@@ -281,6 +281,14 @@ const SummaryApi = {
         url : `${backendDomain}/api/developer-complete-update`,
         method: "post"
       },
+      getAdminUpdateSettings: {
+        url: `${backendDomain}/api/get-file-settings`,
+        method: "get"
+      },
+      adminUpdateSettings: {
+        url : `${backendDomain}/api/update-file-settings`,
+        method: "post"
+      },
     wallet : {
         balance :{
             url : `${backendDomain}/api/wallet/balance`,

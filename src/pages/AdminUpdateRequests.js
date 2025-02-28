@@ -339,8 +339,8 @@ const AdminUpdateRequests = () => {
               </div>
             </div>
             
-            {/* Uploaded Files */}
-            <div className="mb-6">
+          {/* Uploaded Files section in AdminUpdateRequests.js */}
+<div className="mb-6">
   <h4 className="font-medium mb-2">Uploaded Files</h4>
   <div className="border rounded-lg p-4">
     {selectedRequest.files && selectedRequest.files.length > 0 ? (
@@ -349,15 +349,9 @@ const AdminUpdateRequests = () => {
           <div key={index} className="flex items-center bg-gray-50 p-3 rounded">
             <div className="flex-shrink-0 mr-3">
               {file.type && file.type.startsWith('image/') ? (
-                <img 
-                  src={`${window.location.origin}${file.path}`}
-                  alt={file.originalName || 'File'}
-                  className="w-12 h-12 object-cover rounded"
-                  onError={(e) => {
-                    console.error("Image load error:", e);
-                    e.target.src = "https://via.placeholder.com/48?text=Error";
-                  }}
-                />
+                <div className="w-12 h-12 bg-blue-100 rounded flex items-center justify-center">
+                <span className="text-blue-500">IMG</span>
+              </div>
               ) : (
                 <div className="w-12 h-12 bg-gray-200 rounded flex items-center justify-center">
                   <span className="text-gray-500">DOC</span>
@@ -370,15 +364,24 @@ const AdminUpdateRequests = () => {
                 {file.size ? `${(file.size / 1024).toFixed(1)} KB` : 'Unknown size'}
               </p>
             </div>
-            <a 
-              href={`${window.location.origin}${file.path}`}
-              download={file.originalName || file.filename}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="ml-2 text-blue-500 hover:text-blue-700"
-            >
-              Download
-            </a>
+            <div className="flex space-x-2">
+              <a 
+                href={file.downloadLink || `https://drive.google.com/uc?export=download&id=${file.driveFileId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-500 hover:text-blue-700"
+              >
+                Download
+              </a>
+              <a 
+                href={file.driveLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-500 hover:text-blue-700"
+              >
+                View
+              </a>
+            </div>
           </div>
         ))}
       </div>

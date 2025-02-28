@@ -109,73 +109,75 @@ const UpdateRequestModal = ({ plan, onClose, onSubmitSuccess }) => {
   };
   
   // Final submission
-  const submitUpdateRequest = async () => {
-    if (loading) return;
+  // Modified submitUpdateRequest function for UpdateRequestModal.js
+const submitUpdateRequest = async () => {
+  if (loading) return;
+  
+  try {
+    setLoading(true);
     
-    try {
-      setLoading(true);
+    // Create form data for the files
+    const formData = new FormData();
+    formData.append('planId', plan._id);
+    
+    // Add all instructions as a JSON string
+    formData.append('instructions', JSON.stringify(messages));
+    
+    // Add each file separately with the same field name 'files'
+    // FormData will automatically handle multiple files with the same field name
+    files.forEach((fileObj) => {
+      formData.append('files', fileObj.file, fileObj.name);
+    });
+    
+    console.log("Submitting update request...");
+    
+    // Submit the request
+    const response = await fetch(SummaryApi.requestUpdate.url, {
+      method: SummaryApi.requestUpdate.method,
+      credentials: 'include',
+      body: formData
+    });
+    
+    // First check if response is ok
+    if (!response.ok) {
+      let errorMsg = `Server returned ${response.status}: ${response.statusText}`;
       
-      // Create form data for the files
-      const formData = new FormData();
-      formData.append('planId', plan._id);
-      
-      // Add all instructions as a JSON string
-      formData.append('instructions', JSON.stringify(messages));
-      
-      // Add each file
-      files.forEach((fileObj, index) => {
-        formData.append('files', fileObj.file, fileObj.name);
-      });
-      
-      console.log("Submitting update request...");
-      
-      // Submit the request
-      const response = await fetch(SummaryApi.requestUpdate.url, {
-        method: SummaryApi.requestUpdate.method,
-        credentials: 'include',
-        body: formData
-      });
-      
-      // First check if response is ok
-      if (!response.ok) {
-        let errorMsg = `Server returned ${response.status}: ${response.statusText}`;
-        
+      try {
+        // Try to parse the error response as JSON
+        const errorData = await response.json();
+        errorMsg = errorData.message || errorMsg;
+      } catch (parseError) {
+        // If we can't parse the error as JSON, try to get the text
         try {
-          // Try to parse the error response as JSON
-          const errorData = await response.json();
-          errorMsg = errorData.message || errorMsg;
-        } catch (parseError) {
-          // If we can't parse the error as JSON, try to get the text
-          try {
-            const errorText = await response.text();
-            errorMsg = errorText || errorMsg;
-          } catch (textError) {
-            // Fall back to the default error message
-          }
+          const errorText = await response.text();
+          errorMsg = errorText || errorMsg;
+        } catch (textError) {
+          // Fall back to the default error message
         }
-        
-        throw new Error(errorMsg);
       }
       
-      // Now parse the successful response
-      const data = await response.json();
-      
-      if (data.success) {
-        toast.success('Update request submitted successfully');
-        onSubmitSuccess?.();
-        onClose();
-      } else {
-        toast.error(data.message || 'Failed to submit update request');
-        setShowConfirmation(false);
-      }
-    } catch (error) {
-      console.error('Error submitting update request:', error);
-      toast.error(error.message || 'Failed to submit update request');
-      setShowConfirmation(false);
-    } finally {
-      setLoading(false);
+      throw new Error(errorMsg);
     }
-  };
+    
+    // Now parse the successful response
+    const data = await response.json();
+    
+    if (data.success) {
+      toast.success('Update request submitted successfully');
+      onSubmitSuccess?.();
+      onClose();
+    } else {
+      toast.error(data.message || 'Failed to submit update request');
+      setShowConfirmation(false);
+    }
+  } catch (error) {
+    console.error('Error submitting update request:', error);
+    toast.error(error.message || 'Failed to submit update request');
+    setShowConfirmation(false);
+  } finally {
+    setLoading(false);
+  }
+};
   
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
