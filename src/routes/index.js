@@ -1,4 +1,4 @@
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, Navigate } from "react-router-dom";
 import App from "../App"
 import Home from "../pages/Home";
 import Login from "../pages/Login";
@@ -30,7 +30,21 @@ import AdminUpdateRequests from "../pages/AdminUpdateRequests";
 import UserUpdateDashboard from "../pages/UserUpdateDashboard";
 import DeveloperUpdatePanel from "../pages/DeveloperUpdatePanel";
 import AdminFileSettings from "../pages/AdminFileSettings";
+import { useSelector } from "react-redux";
 
+
+// Create a conditional home route
+const HomeRoute = () => {
+    const user = useSelector(state => state?.user?.user);
+    
+    // If user is logged in, redirect to dashboard
+    if (user?._id) {
+      return <Navigate to="my-updates" />;
+    }
+    
+    // Otherwise, show the normal home page
+    return <Home />;
+  };
 
 const router = createBrowserRouter([
     {
@@ -39,7 +53,7 @@ const router = createBrowserRouter([
         children:[
             {
                 path:"",
-                element: <Home />
+                element: <HomeRoute />
             },
             {
                 path: "login",

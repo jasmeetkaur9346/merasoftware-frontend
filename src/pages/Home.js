@@ -19,10 +19,7 @@ const Home = () => {
       <BannerProduct serviceName="home"/>
 
       <HomeSecondBanner/>
-      
-      {/* <VerticalCardProduct category={"static_websites"} heading={"Static Websites"}/> */}
-      
-      {/* <VerticalCardProduct category={"web_applications"} heading={"Cloud Softwares"}/> */}
+    
     </div>
   )
 }
