@@ -720,20 +720,20 @@ const AppConvertingBanner = () => {
 
   // Guest Slides Desktop View
   const GuestSlidesDesktop = ({ slide }) => (
-    <section className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-10 w-full">
+    <section className="bg-gradient-to-r from-blue-50 to-red-50 text-white py-10 w-full">
     <div className="max-w-7xl mx-auto px-6">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
         <div>
-          <h1 className="text-3xl lg:text-4xl font-bold mb-4">
+          <h1 className="text-3xl lg:text-4xl font-bold mb-4 text-gray-900">
             {slide.title}
           </h1>
-          <p className="text-blue-100 text-lg mb-6">
+          <p className=" text-lg mb-6 text-gray-600">
             {slide.description}
           </p>
           {slide.ctaButtons?.length > 0 && (
             <a href={slide.ctaButtons[0].link}>
               <button
-                className="bg-white text-blue-600 px-6 py-3 rounded-lg font-medium hover:bg-blue-50 transition-colors flex items-center"
+                className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-50 transition-colors flex items-center"
               >
                 {slide.ctaButtons[0].text} <ArrowRight size={16} className="ml-2" />
               </button>
