@@ -733,7 +733,7 @@ const AppConvertingBanner = () => {
           {slide.ctaButtons?.length > 0 && (
             <a href={slide.ctaButtons[0].link}>
               <button
-                className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-50 transition-colors flex items-center"
+                className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-50 transition-colors flex items-center hover:border hover:border-blue-600 hover:text-blue-600"
               >
                 {slide.ctaButtons[0].text} <ArrowRight size={16} className="ml-2" />
               </button>
