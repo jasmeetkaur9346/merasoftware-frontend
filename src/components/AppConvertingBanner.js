@@ -721,7 +721,7 @@ const AppConvertingBanner = () => {
   // Guest Slides Desktop View
   const GuestSlidesDesktop = ({ slide }) => (
     <section className="bg-gradient-to-r from-blue-50 to-red-50 text-white  w-full">
-    <div className="max-w-7xl mx-auto px-40">
+    <div className="max-w-7xl mx-auto px-24">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
         <div>
           <h1 className="text-3xl lg:text-4xl font-bold mb-4 text-gray-900">
