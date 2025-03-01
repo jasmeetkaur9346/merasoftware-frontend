@@ -118,12 +118,14 @@ if(value){
       <div className='max-w-7xl mx-auto px-6'>
 
        <div className="py-4 flex items-center justify-between">
+       <Link to={"/"}>
        <div className="flex items-center space-x-2">
               <div className="h-10 w-10 bg-blue-600 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-xl">M</span>
               </div>
               <span className="font-bold text-xl text-gray-800">MeraSoftware</span>
             </div>
+        </Link>
 
 
        <div className='hidden md:flex flex-1 max-w-xl mx-8'>
