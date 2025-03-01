@@ -29,6 +29,7 @@ import AdminWebsiteUpdates from "../pages/AdminWebsiteUpdates";
 import AdminUpdateRequests from "../pages/AdminUpdateRequests";
 import UserUpdateDashboard from "../pages/UserUpdateDashboard";
 import DeveloperUpdatePanel from "../pages/DeveloperUpdatePanel";
+import AdminFileSettings from "../pages/AdminFileSettings";
 
 
 const router = createBrowserRouter([
@@ -111,6 +112,10 @@ const router = createBrowserRouter([
                     {
                         path: "all-users",
                         element : <AllUsers/>
+                    },
+                    {
+                        path: "admin-settings",
+                        element: <AdminFileSettings/>
                     },
                     {
                         path: "welcome-content",

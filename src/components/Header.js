@@ -114,26 +114,27 @@ if(value){
   return (
     <>
 
-    <header className='hidden md:block h-16 shadow-md bg-white fixed w-full z-40'>
-       <div className="h-full flex items-center px-4 container mx-auto justify-between">
-       <div className=''>
-       <Link to={"/"}>
-       <img src={Logo} className='w-24 h-8'/>
-            {/* <Logo w={90} h={50} /> */}
-        </Link>
-       </div>
+    <header className='hidden md:block bg-white shadow-sm sticky top-0 z-50'>
+      <div className='max-w-7xl mx-auto px-6'>
 
-
-       <div className='hidden
-       lg:flex items-center w-full justify-between max-w-sm border rounded-full focus-within:shadow pl-2'>
-       <input type='text' placeholder='search product here...' className='w-full outline-none' onChange={handleSearch} value={search}/>
-           <div className="text-lg min-w-[50px] h-8 bg-red-600 flex items-center justify-center rounded-r-full text-white">
-              <GrSearch />
+       <div className="py-4 flex items-center justify-between">
+       <div className="flex items-center space-x-2">
+              <div className="h-10 w-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-xl">M</span>
+              </div>
+              <span className="font-bold text-xl text-gray-800">MeraSoftware</span>
             </div>
+
+
+       <div className='hidden md:flex flex-1 max-w-xl mx-8'>
+        <div className="relative w-full">
+       <input type='text' placeholder='Search for services...' className='w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent' onChange={handleSearch} value={search}/>
+       <GrSearch size={18} className="absolute left-3 top-2.5 text-gray-400" />
+          </div>
        </div>
 
 
-       <div className="flex items-center gap-7">
+       <div className="flex items-center space-x-6">
 
        {/* Add Wallet Balance Display */}
        {user?._id && (
@@ -206,6 +207,19 @@ if(value){
 
        </div>
 
+       </div>
+
+       <nav className="border-t py-3">
+            <ul className="flex justify-between overflow-x-auto scrollbar-none">
+              <li><a href="#" className="text-gray-800 font-medium whitespace-nowrap hover:text-blue-600 px-3">All Services</a></li>
+              <li><a href="#" className="text-gray-800 font-medium whitespace-nowrap hover:text-blue-600 px-3">Website Development</a></li>
+              <li><a href="#" className="text-gray-800 font-medium whitespace-nowrap hover:text-blue-600 px-3">Web App Development</a></li>
+              <li><a href="#" className="text-gray-800 font-medium whitespace-nowrap hover:text-blue-600 px-3">Mobile App Development</a></li>
+              <li><a href="#" className="text-gray-800 font-medium whitespace-nowrap hover:text-blue-600 px-3">Features & Upgrades</a></li>
+              <li><a href="#" className="text-gray-800 font-medium whitespace-nowrap hover:text-blue-600 px-3">Special Offers</a></li>
+            </ul>
+          </nav>
+          
        </div>
     </header>
 

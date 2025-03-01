@@ -137,10 +137,10 @@ const BannerProduct = ({ serviceName = "home" }) => {
         <div className='container mx-auto md:px-14 px-4 md:mt-5 rounded'>
             <div className='h-40 md:h-auto w-full bg-slate-200 relative rounded-lg shadow-lg'>
                 <div className='absolute z-10 h-full w-full md:flex items-center hidden'>
-                    <div className='flex justify-between w-full text-2xl'>
+                    {/* <div className='flex justify-between w-full text-2xl'>
                         <button onClick={prevImage} className='bg-white shadow-md rounded-full p-1'><FaAngleLeft /></button>
                         <button onClick={nextImage} className='bg-white shadow-md rounded-full p-1'><FaAngleRight /></button>
-                    </div>
+                    </div> */}
                 </div>
                 {/* desktop and tablet version */}
                 <div className='hidden md:flex h-full w-full overflow-hidden'>

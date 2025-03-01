@@ -720,46 +720,38 @@ const AppConvertingBanner = () => {
 
   // Guest Slides Desktop View
   const GuestSlidesDesktop = ({ slide }) => (
-    <div className="bg-gradient-to-r from-blue-50 to-red-50 py-16 ">
-      <div className="container mx-auto px-6">
-        <div className="flex items-center justify-between">
-          <div className="w-1/2">
-            <h1 className="text-5xl font-bold text-gray-900 leading-tight mb-6">
-              {slide.title}
-            </h1>
-            <p className="text-xl text-gray-600 mb-8">
-              {slide.description}
-            </p>
-            <div className="flex gap-4">
-              {slide.ctaButtons?.map((button, btnIndex) => (
-                <a key={btnIndex} href={button.link}>
-                  <button 
-                    className={`${
-                      button.type === 'primary' 
-                        ? 'bg-blue-600 hover:bg-blue-700 text-white' 
-                        : 'border border-blue-600 hover:bg-red-50'
-                    } px-14 py-3 rounded-lg text-lg transition-colors flex items-center`}
-                  >
-                    {button.text}
-                    {button.type === 'primary' && <ArrowRight className="ml-2 w-5 h-5" />}
-                  </button>
-                </a>
-              ))}
-            </div>
-          </div>
-          <div className="w-1/2 flex justify-end">
-            <div className="w-[550px] h-[300px]">
-              <img 
-                src={guestSlide} 
-                alt="Hero" 
-                className="w-full h-full object-cover rounded-3xl shadow-xl"
-              />
-            </div>
-          </div>
+    <section className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-10 w-full">
+    <div className="max-w-7xl mx-auto px-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        <div>
+          <h1 className="text-3xl lg:text-4xl font-bold mb-4">
+            {slide.title}
+          </h1>
+          <p className="text-blue-100 text-lg mb-6">
+            {slide.description}
+          </p>
+          {slide.ctaButtons?.length > 0 && (
+            <a href={slide.ctaButtons[0].link}>
+              <button
+                className="bg-white text-blue-600 px-6 py-3 rounded-lg font-medium hover:bg-blue-50 transition-colors flex items-center"
+              >
+                {slide.ctaButtons[0].text} <ArrowRight size={16} className="ml-2" />
+              </button>
+            </a>
+          )}
+        </div>
+        <div className="hidden lg:block">
+          <img
+            src={guestSlide || "/api/placeholder/600/300"}
+            alt="Services Banner"
+            className="rounded-xl shadow-xl w-full h-auto"
+          />
         </div>
       </div>
     </div>
-  );
+  </section>
+);
+
 
   // Guest Slides Mobile View
   const GuestSlidesMobile = ({ slide }) => (
@@ -813,9 +805,9 @@ const AppConvertingBanner = () => {
   // If we have guest slides, show them immediately (even if other data is still loading)
   if (!user?._id && guestSlides?.length > 0) {
     return (
-      <div className="relative container mx-auto w-full md:px-14">
+    
         <div
-          className="transition-all duration-500 ease-in-out flex"
+          className="transition-all duration-500 ease-in-out flex w-full"
           style={{ transform: `translateX(-${currentSlide * 100}%)` }}
           onTouchStart={onTouchStart}
           onTouchMove={onTouchMove}
@@ -826,7 +818,7 @@ const AppConvertingBanner = () => {
           ) : (
             <GuestSlidesDesktop slide={guestSlides[currentSlide]} />
           )}
-        </div>
+      
 
         {/* Navigation Arrows - Only show on desktop */}
         {!isMobile && guestSlides.length > 1 && (

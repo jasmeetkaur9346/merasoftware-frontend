@@ -12,13 +12,16 @@ const Home = () => {
 
       <AppConvertingBanner/>
       <CategoryList/>
+
+      <VerticalCardProduct category={"standard_websites"} heading={"Standard Websites"}/>
+      <VerticalCardProduct category={"dynamic_websites"} heading={"Dynamic Websites"}/>
+      
       <BannerProduct serviceName="home"/>
 
       <HomeSecondBanner/>
       
       {/* <VerticalCardProduct category={"static_websites"} heading={"Static Websites"}/> */}
-      <VerticalCardProduct category={"standard_websites"} heading={"Standard Websites"}/>
-      <VerticalCardProduct category={"dynamic_websites"} heading={"Dynamic Websites"}/>
+      
       {/* <VerticalCardProduct category={"web_applications"} heading={"Cloud Softwares"}/> */}
     </div>
   )
