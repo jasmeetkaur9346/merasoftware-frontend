@@ -6,7 +6,7 @@ import SummaryApi from '../common';
 import { useOnlineStatus } from '../App';
 import StorageService from '../utils/storageService';
 import { FileText, Clock, ExternalLink, ChevronRight, Activity, ChevronLeft, ArrowRight } from "lucide-react";
-import guestSlide from '../assest/guestslide.jpg';
+import guestSlide from '../assest/guestslide.png';
 
 const AppConvertingBanner = () => {
   const navigate = useNavigate();
@@ -720,8 +720,8 @@ const AppConvertingBanner = () => {
 
   // Guest Slides Desktop View
   const GuestSlidesDesktop = ({ slide }) => (
-    <section className="bg-gradient-to-r from-blue-50 to-red-50 text-white py-10 w-full">
-    <div className="max-w-7xl mx-auto px-6">
+    <section className="bg-gradient-to-r from-blue-50 to-red-50 text-white  w-full">
+    <div className="max-w-7xl mx-auto px-40">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
         <div>
           <h1 className="text-3xl lg:text-4xl font-bold mb-4 text-gray-900">
@@ -740,11 +740,11 @@ const AppConvertingBanner = () => {
             </a>
           )}
         </div>
-        <div className="hidden lg:block">
+        <div className="flex items-center justify-center">
           <img
             src={guestSlide || "/api/placeholder/600/300"}
             alt="Services Banner"
-            className="rounded-xl shadow-xl w-full h-auto"
+            className="  w-auto h-[350px]"
           />
         </div>
       </div>
