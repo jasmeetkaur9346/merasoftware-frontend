@@ -137,7 +137,7 @@ const CategoryList = () => {
           <Link
             to={`/product-category?${buildCategoryQueryString(service.queryCategoryValues)}`}
             key={service.serviceType}
-            className={`${service.bgColor} rounded-xl md:px-4 md:py-6 p-3 hover:shadow-sm transition-shadow cursor-pointer flex flex-col`}
+            className={`${service.bgColor} rounded-xl shadow-2xl md:px-4 md:py-6 p-3 hover:shadow-sm transition-shadow cursor-pointer flex flex-col`}
           >
             <div className="h-8 w-8 md:h-10 md:w-10 rounded-full bg-white flex items-center justify-center mb-2">
               {service.icon}
