@@ -31,6 +31,7 @@ import UserUpdateDashboard from "../pages/UserUpdateDashboard";
 import DeveloperUpdatePanel from "../pages/DeveloperUpdatePanel";
 import AdminFileSettings from "../pages/AdminFileSettings";
 import { useSelector } from "react-redux";
+import UserDashboard from "../pages/UserDashboard";
 
 
 // Create a conditional home route
@@ -39,7 +40,7 @@ const HomeRoute = () => {
     
     // If user is logged in, redirect to dashboard
     if (user?._id) {
-      return <Navigate to="my-updates" />;
+      return <Navigate to="dashboard" />;
     }
     
     // Otherwise, show the normal home page
@@ -51,6 +52,10 @@ const router = createBrowserRouter([
         path: "/",
         element: <App />,
         children:[
+            {
+                path:"start-new-project",
+                element: <Home />
+            },
             {
                 path:"",
                 element: <HomeRoute />
@@ -114,6 +119,10 @@ const router = createBrowserRouter([
             {
                 path: "my-updates",
                 element: <UserUpdateDashboard/>
+            },
+            {
+                path: "dashboard",
+                element: <UserDashboard/>
             },
             {
                 path: "developer-updates",

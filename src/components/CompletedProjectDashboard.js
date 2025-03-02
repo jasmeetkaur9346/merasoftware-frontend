@@ -1,18 +1,19 @@
 import React from 'react';
 import { ShoppingCart, Plus, ChevronRight, Check } from 'lucide-react';
+import { useSelector } from 'react-redux';
+import { Link } from 'react-router-dom';
 
-const CompletedProjectDashboard = () => {
-  // Sample user data with a completed project
-  const userData = {
-    name: "Rahul Sharma",
-    profileImage: "/api/placeholder/150/150",
-    walletBalance: 3800,
-    orders: [],
-    completedProject: {
-      name: "Website Development",
-      completionDate: "February 28, 2025",
-      rating: 5
-    }
+const CompletedProjectDashboard = ({ project, walletBalance = 0, onStartNewProject, onViewReport }) => {
+  const user = useSelector(state => state?.user?.user);
+  const cartProductCount = useSelector(state => state?.cart?.cartProductCount) || 0;
+
+  // Format date for display
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
   };
 
   // Format currency
@@ -31,34 +32,40 @@ const CompletedProjectDashboard = () => {
         <div className="flex justify-between items-center px-8 py-4">
           <div className="flex items-center space-x-4">
             <h1 className="text-2xl font-bold text-gray-800">Dashboard</h1>
-            <button className="bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors">
-              Explore
-            </button>
+            <Link to="/">
+              <button className="bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded-lg text-sm font-medium transition-colors">
+                Explore
+              </button>
+            </Link>
           </div>
           <div className="flex items-center space-x-4">
             {/* Wallet Balance */}
             <div className="flex items-center bg-green-50 px-4 py-2 rounded-lg">
               <div>
                 <p className="text-xs text-green-600">Wallet Balance</p>
-                <p className="font-bold text-green-700">{formatCurrency(userData.walletBalance)}</p>
+                <p className="font-bold text-green-700">{formatCurrency(walletBalance)}</p>
               </div>
             </div>
             
             {/* Cart Button */}
-            <button className="relative bg-gray-100 p-2 rounded-full hover:bg-gray-200">
+            <Link to="/cart" className="relative bg-gray-100 p-2 rounded-full hover:bg-gray-200">
               <ShoppingCart size={22} />
-              {userData.orders.length > 0 && (
+              {cartProductCount > 0 && (
                 <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
-                  {userData.orders.length}
+                  {cartProductCount}
                 </span>
               )}
-            </button>
+            </Link>
             
             {/* Profile Menu */}
-            <button className="flex items-center space-x-2 bg-gray-100 px-3 py-2 rounded-lg hover:bg-gray-200">
-              <img src={userData.profileImage} alt="Profile" className="w-8 h-8 rounded-full" />
-              <span className="font-medium">Profile</span>
-            </button>
+            <Link to="/profile" className="flex items-center space-x-2 bg-gray-100 px-3 py-2 rounded-lg hover:bg-gray-200">
+              <img 
+                src={user?.profilePic || "/api/placeholder/150/150"} 
+                alt="Profile" 
+                className="w-8 h-8 rounded-full" 
+              />
+              <span className="font-medium">{user?.name || "Profile"}</span>
+            </Link>
           </div>
         </div>
       </header>
@@ -72,7 +79,10 @@ const CompletedProjectDashboard = () => {
               <h2 className="text-xl font-bold text-gray-800">Completed Project</h2>
               <div className="flex items-center">
                 <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full mr-2">All Projects</span>
-                <button className="text-blue-600 flex items-center text-sm hover:text-blue-800">
+                <button 
+                  onClick={onViewReport}
+                  className="text-blue-600 flex items-center text-sm hover:text-blue-800"
+                >
                   View Details <ChevronRight size={16} />
                 </button>
               </div>
@@ -81,8 +91,11 @@ const CompletedProjectDashboard = () => {
             <div className="bg-gradient-to-r from-green-500 to-green-700 rounded-lg p-6 text-white">
               <div className="flex justify-between items-start">
                 <div>
-                  <h3 className="text-lg font-bold">{userData.completedProject.name}</h3>
-                  <p className="text-green-100 mt-1">Completed: {userData.completedProject.completionDate}</p>
+                  <h3 className="text-lg font-bold">{project.productId?.serviceName}</h3>
+                  <p className="text-green-100 mt-1">Completed: {
+                    project.lastUpdated ? formatDate(project.lastUpdated) : 
+                    formatDate(project.updatedAt || project.createdAt)
+                  }</p>
                 </div>
                 <div className="bg-white rounded-full p-2">
                   <Check size={24} className="text-green-600" />
@@ -103,7 +116,10 @@ const CompletedProjectDashboard = () => {
               </div>
               
               <div className="mt-6">
-                <button className="w-full bg-white text-green-700 py-2 px-4 rounded-lg font-medium hover:bg-green-50 transition-colors">
+                <button 
+                  onClick={onViewReport}
+                  className="w-full bg-white text-green-700 py-2 px-4 rounded-lg font-medium hover:bg-green-50 transition-colors"
+                >
                   View Project Report
                 </button>
               </div>
@@ -120,7 +136,10 @@ const CompletedProjectDashboard = () => {
               <p className="text-center text-gray-600 mb-6">
                 Ready to begin your next project? Click the button below to get started.
               </p>
-              <button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg font-medium transition-colors">
+              <button 
+                onClick={onStartNewProject}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg font-medium transition-colors"
+              >
                 Start New Project
               </button>
             </div>

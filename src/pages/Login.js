@@ -59,7 +59,7 @@ const Login = () => {
           await fetchUserAddToCart();
   
           toast.success(dataApi.message);
-          navigate("/my-updates");
+          navigate("/dashboard");
         }
   
         if (dataApi.error) {
