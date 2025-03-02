@@ -73,18 +73,12 @@ const Dashboard = () => {
           );
           setActiveUpdatePlan(updatePlan || null);
           
-          // UPDATED LOGIC for "Start New Project" button
-          // Show when:
-          // 1. User has no orders at all, OR
-          // 2. All projects are completed (no active project) AND
-          //    any update plan is either used up or expired
-          const showNewProj = 
-            allOrders.length === 0 || 
-            (!activeProj && 
-              (!updatePlan || 
-                (updatePlan.updatesUsed >= updatePlan.productId?.updateCount) ||
-                (calculateRemainingDays(updatePlan) <= 0)
-              )
+          // Determine if "Start New Project" button should be shown
+          // Show only if no active project AND (no update plan OR update plan with no updates left)
+          const showNewProj = !activeProj && 
+            (!updatePlan || 
+             (updatePlan.updatesUsed >= updatePlan.productId?.updateCount) ||
+             (calculateRemainingDays(updatePlan) <= 0)
             );
           
           setShowNewProjectButton(showNewProj);
@@ -296,7 +290,7 @@ const Dashboard = () => {
           </div>
         ) : null}
         
-        {/* Active Project or Completed Project in second column */}
+        {/* Active Project or Completed Project in third column */}
         {activeProject ? (
           <div className="bg-white rounded-lg shadow-md overflow-hidden">
             <div className="flex justify-between items-center px-6 py-4 border-b">
@@ -358,7 +352,9 @@ const Dashboard = () => {
               </button>
             </div>
           </div>
-        ) : completedProjects.length > 0 ? (
+        ) : (
+          <div className="space-y-6">
+            {completedProjects.length > 0 && (
           <div className="bg-white rounded-lg shadow-md overflow-hidden">
             <div className="flex justify-between items-center px-6 py-4 border-b">
               <h2 className="text-xl font-bold">Completed Project</h2>
@@ -406,7 +402,8 @@ const Dashboard = () => {
               </button>
             </div>
           </div>
-        ) : showNewProjectButton ? (
+        )}
+        {showNewProjectButton && (
           <div className="bg-white rounded-lg shadow-md overflow-hidden">
             <div className="px-6 py-4 border-b">
               <h2 className="text-xl font-bold">Start a New Project</h2>
@@ -433,9 +430,13 @@ const Dashboard = () => {
               </div>
             </div>
           </div>
-        ) : null}
+        )}
+          </div>
+        )}
+
         
-        {/* Orders box - in the last column of the main grid */}
+        
+        {/* Orders box - now in the last column of the main grid */}
         <div className="bg-white rounded-lg shadow-md overflow-hidden">
           <div className="px-6 py-4 border-b">
             <h2 className="text-xl font-bold">Your Orders</h2>
