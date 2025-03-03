@@ -217,6 +217,7 @@ const AppContent = () => {
     initializeData();
   }, [isInitialized]);
 
+  const isDashboard = window.location.pathname.includes('/dashboard');
 
   return (
      <Context.Provider value={{
@@ -232,7 +233,7 @@ const AppContent = () => {
          position='top-center' 
          autoClose={1000}
          />
-        <Header />
+        {!isDashboard && <Header />}
         <main className='min-h-[calc(100vh-120px)] pt-24 md:pt-0'>
           <Outlet />
         </main>
