@@ -6,12 +6,16 @@ import SummaryApi from '../common';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import TriangleMazeLoader from '../components/TriangleMazeLoader';
+import DashboardLayout from '../components/DashboardLayout';
+import Context from '../context';
+import { useSelector } from 'react-redux';
 
 const OrderPage = () => {
   const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedOrder, setSelectedOrder] = useState(null);
+  const user = useSelector(state => state?.user?.user);
+  const context = React.useContext(Context);
 
   const handleOrderClick = (orderId) => {
     navigate(`/project-details/${orderId}`);
@@ -290,9 +294,13 @@ const OrderPage = () => {
   };
 
   return (
-    <div className="container mx-auto p-4 mb-20">
+    <DashboardLayout 
+      user={user}
+      walletBalance={context.walletBalance}
+      cartCount={context.cartProductCount}
+    >
+      <div className="p-6">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-2xl font-bold mb-6">Your Orders</h1>
         
         {loading ? (
             <div className="fixed inset-0 bg-black bg-opacity-10  flex items-center justify-center z-50">
@@ -410,6 +418,7 @@ const OrderPage = () => {
         )}
       </div>
     </div>
+    </DashboardLayout>
   );
 };
 

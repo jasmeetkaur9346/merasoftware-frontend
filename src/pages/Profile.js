@@ -15,6 +15,7 @@ import Context from '../context';
 import CookieManager from '../utils/cookieManager';
 import StorageService from '../utils/storageService';
 import { useOnlineStatus } from '../App';
+import DashboardLayout from '../components/DashboardLayout';
 
 
 const Profile = () => {
@@ -149,6 +150,9 @@ const Profile = () => {
     };
 
     return (
+        <DashboardLayout
+            user={user}
+        > 
         <div className="container mx-auto p-4 mb-20">
             {(loading || updateLoading) && (
                 <div className="fixed inset-0 bg-black bg-opacity-10 flex items-center justify-center z-50">
@@ -291,6 +295,7 @@ const Profile = () => {
                 />
             )}
         </div>
+        </DashboardLayout>
     );
 };
 

@@ -4,6 +4,7 @@ import Context from '../context';
 import SummaryApi from '../common';
 import displayINRCurrency from '../helpers/displayCurrency';
 import TriangleMazeLoader from '../components/TriangleMazeLoader';
+import DashboardLayout from '../components/DashboardLayout';
 
 const WalletDetails = () => {
   const [walletHistory, setWalletHistory] = useState([]);
@@ -76,6 +77,9 @@ const WalletDetails = () => {
   };
 
   return (
+    <DashboardLayout 
+    user={user}
+  > 
     <div className='p-4'>
       {/* Greeting & Balance Card */}
       <div className='bg-white rounded-lg p-6 mb-6 shadow'>
@@ -155,6 +159,7 @@ const WalletDetails = () => {
         )}
       </div>
     </div>
+    </DashboardLayout>
   );
 };
 

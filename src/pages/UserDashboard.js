@@ -10,6 +10,7 @@ import {
 import SummaryApi from '../common';
 import Context from '../context';
 import UpdateRequestModal from '../components/UpdateRequestModal';
+import DashboardLayout from '../components/DashboardLayout';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -280,137 +281,12 @@ const Dashboard = () => {
     );
   }
 
-  return (
-    <div className="flex min-h-screen bg-gray-50">
-      {/* Sidebar */}
-      <aside className="w-64 bg-white border-r shadow-sm">
-        <div className="p-4 border-b">
-          <div className="flex items-center space-x-2">
-            <div className="w-10 h-10 flex items-center justify-center bg-blue-600 text-white font-bold rounded-md">
-              M
-            </div>
-            <span className="font-bold text-xl">MeraSoftware</span>
-          </div>
-        </div>
-        
-        <div className="py-4">
-          <div className="px-4 mb-2 text-xs font-semibold text-gray-500 uppercase">Main Menu</div>
-          <ul>
-            <li>
-              <a href="#" className="flex items-center px-4 py-3 text-blue-600 bg-blue-50 border-r-4 border-blue-600">
-                <Home size={20} className="mr-3" />
-                <span className="font-medium">Dashboard</span>
-              </a>
-            </li>
-            <li>
-              <a 
-                href="#" 
-                className="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100"
-                onClick={() => navigate('/order')}
-              >
-                <ShoppingBag size={20} className="mr-3" />
-                <span className="font-medium">Your Orders</span>
-              </a>
-            </li>
-            <li>
-              <a 
-                href="#" 
-                className="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100"
-                onClick={() => navigate('/profile')}
-              >
-                <UserCircle size={20} className="mr-3" />
-                <span className="font-medium">Account</span>
-              </a>
-            </li>
-            <li>
-              <a 
-                href="#" 
-                className="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100"
-                onClick={() => navigate('/wallet')}
-              >
-                <Wallet size={20} className="mr-3" />
-                <span className="font-medium">Wallet</span>
-              </a>
-            </li>
-          </ul>
-          
-          <div className="px-4 mt-6 mb-2 text-xs font-semibold text-gray-500 uppercase">Help & Support</div>
-          <ul>
-            <li>
-              <a 
-                href="#" 
-                className="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100"
-                onClick={() => navigate('/support')}
-              >
-                <MessageSquare size={20} className="mr-3" />
-                <span className="font-medium">Contact Support</span>
-              </a>
-            </li>
-          </ul>
-        </div>
-        
-        <div className="mt-auto border-t p-4">
-          <a href="#" className="flex items-center text-red-600 hover:text-red-700">
-            <LogOut size={20} className="mr-3" />
-            <span className="font-medium">Logout</span>
-          </a>
-        </div>
-      </aside>
-      
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col">
-        {/* Top Navigation Bar */}
-        <header className="bg-white shadow-sm border-b px-6 py-3">
-          <div className="flex items-center">
-            <h1 className="text-2xl font-bold text-gray-800">Dashboard</h1>
-            
-            <div className="flex-1 mx-4 max-w-2xl">
-          <div className="relative w-full">
-            <input
-              type="text"
-              placeholder="Search..."
-              className="w-full py-2 px-4 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
-            />
-            <div className="absolute right-3 top-2.5 text-gray-400">
-              <Search size={18} />
-            </div>
-          </div>
-        </div>
-
-        <div className="flex items-center space-x-4">
-              <div className="relative">
-                <button 
-                  className="w-10 h-10 flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded-full text-gray-700"
-                  onClick={() => navigate('/notifications')}
-                >
-                  <Bell size={20} />
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">3</span>
-                </button>
-              </div>
-              
-              <div 
-                className="flex items-center space-x-2 cursor-pointer"
-                onClick={() => navigate('/profile')}
-              >
-                <div className="w-10 h-10 bg-gray-200 rounded-full overflow-hidden">
-                  {user?.profilePic ? (
-                    <img src={user.profilePic} alt={user.name} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-blue-100 text-blue-600">
-                      <User size={20} />
-                    </div>
-                  )}
-                </div>
-                <div>
-                  <div className="font-medium text-sm">{user?.name || 'User'}</div>
-                  <div className="text-xs text-gray-500">Premium Client</div>
-                </div>
-                <ChevronDown size={16} className="text-gray-500" />
-              </div>
-              </div>
-
-          </div>
-        </header>
+  return (  
+    <DashboardLayout 
+    user={user}
+    walletBalance={walletBalance}
+    cartCount={cartCount}
+  >  
         
         {/* Main Dashboard Content */}
         <main className="flex-1 p-6 overflow-auto">
@@ -862,7 +738,6 @@ const Dashboard = () => {
             </div>
           </div>
         </main>
-      </div>
       
       {/* View All Projects Modal */}
       {showAllProjectsModal && (
@@ -1046,7 +921,7 @@ const Dashboard = () => {
           }}
         />
       )}
-    </div>
+     </DashboardLayout>
   );
 };
 
