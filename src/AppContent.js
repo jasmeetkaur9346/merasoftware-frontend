@@ -23,6 +23,22 @@ const AppContent = () => {
   const [cartProductCount, setCartProductCount] = useState(0);
   const [walletBalance, setWalletBalance] = useState(0);
 
+  useEffect(() => {
+    const keepAlive = () => {
+      fetch("https://codeonwork-backend.onrender.com/ping")
+        .then(() => console.log("Keep-alive request sent"))
+        .catch((err) => console.error("Keep-alive request failed:", err));
+    };
+
+    // Pehli request turant bhejo
+    keepAlive();
+
+    // Har 5 minutes me request bhejne ke liye interval set karo
+    const interval = setInterval(keepAlive, 5 * 60 * 1000); // 5 minutes
+
+    return () => clearInterval(interval); // Cleanup on unmount
+  }, []);
+
   const handleLogout = async () => {
     try {
       const response = await fetch(SummaryApi.logout.url, {
