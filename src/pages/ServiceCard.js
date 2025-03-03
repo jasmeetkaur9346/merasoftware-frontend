@@ -134,7 +134,7 @@ const Dashboard = () => {
           {/* Projects Section */}
           <div className="grid grid-cols-12 gap-6">
             {/* Left Column - Projects */}
-            <div className="col-span-8">
+            <div className="col-span-12">
               <div className="mb-4 flex justify-between items-center">
                 <h3 className="text-lg font-semibold text-gray-800">Your Projects</h3>
                 {/* <div className="flex space-x-2">
@@ -147,7 +147,7 @@ const Dashboard = () => {
                 </div> */}
               </div>
               
-              <div className="grid grid-cols-3 gap-5">
+              <div className="grid grid-cols-4 gap-5">
                 {/* Ongoing Project Card */}
                 <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100 hover:shadow-md transition-shadow">
                   <div className="h-2 bg-yellow-500"></div>
@@ -230,7 +230,7 @@ const Dashboard = () => {
                 </div>
                 
                 {/* Another Completed Project Card */}
-                {/* <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100 hover:shadow-md transition-shadow">
+                <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100 hover:shadow-md transition-shadow">
                   <div className="h-2 bg-green-500"></div>
                   <div className="p-5">
                     <div className="flex justify-between items-start mb-3">
@@ -266,7 +266,7 @@ const Dashboard = () => {
                       </button>
                     </div>
                   </div>
-                </div> */}
+                </div>
                 
                 {/* View All Projects Card */}
                 <div className="bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl shadow-sm overflow-hidden text-white hover:shadow-md transition-shadow flex flex-col items-center justify-center p-5 text-center">
@@ -286,7 +286,12 @@ const Dashboard = () => {
             </div>
             
             {/* Right Column - Explore and More */}
-            <div className="col-span-4 space-y-6">
+            
+          </div>
+        </main>
+        
+        <div >
+        <div className="row-span-4 grid grid-cols-2 gap-5 px-6">
               {/* Explore More Card */}
               {/* <div className="bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl shadow-sm overflow-hidden p-6 text-white">
                 <h3 className="font-bold text-xl mb-3">Explore More</h3>
@@ -320,7 +325,7 @@ const Dashboard = () => {
               </div> */}
               
               {/* Your Orders Card */}
-              <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
+              <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100 ">
                 <div className="flex justify-between items-center p-5 border-b">
                   <h3 className="font-semibold">Recent Orders</h3>
                   <a href="#" className="text-sm text-blue-600 hover:text-blue-700 flex items-center">
@@ -389,8 +394,8 @@ const Dashboard = () => {
                 </div>
               </div>
             </div>
-          </div>
-        </main>
+        </div>
+
       </div>
     </div>
   );
