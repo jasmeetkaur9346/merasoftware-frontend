@@ -107,7 +107,7 @@ const Dashboard = () => {
   };
 
   const handleViewAllOrders = () => {
-    navigate('/my-orders');
+    navigate('/order');
   };
   
   const handleViewProjectDetails = (orderId) => {
