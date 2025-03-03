@@ -456,7 +456,7 @@ const Dashboard = () => {
                   <div 
                     key={order._id} 
                     className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer mb-4 last:mb-0"
-                    onClick={() => navigate(`/order/${order._id}`)}
+                    onClick={() => navigate("/product/"+order.productId?._id)}
                   >
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex items-center">
