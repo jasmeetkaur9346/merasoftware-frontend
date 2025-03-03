@@ -288,10 +288,8 @@ const Dashboard = () => {
             {/* Right Column - Explore and More */}
             
           </div>
-        </main>
-        
-        <div >
-        <div className="row-span-4 grid grid-cols-2 gap-5 px-6">
+
+          <div className="row-span-4 grid grid-cols-2 gap-5 mt-8">
               {/* Explore More Card */}
               {/* <div className="bg-gradient-to-br from-purple-500 to-indigo-600 rounded-xl shadow-sm overflow-hidden p-6 text-white">
                 <h3 className="font-bold text-xl mb-3">Explore More</h3>
@@ -394,8 +392,8 @@ const Dashboard = () => {
                 </div>
               </div>
             </div>
-        </div>
 
+        </main>
       </div>
     </div>
   );
