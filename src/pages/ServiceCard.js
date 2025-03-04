@@ -8,11 +8,11 @@ const ProductCard = ({ website }) => {
   const displayFeatures = showAllFeatures ? website.features : website.features.slice(0, 5);
 
   return (
-    <div className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 flex flex-col h-full border border-gray-200">
+    <div className="bg-white overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 flex flex-col h-full border border-gray-200">
       {/* Card Header */}
       <div className="flex flex-col justify-start text-left bg-blue-50 px-2 py-3 border-b border-gray-200">
-        <h3 className="md:text-lg text-xs font-bold text-left text-gray-800">{website.title}</h3>
-        <p className="text-xs text-gray-500 mt-1 text-left">{website.type}</p>
+        <h3 className="md:text-lg text-sm font-bold text-left text-gray-800">{website.title}</h3>
+        {/* <p className="text-xs text-gray-500 mt-1 text-left">{website.type}</p> */}
       </div>
       
       {/* Features Section */}
@@ -236,7 +236,7 @@ const WebsiteGrid = () => {
 
   return (
     <div className="bg-gray-50 min-h-screen py-8">
-      <div className="max-w-7xl mx-auto px-4">
+      <div className="max-w-7xl mx-auto px-3">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center">
             <div className="bg-blue-600 text-white p-2 rounded-md mr-3">
@@ -269,7 +269,7 @@ const WebsiteGrid = () => {
         </div>
         
         {/* Updated grid to show 2 cards per row on mobile */}
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+        <div className="grid grid-cols-2 gap-0 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4  md:gap-6">
           {websites.map(website => (
             <ProductCard key={website.id} website={website} />
           ))}
