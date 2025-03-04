@@ -21,8 +21,8 @@ const DashboardLayout = ({ children, user, walletBalance, cartCount, isLoading }
   const getPageTitle = () => {
     if (currentPath.startsWith('/dashboard')) return 'Dashboard';
     if (currentPath.startsWith('/order')) return 'Your Orders';
-    if (currentPath.startsWith('/profile')) return 'Account';
-    if (currentPath.startsWith('/wallet')) return 'Wallet';
+    if (currentPath.startsWith('/profile')) return 'Account Details';
+    if (currentPath.startsWith('/wallet')) return 'Wallet Details';
     if (currentPath.startsWith('/support')) return 'Support';
     return 'Dashboard';
   };
@@ -47,10 +47,7 @@ const DashboardLayout = ({ children, user, walletBalance, cartCount, isLoading }
       <aside className="hidden lg:block lg:w-64 bg-white border-r shadow-sm">
         <div className="p-4 border-b">
           <div className="flex items-center space-x-2">
-            <div className="w-10 h-10 flex items-center justify-center bg-blue-600 text-white font-bold rounded-md">
-              M
-            </div>
-            <span className="font-bold text-xl">MeraSoftware</span>
+          <h1 className="mr-2 text-2xl font-bold text-gray-800">{getPageTitle()}</h1>
           </div>
         </div>
         
@@ -140,7 +137,7 @@ const DashboardLayout = ({ children, user, walletBalance, cartCount, isLoading }
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
         {/* Top Navigation Bar - Only visible on desktop */}
-        <header className="hidden lg:block bg-white shadow-sm border-b">
+        {/* <header className="hidden lg:block bg-white shadow-sm border-b">
           <div className="flex items-center justify-between px-6 py-3">
             <h1 className="text-2xl font-bold text-gray-800">{getPageTitle()}</h1>
             
@@ -186,7 +183,7 @@ const DashboardLayout = ({ children, user, walletBalance, cartCount, isLoading }
               </div>
             </div>
           </div>
-        </header>
+        </header> */}
         
         {/* Page Content */}
         <main className="flex-1 overflow-auto">

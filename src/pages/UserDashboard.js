@@ -238,9 +238,9 @@ const Dashboard = () => {
         </aside>
         
         <div className="flex-1 flex flex-col">
-          <header className="bg-white shadow-sm border-b px-6 py-3">
+          {/* <header className="bg-white shadow-sm border-b px-6 py-3">
             <div className="flex items-center justify-between">
-              <h1 className="text-2xl font-bold text-gray-800">Dashboard</h1>
+              <h1 className="text-2xl font-bold text-gray-800"></h1>
               
               <div className="animate-pulse flex space-x-4">
                 <div className="h-10 bg-gray-200 rounded w-64 hidden md:block"></div>
@@ -248,19 +248,19 @@ const Dashboard = () => {
                 <div className="h-10 bg-gray-200 rounded w-32 hidden md:block"></div>
               </div>
             </div>
-          </header>
+          </header> */}
           
           <main className="flex-1 p-6 overflow-auto">
             <div className="flex justify-between items-center mb-6">
               <div>
-                <div className="text-sm text-gray-500 mb-1">Welcome back,</div>
-                <h2 className="text-xl font-bold text-gray-800">Let's see your projects</h2>
+                <div className="text-sm animate-pulse h-6 text-gray-500 mb-1 rounded w-24 bg-gray-200 "></div>
+                <h2 className="text-xl animate-pulse h-6 font-bold text-gray-800 w-32 rounded bg-gray-200 "></h2>
               </div>
               
-              <div className="animate-pulse flex space-x-2">
+              {/* <div className="animate-pulse flex space-x-2">
                 <div className="h-10 bg-gray-200 rounded w-24"></div>
                 <div className="h-10 bg-gray-200 rounded w-32"></div>
-              </div>
+              </div> */}
             </div>
             
             {/* Mobile-friendly loading grid */}
@@ -290,13 +290,13 @@ const Dashboard = () => {
     >  
       {/* Main Dashboard Content */}
       <main className="flex-1 p-4 md:p-6 overflow-auto">
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex justify-between items-center mb-8">
           <div>
             <div className="text-sm text-gray-500 mb-1">Welcome back,</div>
             <h2 className="text-xl font-bold text-gray-800">Let's see your projects</h2>
           </div>
           
-          <div className="flex space-x-2">
+          {/* <div className="hidden md:flex space-x-2">
             <div className="px-3 md:px-4 py-2 bg-white shadow-sm rounded-lg flex items-center">
               <Wallet size={16} className="text-blue-600 mr-1 md:mr-2" />
               <span className="font-medium text-sm md:text-base">₹{walletBalance}</span>
@@ -308,7 +308,7 @@ const Dashboard = () => {
               <ShoppingBag size={16} className="mr-1 md:mr-2" />
               <span className="text-sm md:text-base">Cart ({cartCount})</span>
             </button>
-          </div>
+          </div> */}
         </div>
         
         {/* Projects Section */}
@@ -517,7 +517,7 @@ const Dashboard = () => {
                         <div className="font-medium text-sm md:text-base">{order.productId?.serviceName || "Service"}</div>
                       </div>
                       <div className="text-xs md:text-sm text-gray-500">Purchased: {formatDate(order.createdAt)}</div>
-                      <div className="text-xs md:text-sm text-gray-500">Amount: ₹{order.productId?.price || 0}</div>
+                      <div className="text-xs md:text-sm text-gray-500">Amount: ₹{order.price || 0}</div>
                     </div>
                   ))
                 )}

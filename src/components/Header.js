@@ -141,9 +141,9 @@ if(value){
 
        {/* Add Wallet Balance Display */}
        {user?._id && (
-              <div className='flex items-center gap-2 bg-gray-100 px-3 py-1 rounded-full'>
-                <IoWalletOutline className="text-xl text-gray-600" />
-                <span className='font-medium'>₹{context.walletBalance}</span>
+              <div className='flex items-center gap-2 px-3 py-1 rounded-full'>
+                <IoWalletOutline className="text-xl text-green-600" />
+                <span className='font-medium text-green-600'>₹{context.walletBalance}</span>
               </div>
             )}
 
@@ -189,7 +189,7 @@ if(value){
               <Link to={"/cart"} className='text-2xl relative'>
              <span><FaShoppingCart/></span>
           
-          <div className='bg-red-600 text-white w-5 h-5 rounded-full p-1 flex items-center justify-center absolute -top-2 -right-3'>
+          <div className='bg-blue-600 text-white w-5 h-5 rounded-full p-1 flex items-center justify-center absolute -top-2 -right-3'>
             <p className='text-sm'>{context?.cartProductCount}</p>
         </div>
           </Link>
@@ -200,9 +200,9 @@ if(value){
      <div className='hidden md:block'>
     {
         user?._id ? (
-            <button onClick={handleLogout} className='px-3 py-1 rounded-full text-white bg-red-600 hover:bg-red-700'>Logout</button>
+            <button onClick={handleLogout} className='px-3 py-1 rounded-full text-white bg-blue-600 hover:bg-blue-700'>Logout</button>
         ): (
-            <Link to={"/login"} className='px-3 py-1 rounded-full text-white bg-red-600 hover:bg-red-700'>Login</Link>
+            <Link to={"/login"} className='px-3 py-1 rounded-full text-white bg-blue-600 hover:bg-blue-700'>Login</Link>
         )
     }
     </div>
