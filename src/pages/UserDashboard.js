@@ -179,7 +179,7 @@ const Dashboard = () => {
     return (
       <div className="flex min-h-screen bg-gray-50">
         {/* Sidebar */}
-        <aside className="hidden md:block w-64 bg-white border-r shadow-sm">
+        <aside className="w-64 bg-white border-r shadow-sm">
           <div className="p-4 border-b">
             <div className="flex items-center space-x-2">
               <div className="w-10 h-10 flex items-center justify-center bg-blue-600 text-white font-bold rounded-md">
@@ -238,43 +238,42 @@ const Dashboard = () => {
         </aside>
         
         <div className="flex-1 flex flex-col">
-          {/* <header className="bg-white shadow-sm border-b px-6 py-3">
+          <header className="bg-white shadow-sm border-b px-6 py-3">
             <div className="flex items-center justify-between">
-              <h1 className="text-2xl font-bold text-gray-800"></h1>
+              <h1 className="text-2xl font-bold text-gray-800">Dashboard</h1>
               
               <div className="animate-pulse flex space-x-4">
-                <div className="h-10 bg-gray-200 rounded w-64 hidden md:block"></div>
+                <div className="h-10 bg-gray-200 rounded w-64"></div>
                 <div className="h-10 w-10 bg-gray-200 rounded-full"></div>
-                <div className="h-10 bg-gray-200 rounded w-32 hidden md:block"></div>
+                <div className="h-10 bg-gray-200 rounded w-32"></div>
               </div>
             </div>
-          </header> */}
+          </header>
           
           <main className="flex-1 p-6 overflow-auto">
             <div className="flex justify-between items-center mb-6">
               <div>
-                <div className="text-sm animate-pulse h-6 text-gray-500 mb-1 rounded w-24 bg-gray-200 "></div>
-                <h2 className="text-xl animate-pulse h-6 font-bold text-gray-800 w-32 rounded bg-gray-200 "></h2>
+                <div className="text-sm text-gray-500 mb-1">Welcome back,</div>
+                <h2 className="text-xl font-bold text-gray-800">Let's see your projects</h2>
               </div>
               
-              {/* <div className="animate-pulse flex space-x-2">
+              <div className="animate-pulse flex space-x-2">
                 <div className="h-10 bg-gray-200 rounded w-24"></div>
                 <div className="h-10 bg-gray-200 rounded w-32"></div>
-              </div> */}
+              </div>
             </div>
             
-            {/* Mobile-friendly loading grid */}
-            <div className="animate-pulse grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-              <div className="h-48 md:h-64 bg-gray-200 rounded-xl"></div>
-              <div className="h-48 md:h-64 bg-gray-200 rounded-xl"></div>
-              <div className="h-48 md:h-64 bg-gray-200 rounded-xl"></div>
-              <div className="h-48 md:h-64 bg-gray-200 rounded-xl"></div>
+            <div className="animate-pulse grid grid-cols-4 gap-4 mb-6">
+              <div className="h-64 bg-gray-200 rounded-xl"></div>
+              <div className="h-64 bg-gray-200 rounded-xl"></div>
+              <div className="h-64 bg-gray-200 rounded-xl"></div>
+              <div className="h-64 bg-gray-200 rounded-xl"></div>
             </div>
             
-            <div className="animate-pulse grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="h-64 md:h-80 bg-gray-200 rounded-xl"></div>
-              <div className="h-64 md:h-80 bg-gray-200 rounded-xl"></div>
-              <div className="h-64 md:h-80 bg-gray-200 rounded-xl"></div>
+            <div className="animate-pulse grid grid-cols-3 gap-6">
+              <div className="h-80 bg-gray-200 rounded-xl"></div>
+              <div className="h-80 bg-gray-200 rounded-xl"></div>
+              <div className="h-80 bg-gray-200 rounded-xl"></div>
             </div>
           </main>
         </div>
@@ -284,309 +283,399 @@ const Dashboard = () => {
 
   return (  
     <DashboardLayout 
-      user={user}
-      walletBalance={walletBalance}
-      cartCount={cartCount}
-    >  
-      {/* Main Dashboard Content */}
-      <main className="flex-1 p-4 md:p-6 overflow-auto">
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <div className="text-sm text-gray-500 mb-1">Welcome back,</div>
-            <h2 className="text-xl font-bold text-gray-800">Let's see your projects</h2>
-          </div>
-          
-          {/* <div className="hidden md:flex space-x-2">
-            <div className="px-3 md:px-4 py-2 bg-white shadow-sm rounded-lg flex items-center">
-              <Wallet size={16} className="text-blue-600 mr-1 md:mr-2" />
-              <span className="font-medium text-sm md:text-base">₹{walletBalance}</span>
-            </div>
-            <button 
-              className="px-3 md:px-4 py-2 bg-blue-600 text-white rounded-lg flex items-center hover:bg-blue-700"
-              onClick={() => navigate('/cart')}
-            >
-              <ShoppingBag size={16} className="mr-1 md:mr-2" />
-              <span className="text-sm md:text-base">Cart ({cartCount})</span>
-            </button>
-          </div> */}
-        </div>
+    user={user}
+    walletBalance={walletBalance}
+    cartCount={cartCount}
+  >  
         
-        {/* Projects Section */}
-        <div>
-          <div className="mb-4 flex justify-between items-center">
-            <h3 className="text-lg font-semibold text-gray-800">Your Projects</h3>
+        {/* Main Dashboard Content */}
+        <main className="flex-1 p-6 overflow-auto">
+          <div className="flex justify-between items-center mb-6">
+            <div>
+              <div className="text-sm text-gray-500 mb-1">Welcome back,</div>
+              <h2 className="text-xl font-bold text-gray-800">Let's see your projects</h2>
+            </div>
+            
+            <div className="flex space-x-2">
+              <div className="px-4 py-2 bg-white shadow-sm rounded-lg flex items-center">
+                <Wallet size={18} className="text-blue-600 mr-2" />
+                <span className="font-medium">₹{walletBalance}</span>
+              </div>
+              <button 
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg flex items-center hover:bg-blue-700"
+                onClick={() => navigate('/cart')}
+              >
+                <ShoppingBag size={18} className="mr-2" />
+                <span>Cart ({cartCount})</span>
+              </button>
+            </div>
           </div>
           
-          {/* Project Cards - 2 cards in a row for mobile, 4 for desktop */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6">
-            {/* Active Update Plan or Active Project Card - Should always be first if exists */}
-            {activeUpdatePlan && (
-              <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100 hover:shadow-md transition-shadow">
-                <div className="h-2 bg-blue-500"></div>
-                <div className="p-3 md:p-5">
-                  <div className="flex justify-between items-start mb-2 md:mb-3">
-                    <div>
-                      <div className="text-xs font-medium text-blue-600 mb-1 px-2 py-0.5 bg-blue-50 rounded-full inline-block">
-                        Active Plan
-                      </div>
-                      <h4 className="font-semibold text-sm md:text-base">{activeUpdatePlan.productId?.serviceName || "Website Updates"}</h4>
-                    </div>
-                  </div>
-                  
-                  <div className="mb-3 md:mb-4 text-xs md:text-sm text-gray-600">
-                    <div className="flex items-center justify-between mb-1">
-                      <span>Updates Left</span>
-                      <span className="font-medium">
-                        {activeUpdatePlan.productId?.updateCount - (activeUpdatePlan.updatesUsed || 0)}
-                      </span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-1.5 mb-2">
-                      <div 
-                        className="bg-blue-600 h-1.5 rounded-full" 
-                        style={{ 
-                          width: `${((activeUpdatePlan.productId?.updateCount - (activeUpdatePlan.updatesUsed || 0)) / activeUpdatePlan.productId?.updateCount) * 100}%` 
-                        }}
-                      ></div>
-                    </div>
-                  </div>
-                  
-                  <button 
-                    className="w-full py-1.5 text-xs md:text-sm bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100"
-                    onClick={() => navigate(`/plan-details/${activeUpdatePlan._id}`)}
-                  >
-                    View Details
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Active Project Card */}
-            {activeProject && !activeUpdatePlan && (
-              <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100 hover:shadow-md transition-shadow">
-                <div className="h-2 bg-blue-500"></div>
-                <div className="p-3 md:p-5">
-                  <div className="flex justify-between items-start mb-2 md:mb-3">
-                    <div>
-                      <div className="text-xs font-medium text-blue-600 mb-1 px-2 py-0.5 bg-blue-50 rounded-full inline-block">
-                        In Progress
-                      </div>
-                      <h4 className="font-semibold text-sm md:text-base">{activeProject.productId?.serviceName || "Website Development"}</h4>
-                    </div>
-                  </div>
-                  
-                  <div className="mb-3 md:mb-4 text-xs md:text-sm text-gray-600">
-                    <div className="flex items-center justify-between mb-1">
-                      <span>Progress</span>
-                      <span className="font-medium">{activeProject.projectProgress || 0}%</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-1.5 mb-2">
-                      <div 
-                        className="bg-blue-600 h-1.5 rounded-full" 
-                        style={{ 
-                          width: `${activeProject.projectProgress || 0}%` 
-                        }}
-                      ></div>
-                    </div>
-                  </div>
-                  
-                  <button 
-                    className="w-full py-1.5 text-xs md:text-sm bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100"
-                    onClick={() => handleViewProjectDetails(activeProject._id)}
-                  >
-                    View Project
-                  </button>
-                </div>
-              </div>
-            )}
+          {/* Projects Section */}
+          <div>
+            <div className="mb-4 flex justify-between items-center">
+              <h3 className="text-lg font-semibold text-gray-800">Your Projects</h3>
+            </div>
             
-            {/* Completed Projects Cards - Show up to 2 */}
-            {completedProjects.slice(0, 2).map((project, index) => {
-              const isUpdatePlan = project.productId?.category?.toLowerCase() === 'website_updates';
+            {/* Project Cards - 4 cards in a single row */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+              {/* Active Update Plan or Active Project Card - Should always be first if exists */}
+              {activeUpdatePlan && (
+                <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100 hover:shadow-md transition-shadow">
+                  <div className="h-2 bg-blue-500"></div>
+                  <div className="p-5">
+                    <div className="flex justify-between items-start mb-3">
+                      <div>
+                        <div className="text-xs font-medium text-blue-600 mb-1 px-2 py-0.5 bg-blue-50 rounded-full inline-block">
+                          Active Plan
+                        </div>
+                        <h4 className="font-semibold">{activeUpdatePlan.productId?.serviceName || "Website Updates"}</h4>
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        <div>Purchased: {formatDate(activeUpdatePlan.createdAt)}</div>
+                      </div>
+                    </div>
+                    
+                    <div className="mb-4 text-sm text-gray-600">
+                      <div className="flex items-center justify-between mb-1">
+                        <span>Updates Remaining</span>
+                        <span className="font-medium">
+                          {activeUpdatePlan.productId?.updateCount - (activeUpdatePlan.updatesUsed || 0)} of {activeUpdatePlan.productId?.updateCount}
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-1.5 mb-3">
+                        <div 
+                          className="bg-blue-600 h-1.5 rounded-full" 
+                          style={{ 
+                            width: `${((activeUpdatePlan.productId?.updateCount - (activeUpdatePlan.updatesUsed || 0)) / activeUpdatePlan.productId?.updateCount) * 100}%` 
+                          }}
+                        ></div>
+                      </div>
+                      
+                      <div className="flex items-center justify-between mb-1">
+                        <span>Validity</span>
+                        <span className="font-medium flex items-center">
+                          <Clock className="w-3 h-3 mr-1" />
+                          {calculateRemainingDays(activeUpdatePlan)} days left
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-1.5 mb-2">
+                        <div 
+                          className="bg-green-600 h-1.5 rounded-full" 
+                          style={{ 
+                            width: `${(calculateRemainingDays(activeUpdatePlan) / activeUpdatePlan.productId?.validityPeriod) * 100}%` 
+                          }}
+                        ></div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex justify-between">
+                      <button 
+                        onClick={handleRequestUpdate}
+                        disabled={(activeUpdatePlan.updatesUsed || 0) >= activeUpdatePlan.productId?.updateCount || calculateRemainingDays(activeUpdatePlan) <= 0}
+                        className={`px-3 py-1.5 text-sm rounded-lg flex items-center ${
+                          (activeUpdatePlan.updatesUsed || 0) >= activeUpdatePlan.productId?.updateCount || calculateRemainingDays(activeUpdatePlan) <= 0
+                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                            : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
+                        }`}
+                      >
+                        <RefreshCw size={14} className="mr-1" /> 
+                        Request Update
+                      </button>
+                      <button 
+                        className="px-3 py-1.5 text-sm text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 flex items-center"
+                        onClick={() => navigate(`/plan-details/${activeUpdatePlan._id}`)}
+                      >
+                        <ExternalLink size={14} className="mr-1" /> 
+                        Details
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Active Project Card */}
+              {activeProject && !activeUpdatePlan && (
+                <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100 hover:shadow-md transition-shadow">
+                  <div className="h-2 bg-blue-500"></div>
+                  <div className="p-5">
+                    <div className="flex justify-between items-start mb-3">
+                      <div>
+                        <div className="text-xs font-medium text-blue-600 mb-1 px-2 py-0.5 bg-blue-50 rounded-full inline-block">
+                          In Progress
+                        </div>
+                        <h4 className="font-semibold">{activeProject.productId?.serviceName || "Website Development"}</h4>
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        <div>Started: {formatDate(activeProject.createdAt)}</div>
+                      </div>
+                    </div>
+                    
+                    <div className="mb-4 text-sm text-gray-600">
+                      <div className="flex items-center justify-between mb-1">
+                        <span>Progress</span>
+                        <span className="font-medium">{activeProject.projectProgress || 0}%</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-1.5 mb-2">
+                        <div 
+                          className="bg-blue-600 h-1.5 rounded-full" 
+                          style={{ 
+                            width: `${activeProject.projectProgress || 0}%` 
+                          }}
+                        ></div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex justify-between">
+                      <button 
+                        className="px-3 py-1.5 text-sm bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100"
+                        onClick={() => handleViewProjectDetails(activeProject._id)}
+                      >
+                        View Project
+                      </button>
+                      <button 
+                        className="px-3 py-1.5 text-sm text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 flex items-center"
+                        onClick={() => navigate(`/project-details/${activeProject._id}`)}
+                      >
+                        <ExternalLink size={14} className="mr-1" /> 
+                        Details
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
               
-              return (
+              {/* Completed Projects Cards - Show up to 2 */}
+              {completedProjects.slice(0, 2).map((project, index) => {
+                const isUpdatePlan = project.productId?.category?.toLowerCase() === 'website_updates';
+                
+                return (
                 <div key={project._id} className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100 hover:shadow-md transition-shadow">
                   <div className="h-2 bg-green-500"></div>
-                  <div className="p-3 md:p-5">
-                    <div className="flex justify-between items-start mb-2 md:mb-3">
+                  <div className="p-5">
+                    <div className="flex justify-between items-start mb-3">
                       <div>
                         <div className="text-xs font-medium text-green-600 mb-1 px-2 py-0.5 bg-green-50 rounded-full inline-block">
                           Completed
                         </div>
-                        <h4 className="font-semibold text-sm md:text-base">{project.productId?.serviceName || "Website Project"}</h4>
+                        <h4 className="font-semibold">{project.productId?.serviceName || "Website Project"}</h4>
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        <div>{isUpdatePlan ? 'Ended' : 'Completed'}: {formatDate(project.updatedAt || project.createdAt)}</div>
                       </div>
                     </div>
                     
-                    <div className="mb-3 md:mb-4 text-xs md:text-sm text-gray-600">
-                      <div className="flex items-center">
-                        <CheckCircle size={14} className="text-green-500 mr-1" />
-                        <span>{isUpdatePlan ? 'Plan Complete' : 'Deployed'}</span>
-                      </div>
+                    <div className="mb-4 text-sm text-gray-600">
+                      {isUpdatePlan ? (
+                        <>
+                          <div className="flex items-center">
+                            <CheckCircle size={16} className="text-green-500 mr-2" />
+                            <span>Updates Used: {project.updatesUsed || 0} of {project.productId?.updateCount || 0}</span>
+                          </div>
+                          <div className="flex items-center mt-1">
+                            <CheckCircle size={16} className="text-green-500 mr-2" />
+                            <span>Plan Completed</span>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="flex items-center">
+                            <CheckCircle size={16} className="text-green-500 mr-2" />
+                            <span>Successfully Deployed</span>
+                          </div>
+                          <div className="flex items-center mt-1">
+                            <CheckCircle size={16} className="text-green-500 mr-2" />
+                            <span>All Features Working</span>
+                          </div>
+                        </>
+                      )}
                     </div>
                     
-                    <button 
-                      className="w-full py-1.5 text-xs md:text-sm bg-green-50 text-green-600 rounded-lg hover:bg-green-100"
-                      onClick={() => handleViewProjectDetails(project._id)}
-                    >
-                      View Project
-                    </button>
+                    <div className="flex justify-between">
+                      <button 
+                        className="px-3 py-1.5 text-sm bg-green-50 text-green-600 rounded-lg hover:bg-green-100"
+                        onClick={() => handleViewProjectDetails(project._id)}
+                      >
+                        View {isUpdatePlan ? 'Details' : 'Project'}
+                      </button>
+                      <button 
+                        className="px-3 py-1.5 text-sm text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 flex items-center"
+                        onClick={() => navigate(`/project-details/${project._id}`)}
+                      >
+                        <ExternalLink size={14} className="mr-1" /> 
+                        {isUpdatePlan ? 'Details' : 'Report'}
+                      </button>
+                    </div>
                   </div>
                 </div>
               );
-            })}
-            
-            {/* Start New Project Card - Only shown when no active project/update plan */}
-            {showNewProjectButton && (
-              <div className="bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-xl shadow-lg overflow-hidden text-white hover:shadow-xl transition-all p-3 md:p-5 flex flex-col items-center justify-center text-center transform hover:-translate-y-1">
-                <div>
-                  <div className="w-12 h-12 md:w-16 md:h-16 bg-white/20 rounded-full flex items-center justify-center mb-3 md:mb-4 mx-auto backdrop-blur-sm">
-                    <PlusCircle size={24} />
+              })}
+              
+              {/* Start New Project Card - Only shown when no active project/update plan */}
+              {showNewProjectButton && (
+                <div className="bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-xl shadow-lg overflow-hidden text-white hover:shadow-xl transition-all p-6 flex flex-col items-center justify-center text-center transform hover:-translate-y-1">
+                  <div>
+                    <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mb-4 mx-auto backdrop-blur-sm">
+                      <PlusCircle size={32} />
+                    </div>
+                    <h4 className="font-bold text-xl mb-2">Start a New Project</h4>
+                    <p className="text-blue-100 text-sm mb-5">Begin your next success story with our team</p>
+                    
+                    <button 
+                      className="w-full py-2.5 bg-white text-blue-600 rounded-lg font-medium hover:bg-blue-50 transition-colors shadow-md"
+                      onClick={handleStartProject}
+                    >
+                      Create Project
+                    </button>
                   </div>
-                  <h4 className="font-bold text-base md:text-xl mb-1 md:mb-2">Start a New Project</h4>
-                  <p className="text-blue-100 text-xs md:text-sm mb-3 md:mb-5">Begin your next success story</p>
+                </div>
+              )}
+              
+              {/* View All Projects Card - Always shown */}
+              <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100 hover:shadow-md transition-shadow">
+                <div className="h-2 bg-purple-500"></div>
+                <div className="p-5 h-full flex flex-col">
+                  <div className="mb-4">
+                    <h4 className="font-semibold">View All Projects</h4>
+                    <p className="text-sm text-gray-600 mt-2">Browse your complete project history and portfolio.</p>
+                  </div>
+                  
+                  <div className="flex-grow">
+                    <div className="flex items-center bg-purple-50 p-3 rounded-lg mb-4">
+                      <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center mr-3">
+                        <ExternalLink size={18} className="text-purple-600" />
+                      </div>
+                      <div>
+                        <div className="font-medium">All Projects</div>
+                        <div className="text-xs text-gray-500">View your entire portfolio</div>
+                      </div>
+                    </div>
+                  </div>
                   
                   <button 
-                    className="w-full py-1.5 md:py-2.5 bg-white text-blue-600 rounded-lg font-medium text-xs md:text-sm hover:bg-blue-50 transition-colors shadow-md"
-                    onClick={handleStartProject}
+                    className="w-full mt-auto py-2 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700"
+                    onClick={handleViewAllProjects}
                   >
-                    Create
+                    Browse All Projects
                   </button>
                 </div>
               </div>
-            )}
-            
-            {/* View All Projects Card - Always shown */}
-            <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100 hover:shadow-md transition-shadow">
-              <div className="h-2 bg-purple-500"></div>
-              <div className="p-3 md:p-5 h-full flex flex-col">
-                <div className="mb-3 md:mb-4">
-                  <h4 className="font-semibold text-sm md:text-base">View All Projects</h4>
-                  <p className="text-xs md:text-sm text-gray-600 mt-1 md:mt-2">Browse your project history</p>
-                </div>
-                
-                <button 
-                  className="w-full mt-auto py-1.5 md:py-2 bg-purple-600 text-white rounded-lg font-medium text-xs md:text-sm hover:bg-purple-700"
-                  onClick={handleViewAllProjects}
-                >
-                  Browse All
-                </button>
-              </div>
-            </div>
-          </div>
-          
-          {/* Secondary Cards Section - Your Orders, Explore New Services, Chat with Developer */}
-          <div className="space-y-4 md:space-y-0 md:grid md:grid-cols-3 md:gap-6">
-            {/* Your Orders Card */}
-            <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
-              <div className="flex justify-between items-center p-4 md:p-5 border-b">
-                <h3 className="font-semibold text-sm md:text-base">Recent Orders</h3>
-                <a 
-                  href="#" 
-                  className="text-xs md:text-sm text-blue-600 hover:text-blue-700 flex items-center"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    handleViewAllOrders();
-                  }}
-                >
-                  View All <ChevronRight size={16} className="ml-1" />
-                </a>
-              </div>
-              
-              <div className="divide-y">
-                {orders.length === 0 ? (
-                  <div className="p-4 md:p-6 text-center">
-                    <div className="text-gray-400 mb-2">
-                      <ShoppingBag className="w-10 h-10 md:w-12 md:h-12 mx-auto" />
-                    </div>
-                    <p className="text-gray-500 text-xs md:text-sm">You don't have any orders yet.</p>
-                    <button 
-                      className="mt-3 md:mt-4 px-3 md:px-4 py-1.5 md:py-2 bg-blue-600 text-white rounded-lg text-xs md:text-sm hover:bg-blue-700 inline-flex items-center"
-                      onClick={handleExplore}
-                    >
-                      <ShoppingBag size={14} className="mr-1 md:mr-2" />
-                      Explore Services
-                    </button>
-                  </div>
-                ) : (
-                  orders.map(order => (
-                    <div 
-                      key={order._id} 
-                      className="p-3 md:p-4 hover:bg-gray-50 cursor-pointer"
-                      onClick={() => navigate(`/order/${order._id}`)}
-                    >
-                      <div className="mb-1">
-                        <div className="font-medium text-sm md:text-base">{order.productId?.serviceName || "Service"}</div>
-                      </div>
-                      <div className="text-xs md:text-sm text-gray-500">Purchased: {formatDate(order.createdAt)}</div>
-                      <div className="text-xs md:text-sm text-gray-500">Amount: ₹{order.price || 0}</div>
-                    </div>
-                  ))
-                )}
-              </div>
             </div>
             
-            {/* Explore New Services Card - Only shown if user has orders */}
-            {orders.length > 0 ? (
+            {/* Secondary Cards Section - Your Orders, Explore New Services, Chat with Developer */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Your Orders Card */}
               <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
-                <div className="flex justify-between items-center p-4 md:p-5 border-b">
-                  <h3 className="font-semibold text-sm md:text-base">Explore New Services</h3>
+                <div className="flex justify-between items-center p-5 border-b">
+                  <h3 className="font-semibold">Recent Orders</h3>
                   <a 
                     href="#" 
-                    className="text-xs md:text-sm text-blue-600 hover:text-blue-700 flex items-center"
+                    className="text-sm text-blue-600 hover:text-blue-700 flex items-center"
                     onClick={(e) => {
                       e.preventDefault();
-                      handleExplore();
+                      handleViewAllOrders();
                     }}
                   >
                     View All <ChevronRight size={16} className="ml-1" />
                   </a>
                 </div>
                 
-                <div className="p-4 md:p-5">
-                  <p className="text-xs md:text-sm text-gray-600 mb-3 md:mb-4">Enhance your website with our premium add-ons.</p>
-                  
-                  <div className="grid grid-cols-2 gap-2 md:gap-3 w-full mb-4 md:mb-5">
-                    <div className="bg-blue-50 p-2 md:p-3 rounded-lg cursor-pointer hover:bg-blue-100" onClick={handleExplore}>
-                      <div className="text-xs md:text-sm font-medium mb-0.5 md:mb-1">Dynamic Gallery</div>
-                      <div className="text-xs text-gray-500">Showcase your work</div>
+                <div className="divide-y">
+                  {orders.length === 0 ? (
+                    <div className="p-6 text-center">
+                      <div className="text-gray-400 mb-2">
+                        <ShoppingBag className="w-12 h-12 mx-auto" />
+                      </div>
+                      <p className="text-gray-500">You don't have any orders yet.</p>
+                      <button 
+                        className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 inline-flex items-center"
+                        onClick={handleExplore}
+                      >
+                        <ShoppingBag size={16} className="mr-2" />
+                        Explore Services
+                      </button>
                     </div>
-                    <div className="bg-blue-50 p-2 md:p-3 rounded-lg cursor-pointer hover:bg-blue-100" onClick={handleExplore}>
-                      <div className="text-xs md:text-sm font-medium mb-0.5 md:mb-1">Live Chat Support</div>
-                      <div className="text-xs text-gray-500">Connect instantly</div>
-                    </div>
-                  </div>
-                  
-                  <button 
-                    className="w-full py-1.5 md:py-2 bg-blue-600 text-white rounded-lg font-medium text-xs md:text-sm hover:bg-blue-700"
-                    onClick={handleExplore}
-                  >
-                    Explore All Features
-                  </button>
+                  ) : (
+                    orders.map(order => (
+                      <div 
+                        key={order._id} 
+                        className="p-4 hover:bg-gray-50 cursor-pointer"
+                        onClick={() => navigate(`/order/${order._id}`)}
+                      >
+                        <div className="mb-1">
+                          <div className="font-medium">{order.productId?.serviceName || "Service"}</div>
+                        </div>
+                        <div className="text-sm text-gray-500">Purchased on: {formatDate(order.createdAt)}</div>
+                        <div className="text-sm text-gray-500">Amount: ₹{order.productId?.price || 0}</div>
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
-            ) : (
-              <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100 opacity-70">
-                <div className="flex justify-between items-center p-4 md:p-5 border-b">
-                  <h3 className="font-semibold text-sm md:text-base">Explore New Services</h3>
-                </div>
-                
-                <div className="p-4 md:p-5">
-                  <p className="text-xs md:text-sm text-gray-600 mb-3 md:mb-4">Place your first order to explore our premium services.</p>
-                  
-                  <div className="grid grid-cols-2 gap-2 md:gap-3 w-full mb-4 md:mb-5">
-                    <div className="bg-gray-100 p-2 md:p-3 rounded-lg">
-                      <div className="text-xs md:text-sm font-medium mb-0.5 md:mb-1">Dynamic Gallery</div>
-                      <div className="text-xs text-gray-500">Showcase your work</div>
-                    </div>
-                    <div className="bg-gray-100 p-2 md:p-3 rounded-lg">
-                      <div className="text-xs md:text-sm font-medium mb-0.5 md:mb-1">Live Chat Support</div>
-                      <div className="text-xs text-gray-500">Connect instantly</div>
-                    </div>
+              
+              {/* Explore New Services Card - Only shown if user has orders */}
+              {orders.length > 0 ? (
+                <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
+                  <div className="flex justify-between items-center p-5 border-b">
+                    <h3 className="font-semibold">Explore New Services</h3>
+                    <a 
+                      href="#" 
+                      className="text-sm text-blue-600 hover:text-blue-700 flex items-center"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleExplore();
+                      }}
+                    >
+                      View All <ChevronRight size={16} className="ml-1" />
+                    </a>
                   </div>
                   
-                  <button 
-                    className="w-full py-1.5 md:py-2 bg-blue-600 text-white rounded-lg font-medium text-xs md:text-sm hover:bg-blue-700"
-                    onClick={handleExplore}
-                  >
+                  <div className="p-5">
+                    <p className="text-gray-600 mb-4">Enhance your website with our premium add-ons.</p>
+                    
+                    <div className="grid grid-cols-2 gap-3 w-full mb-5">
+                      <div className="bg-blue-50 p-3 rounded-lg cursor-pointer hover:bg-blue-100" onClick={handleExplore}>
+                        <div className="text-sm font-medium mb-1">Dynamic Gallery</div>
+                        <div className="text-xs text-gray-500">Showcase your work</div>
+                      </div>
+                      <div className="bg-blue-50 p-3 rounded-lg cursor-pointer hover:bg-blue-100" onClick={handleExplore}>
+                        <div className="text-sm font-medium mb-1">Live Chat Support</div>
+                        <div className="text-xs text-gray-500">Connect instantly</div>
+                      </div>
+                    </div>
+                    
+                    <button 
+                      className="w-full py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700"
+                      onClick={handleExplore}
+                    >
+                      Explore All Features
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100 opacity-70">
+                  <div className="flex justify-between items-center p-5 border-b">
+                    <h3 className="font-semibold">Explore New Services</h3>
+                  </div>
+                  
+                  <div className="p-5">
+                    <p className="text-gray-600 mb-4">Place your first order to explore our premium services.</p>
+                    
+                    <div className="grid grid-cols-2 gap-3 w-full mb-5">
+                      <div className="bg-gray-100 p-3 rounded-lg">
+                        <div className="text-sm font-medium mb-1">Dynamic Gallery</div>
+                        <div className="text-xs text-gray-500">Showcase your work</div>
+                      </div>
+                      <div className="bg-gray-100 p-3 rounded-lg">
+                        <div className="text-sm font-medium mb-1">Live Chat Support</div>
+                        <div className="text-xs text-gray-500">Connect instantly</div>
+                      </div>
+                    </div>
+                    
+                    <button 
+                      className="w-full py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700"
+                      onClick={handleExplore}
+                    >
                       Get Started
                     </button>
                   </div>

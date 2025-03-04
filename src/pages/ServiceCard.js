@@ -1,294 +1,241 @@
-import React, { useState } from 'react';
-import { Search, CheckCircle, MessageSquare, PlusCircle, Home, ShoppingBag, 
-  UserCircle, Wallet, ChevronRight, ExternalLink, Bell, ChevronDown, Settings } from 'lucide-react';
+import React from 'react';
+import { RefreshCw, Clock, ChevronRight, Check, ExternalLink, FileText } from 'lucide-react';
 
-const MobileDashboard = () => {
-  const [activeTab, setActiveTab] = useState('home');
+const NeomorphicCards = () => {
+  // Subscription card data
+  const subscriptionData = {
+    planName: "Two Updates",
+    purchaseDate: "Purchased: 3 Mar 2025",
+    updatesUsed: 1,
+    totalUpdates: 2,
+    daysLeft: 45,
+    isActive: true
+  };
+
+  // Project card data
+  const projectCardData = {
+    status: "Completed",
+    projectName: "Restaurant Website",
+    completionDate: "Completed: 3 Mar 2025",
+    statusItems: [
+      "Successfully Deployed",
+      "All Features Working"
+    ]
+  };
+  
+  // All projects card data
+  const allProjectsCardData = {
+    title: "View All Projects",
+    description: "Browse your complete project history and portfolio.",
+    sectionTitle: "All Projects",
+    sectionDescription: "View your entire portfolio"
+  };
+  
+  const updatesRemaining = subscriptionData.totalUpdates - subscriptionData.updatesUsed;
+  const validityPercentage = (subscriptionData.daysLeft / 60) * 100;
   
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
-      {/* Top Navigation Bar */}
-      <header className="bg-white shadow-sm px-4 py-3 sticky top-0 z-10">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center">
-            <div className="w-8 h-8 flex items-center justify-center bg-blue-600 text-white font-bold rounded-md mr-2">
-              M
-            </div>
-            <span className="font-bold text-lg">MeraSoftware</span>
-          </div>
-          
-          <div className="flex items-center space-x-3">
-            <div className="flex items-center bg-blue-50 px-2 py-1 rounded-lg">
-              <Wallet size={16} className="text-blue-600 mr-1" />
-              <span className="text-sm font-medium">₹23K</span>
-            </div>
-            
-            <div className="relative">
-              <button className="w-8 h-8 flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded-full text-gray-700">
-                <Bell size={18} />
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-4 h-4 flex items-center justify-center rounded-full">3</span>
-              </button>
-            </div>
-            
-            <div className="w-8 h-8 bg-gray-200 rounded-full overflow-hidden">
-              <img src="/api/placeholder/32/32" alt="Profile" />
-            </div>
-          </div>
-        </div>
-        
-        {/* Search Bar - Below top nav */}
-        <div className="mt-3 relative">
-          <input
-            type="text"
-            placeholder="Search projects, orders..."
-            className="w-full py-2 px-4 pr-10 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
-          />
-          <div className="absolute right-3 top-2.5 text-gray-400">
-            <Search size={16} />
-          </div>
-        </div>
-      </header>
+    <div className="flex flex-col items-center p-8 bg-gray-100 min-h-screen">
+      <h1 className="text-2xl font-bold mb-8">Neomorphic Card Designs</h1>
       
-      {/* Main Content Area */}
-      <main className="flex-1 px-4 py-5 overflow-auto">
-        <div className="mb-5">
-          <div className="text-sm text-gray-500 mb-1">Welcome back,</div>
-          <h2 className="text-lg font-bold text-gray-800">Sandeep Singh</h2>
-        </div>
-        
-        {/* Projects Section */}
-        <div className="mb-8">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="font-semibold text-gray-800">Your Projects</h3>
-            <div className="flex space-x-1">
-              <button className="px-2 py-1 bg-white border border-gray-300 rounded-lg text-xs font-medium text-gray-600">
-                Filter
-              </button>
-              <button className="px-2 py-1 bg-white border border-gray-300 rounded-lg text-xs font-medium text-gray-600">
-                Sort
-              </button>
-            </div>
+      <div className="flex flex-row gap-4 w-full max-w-6xl overflow-x-auto pb-4">
+        {/* Card 1: Subscription Card */}
+        <div className="w-64 flex-shrink-0 bg-gray-100 rounded-2xl overflow-hidden shadow-lg relative">
+          <div className="absolute inset-0 bg-gradient-to-br from-white via-gray-100 to-gray-200 opacity-80"></div>
+          
+          {/* Status indicator pill */}
+          <div className="absolute top-4 right-4 px-3 py-1 bg-white rounded-full shadow-sm flex items-center z-10">
+            <div className="w-2 h-2 bg-emerald-400 rounded-full mr-2 animate-pulse"></div>
+            <span className="text-xs font-medium text-gray-700">Active</span>
           </div>
           
-          {/* Project Cards - Square cards in a 2x2 Grid */}
-          <div className="grid grid-cols-2 gap-3">
-            {/* Card 1: Start a New Project */}
-            <div className="bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-xl shadow-sm overflow-hidden text-white aspect-square flex flex-col items-center justify-center text-center p-3">
-              <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center mb-2 mx-auto">
-                <PlusCircle size={20} />
+          {/* Main content container */}
+          <div className="relative z-10 p-4">
+            {/* Plan name and date */}
+            <div className="mb-3">
+              <h2 className="text-xl font-bold text-gray-800">{subscriptionData.planName}</h2>
+              <span className="text-xs text-gray-500">{subscriptionData.purchaseDate}</span>
+            </div>
+            
+            {/* Updates circle indicator */}
+            <div className="flex justify-center mb-4">
+              <div className="relative">
+                <div className="absolute inset-0 rounded-full shadow-inner bg-white"></div>
+                <div className="relative w-24 h-24 rounded-full bg-white shadow-lg flex items-center justify-center">
+                  <svg viewBox="0 0 100 100" width="90" height="90">
+                    <circle 
+                      cx="50" 
+                      cy="50" 
+                      r="42" 
+                      fill="none" 
+                      stroke="#e2e8f0" 
+                      strokeWidth="8"
+                    />
+                    <circle 
+                      cx="50" 
+                      cy="50" 
+                      r="42" 
+                      fill="none" 
+                      stroke="#3b82f6" 
+                      strokeWidth="8" 
+                      strokeLinecap="round"
+                      strokeDasharray={`${(subscriptionData.updatesUsed / subscriptionData.totalUpdates) * 264} 264`}
+                      transform="rotate(-90 50 50)"
+                    />
+                    <g>
+                      <text x="50" y="45" textAnchor="middle" fontSize="26" fontWeight="bold" fill="#3b82f6">
+                        {updatesRemaining}
+                      </text>
+                      <text x="50" y="65" textAnchor="middle" fontSize="12" fill="#64748b">
+                        updates
+                      </text>
+                    </g>
+                  </svg>
+                </div>
               </div>
-              <h4 className="font-bold text-sm mb-1">Start a New Project</h4>
-              <p className="text-blue-100 text-xs mb-2">Begin your next success</p>
-              <button className="w-full py-1.5 bg-white text-blue-600 rounded-lg text-xs font-medium shadow-sm">
-                Create
+            </div>
+            
+            {/* Validity section */}
+            <div className="mb-4">
+              <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center">
+                  <Clock size={12} className="text-gray-400 mr-1" />
+                  <span className="text-xs text-gray-600">Validity Period</span>
+                </div>
+                <span className="text-xs font-medium text-gray-700">{subscriptionData.daysLeft} days</span>
+              </div>
+              
+              {/* Custom progress bar */}
+              <div className="w-full h-2 bg-white rounded-full shadow-inner overflow-hidden">
+                <div 
+                  className="h-full bg-gradient-to-r from-blue-400 to-emerald-400 rounded-full shadow-sm transform transition-all duration-500 ease-out"
+                  style={{ width: `${validityPercentage}%` }}
+                ></div>
+              </div>
+            </div>
+            
+            {/* Action buttons */}
+            <div>
+              <button className="w-full py-2 bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow flex items-center justify-center text-blue-600 text-sm font-medium mb-2 group">
+                <RefreshCw size={14} className="mr-2 group-hover:rotate-45 transition-transform duration-300" />
+                <span>Request Update</span>
               </button>
-            </div>
-            
-            {/* Card 2: Completed Project */}
-            <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100 aspect-square">
-              <div className="h-1.5 bg-green-500"></div>
-              <div className="p-3 flex flex-col h-full">
-                <div className="mb-1">
-                  <div className="text-xs font-medium text-green-600 px-1.5 py-0.5 bg-green-50 rounded-full inline-block mb-1">
-                    Completed
-                  </div>
-                  <h4 className="font-semibold text-sm">Restaurant Website</h4>
-                </div>
-                
-                <div className="text-xs text-gray-600 mb-2 flex-grow">
-                  <div className="flex items-center">
-                    <CheckCircle size={12} className="text-green-500 mr-1" />
-                    <span>Deployed</span>
-                  </div>
-                </div>
-                
-                <button className="px-2 py-1 text-xs bg-green-50 text-green-600 rounded-lg w-full">
-                  View Project
-                </button>
-              </div>
-            </div>
-            
-            {/* Card 3: Another Completed Project */}
-            <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100 aspect-square">
-              <div className="h-1.5 bg-green-500"></div>
-              <div className="p-3 flex flex-col h-full">
-                <div className="mb-1">
-                  <div className="text-xs font-medium text-green-600 px-1.5 py-0.5 bg-green-50 rounded-full inline-block mb-1">
-                    Completed
-                  </div>
-                  <h4 className="font-semibold text-sm">Portfolio App</h4>
-                </div>
-                
-                <div className="text-xs text-gray-600 mb-2 flex-grow">
-                  <div className="flex items-center">
-                    <CheckCircle size={12} className="text-green-500 mr-1" />
-                    <span>Published</span>
-                  </div>
-                </div>
-                
-                <button className="px-2 py-1 text-xs bg-green-50 text-green-600 rounded-lg w-full">
-                  View Project
-                </button>
-              </div>
-            </div>
-            
-            {/* Card 4: View All Projects */}
-            <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100 aspect-square">
-              <div className="h-1.5 bg-purple-500"></div>
-              <div className="p-3 flex flex-col h-full">
-                <h4 className="font-semibold text-sm mb-1">View All Projects</h4>
-                <p className="text-xs text-gray-600 mb-auto">Browse all your projects</p>
-                <button className="w-full py-1.5 bg-purple-600 text-white rounded-lg text-xs font-medium">
-                  Browse All
-                </button>
-              </div>
             </div>
           </div>
         </div>
-        
-        {/* Secondary Cards Section */}
-        <div className="space-y-4">
-          {/* Your Orders Card */}
-          <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
-            <div className="flex justify-between items-center p-3 border-b">
-              <h3 className="font-semibold text-sm">Recent Orders</h3>
-              <a href="#" className="text-xs text-blue-600 flex items-center">
-                View All <ChevronRight size={14} className="ml-1" />
-              </a>
+
+        {/* Card 2: Restaurant Website */}
+        <div className="w-full bg-gray-100 rounded-2xl overflow-hidden shadow-lg relative">
+          <div className="absolute inset-0 bg-gradient-to-br from-white via-gray-100 to-gray-200 opacity-80"></div>
+          
+          <div className="relative z-10 p-4">
+            {/* Status label */}
+            <div className="mb-1">
+              <span className="text-sm font-medium text-emerald-500">{projectCardData.status}</span>
+            </div>
+            
+            <div className="mb-4">
+              <h2 className="text-xl font-bold text-gray-800">{projectCardData.projectName}</h2>
+              <span className="text-xs text-gray-500">{projectCardData.completionDate}</span>
+            </div>
+            
+            {/* Status items */}
+            <div className="mb-4">
+              {projectCardData.statusItems.map((item, index) => (
+                <div key={index} className="flex items-center mb-2">
+                  <div className="w-5 h-5 bg-white rounded-full shadow-md flex items-center justify-center mr-2">
+                    <Check size={12} className="text-emerald-500" />
+                  </div>
+                  <span className="text-xs text-gray-700">{item}</span>
+                </div>
+              ))}
             </div>
             
             <div>
-              <div className="p-3 border-b">
-                <div className="flex justify-between mb-1">
-                  <div className="font-medium text-sm">Website Updates</div>
-                  <div className="text-xs px-1.5 py-0.5 bg-orange-50 text-orange-600 rounded-full">
-                    Pending
-                  </div>
-                </div>
-                <div className="text-xs text-gray-500">2 Mar 2025 • ₹35,000</div>
-              </div>
-              
-              <div className="p-3">
-                <div className="flex justify-between mb-1">
-                  <div className="font-medium text-sm">SSL Certificate</div>
-                  <div className="text-xs px-1.5 py-0.5 bg-green-50 text-green-600 rounded-full">
-                    Complete
-                  </div>
-                </div>
-                <div className="text-xs text-gray-500">28 Feb 2025 • ₹5,000</div>
-              </div>
-            </div>
-          </div>
-          
-          {/* Explore New Services Card */}
-          <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
-            <div className="flex justify-between items-center p-3 border-b">
-              <h3 className="font-semibold text-sm">Explore Services</h3>
-              <a href="#" className="text-xs text-blue-600 flex items-center">
-                View All <ChevronRight size={14} className="ml-1" />
-              </a>
-            </div>
-            
-            <div className="p-3">
-              <p className="text-xs text-gray-600 mb-3">Enhance your website with our premium add-ons.</p>
-              
-              <div className="grid grid-cols-2 gap-2 w-full mb-3">
-                <div className="bg-blue-50 p-2 rounded-lg">
-                  <div className="text-xs font-medium">Dynamic Gallery</div>
-                  <div className="text-xs text-gray-500">Show your work</div>
-                </div>
-                <div className="bg-blue-50 p-2 rounded-lg">
-                  <div className="text-xs font-medium">Live Chat</div>
-                  <div className="text-xs text-gray-500">Connect now</div>
-                </div>
-              </div>
-              
-              <button className="w-full py-1.5 bg-blue-600 text-white rounded-lg text-xs font-medium">
-                Explore All
-              </button>
-            </div>
-          </div>
-          
-          {/* Chat with Developer Card */}
-          <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
-            <div className="p-3 border-b">
-              <h3 className="font-semibold text-sm">Chat with Developer</h3>
-            </div>
-            
-            <div className="p-3">
-              <div className="flex items-center mb-3">
-                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-2">
-                  <MessageSquare size={16} className="text-blue-600" />
-                </div>
-                <div>
-                  <div className="font-medium text-sm">Direct Support</div>
-                  <div className="text-xs text-gray-500">Get expert help</div>
-                </div>
-              </div>
-              
-              <div className="mb-3">
-                <textarea 
-                  className="w-full border rounded-lg p-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" 
-                  rows="2" 
-                  placeholder="Type your message here..."
-                ></textarea>
-              </div>
-              
-              <button className="w-full py-1.5 bg-blue-600 text-white rounded-lg text-xs font-medium">
-                Send Message
+              <button className="w-full py-2 bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow flex items-center justify-center text-emerald-600 text-sm font-medium mb-2 group">
+                <span>View Project</span>
+                <ChevronRight size={14} className="ml-1 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300" />
               </button>
             </div>
           </div>
         </div>
-      </main>
-      
-      {/* Bottom Navigation */}
-      <footer className="bg-white border-t sticky bottom-0 z-10">
-        <div className="flex justify-between items-center px-2">
-          <button 
-            className={`flex flex-col items-center py-2 px-4 ${activeTab === 'home' ? 'text-blue-600' : 'text-gray-600'}`}
-            onClick={() => setActiveTab('home')}
-          >
-            <Home size={20} />
-            <span className="text-xs mt-1">Home</span>
-          </button>
+        
+        {/* Card 3: View All Projects */}
+        <div className="w-full bg-gray-100 rounded-2xl overflow-hidden shadow-lg relative">
+          <div className="absolute inset-0 bg-gradient-to-br from-white via-gray-100 to-gray-200 opacity-80"></div>
           
-          <button 
-            className={`flex flex-col items-center py-2 px-4 ${activeTab === 'wallet' ? 'text-blue-600' : 'text-gray-600'}`}
-            onClick={() => setActiveTab('wallet')}
-          >
-            <Wallet size={20} />
-            <span className="text-xs mt-1">Wallet</span>
-          </button>
-          
-          <button 
-            className="flex flex-col items-center py-2 px-4"
-          >
-            <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center -mt-5 shadow-lg">
-              <PlusCircle size={24} className="text-white" />
+          <div className="relative z-10 p-4">
+            <div className="mb-4">
+              <h2 className="text-xl font-bold text-gray-800">{allProjectsCardData.title}</h2>
+              <span className="text-xs text-gray-500">{allProjectsCardData.description}</span>
             </div>
-            <span className="text-xs mt-1 text-blue-600">Explore</span>
-          </button>
-          
-          <button 
-            className={`flex flex-col items-center py-2 px-4 ${activeTab === 'orders' ? 'text-blue-600' : 'text-gray-600'}`}
-            onClick={() => setActiveTab('orders')}
-          >
-            <ShoppingBag size={20} />
-            <span className="text-xs mt-1">Orders</span>
-          </button>
-          
-          <button 
-            className={`flex flex-col items-center py-2 px-4 ${activeTab === 'account' ? 'text-blue-600' : 'text-gray-600'}`}
-            onClick={() => setActiveTab('account')}
-          >
-            <UserCircle size={20} />
-            <span className="text-xs mt-1">Account</span>
-          </button>
+            
+            {/* Project section */}
+            <div className="mb-4">
+              <div className="p-3 bg-white rounded-xl shadow-md">
+                <div className="flex items-center">
+                  <div className="w-8 h-8 bg-purple-100 rounded-lg shadow-inner flex items-center justify-center mr-2">
+                    <ExternalLink size={14} className="text-purple-500" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm text-gray-800 font-medium">{allProjectsCardData.sectionTitle}</h3>
+                    <p className="text-xs text-gray-500">{allProjectsCardData.sectionDescription}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div>
+              <button className="w-full py-2 bg-purple-600 text-white rounded-xl shadow-md hover:shadow-lg transition-shadow flex items-center justify-center text-sm font-medium group">
+                <span>Browse Projects</span>
+                <ChevronRight size={14} className="ml-1 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300" />
+              </button>
+            </div>
+          </div>
         </div>
-      </footer>
+
+        {/* Card 4: Fourth Card (Copy of Project Card with different colors) */}
+        <div className="w-full bg-gray-100 rounded-2xl overflow-hidden shadow-lg relative">
+          <div className="absolute inset-0 bg-gradient-to-br from-white via-gray-100 to-gray-200 opacity-80"></div>
+          
+          <div className="relative z-10 p-4">
+            {/* Status label */}
+            <div className="mb-1">
+              <span className="text-sm font-medium text-blue-500">In Progress</span>
+            </div>
+            
+            <div className="mb-4">
+              <h2 className="text-xl font-bold text-gray-800">Personal Portfolio</h2>
+              <span className="text-xs text-gray-500">Started: 1 Mar 2025</span>
+            </div>
+            
+            {/* Status items */}
+            <div className="mb-4">
+              <div className="flex items-center mb-2">
+                <div className="w-5 h-5 bg-white rounded-full shadow-md flex items-center justify-center mr-2">
+                  <Check size={12} className="text-blue-500" />
+                </div>
+                <span className="text-xs text-gray-700">Design Completed</span>
+              </div>
+              <div className="flex items-center mb-2">
+                <div className="w-5 h-5 bg-white rounded-full shadow-md flex items-center justify-center mr-2">
+                  <Clock size={12} className="text-blue-500" />
+                </div>
+                <span className="text-xs text-gray-700">Development (70%)</span>
+              </div>
+            </div>
+            
+            <div>
+              <button className="w-full py-2 bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow flex items-center justify-center text-blue-600 text-sm font-medium mb-2 group">
+                <span>Continue Working</span>
+                <ChevronRight size={14} className="ml-1 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
 
-export default MobileDashboard;
+export default NeomorphicCards;
