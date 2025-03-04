@@ -15,6 +15,7 @@ import { useOnlineStatus } from '../App';
 import { IoWalletOutline } from "react-icons/io5";
 import CookieManager from '../utils/cookieManager';
 import StorageService from '../utils/storageService';
+import {  Bell, UserCircle } from 'lucide-react';
 
 
 const Header = () => {
@@ -227,34 +228,26 @@ if(value){
 
     {/* Mobile Search Bar with Login and Dynamic Back Button */}
 
-    <div className="md:hidden w-full max-w-lg mx-auto  fixed z-10 bg-gray-900 mb-10">
-      {/* Header */}
-      {/* <header className="bg-gray-900 px-4 h-12 flex justify-between items-center">
-      <div className=''>
-       <Link to={"/"}>
-       <img src={Logo} className=' h-8'/>
-        </Link>
-        </div>
-        
-        <div className='flex items-center gap-5'>
-         {user?._id && (
-              <div className='flex items-center gap-1 bg-gray-800 px-2 py-1 rounded-full'>
-                <IoWalletOutline className="text-white" />
-                <span className='text-white text-sm'>₹{context.walletBalance}</span>
-              </div>
-            )}
-
-        <IoIosNotifications className='text-white text-3xl '/>
-
-        <Link to={"/cart"} className='text-2xl relative'>
-             <FaShoppingCart className='text-white'/>
+    <header className="md:hidden bg-white shadow-sm px-4 py-3 sticky top-0 z-10">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <div className="w-8 h-8 flex items-center justify-center bg-blue-600 text-white font-bold rounded-md mr-2">
+              M
+            </div>
+            <span className="font-bold text-lg">MeraSoftware</span>
+          </div>
           
-          <div className='bg-red-600 text-white w-5 h-5 rounded-full p-1 flex items-center justify-center absolute -top-2 -right-3'>
-            <p className='text-sm'>{context?.cartProductCount || 0}</p>
-        </div>
-          </Link>
-      
-        <Link to={"/login"}>
+          <div className="flex items-center space-x-3">
+            
+            <div className="relative">
+              <button className="w-8 h-8 flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded-full text-gray-700">
+                <Bell size={18} />
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-4 h-4 flex items-center justify-center rounded-full">3</span>
+              </button>
+            </div>
+            
+
+            <Link to={"/login"}>
         {
                     user?._id && (
                       <div className='text-3xl cursor-pointer relative flex justify-center' onClick={()=>setMenuDisplay(preve => !preve)}>
@@ -262,7 +255,7 @@ if(value){
                           user?.profilePic ? (
                             <img src={user?.profilePic} className='w-8 h-8 rounded-full' alt={user?.name} />
                           ) : (
-                            <BiSolidUser className="text-white text-2xl"/>
+                            <UserCircle className="text-white text-2xl"/>
                           )
                         }
                       </div>
@@ -270,38 +263,21 @@ if(value){
                   }
                   
         </Link>
+          </div>
         </div>
-      </header> */}
-
-      {/* Search Bar */}
-
-      <div className="py-3 pt-6 px-4">
- <div className="relative flex items-center w-full justify-between max-w-sm">
-   {showBackButton && (
-     <button 
-       onClick={onBack} 
-       className='p-2 text-white mr-2'
-       aria-label="Go back"
-     >
-       <FaArrowLeftLong size={24} />
-     </button>
-   )}
-   <div className="flex-1 flex items-center border rounded-lg border-gray-500 focus-within:shadow">
-     <input
-       type="text"
-       placeholder="Search services..."
-       className="w-full outline-none h-10 rounded-l-lg  px-4 "
-       onChange={handleSearch}
-       value={search}
-     />
-     <div className="text-lg min-w-[50px] h-10 bg-gray-900 rounded-r-lg flex items-center justify-center  text-white">
-       <GrSearch />
-     </div>
-   </div>
- </div>
-</div>
-
-      </div>
+        
+        {/* Search Bar - Below top nav */}
+        <div className="mt-3 relative">
+          <input
+            type="text"
+            placeholder="Search projects, orders..."
+            className="w-full py-2 px-4 pr-10 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-600"
+          />
+          <div className="absolute right-3 top-2.5 text-gray-400">
+            <GrSearch size={16} />
+          </div>
+        </div>
+      </header>
 
       </>
   )

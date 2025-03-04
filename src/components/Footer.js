@@ -1,15 +1,19 @@
 import React, { useState, useContext } from 'react';
 import { Link } from 'react-router-dom';
-import { FaHome } from "react-icons/fa";
-import { FiUser } from "react-icons/fi";
+// import { FaHome } from "react-icons/fa";
+// import { FiUser } from "react-icons/fi";
+// import { FiPackage } from "react-icons/fi";
 import { useSelector } from 'react-redux';
-import { IoCartOutline } from "react-icons/io5";
-import { IoWalletOutline } from "react-icons/io5";
+// import { IoCartOutline } from "react-icons/io5";
+// import { IoWalletOutline } from "react-icons/io5";
+import { PlusCircle, Home, ShoppingBag, 
+  UserCircle, Wallet, ShoppingCart } from 'lucide-react';
 import Context from '../context';
 
 const Footer = () => {
   const user = useSelector(state => state?.user?.user);
   const [menuDisplay, setMenuDisplay] = useState(false);
+  const [activeTab, setActiveTab] = useState('home');
   const context = useContext(Context);
 
   return (
@@ -88,67 +92,64 @@ const Footer = () => {
       </footer>
 
       {/* Mobile Footer Navigation - Hidden on desktop */}
-      <div className="md:hidden mt-32">
+      <div className="md:hidden">
         {/* Bottom Navigation */}
-        <div className="fixed bottom-0 left-0 right-0 bg-gray-900 border-t">
-          <div className="flex justify-around py-2">
-            <Link to={"/"}>
-              <div className="flex flex-col text-white items-center">
-                <FaHome className="w-6 h-6" />
-                <span className="text-xs">Home</span>
-              </div>
-            </Link>
-           
-            {/* Cart Link */}
-            <Link to={"/cart"}>
-              <div className="flex flex-col text-white items-center relative">
-                <IoCartOutline className="w-6 h-6" />
-                {user?._id && context?.cartProductCount > 0 && (
-                  <div className="absolute -top-2 -right-2 bg-red-600 text-white w-4 h-4 rounded-full flex items-center justify-center">
-                    <p className="text-xs">{context?.cartProductCount}</p>
-                  </div>
-                )}
-                <span className="text-xs">Cart</span>
-              </div>
-            </Link>
-            <Link to={user?._id ? "/wallet" : "/login"}>
-              <div className="flex flex-col text-white items-center cursor-pointer">
-                <IoWalletOutline className="w-6 h-6" />
-                {user?._id ? (
-                  <div className="flex flex-col items-center">
-                    <span className="text-xs text-white">
-                      ₹{context?.walletBalance || 0}
-                    </span>
-                  </div>
-                ) : (
-                  <span className="text-xs">Wallet</span>
-                )}
-              </div>
-            </Link>
-            <Link to={user?._id ? "/profile" : "/login"}>
-              {user?._id ? (
-                <div className='cursor-pointer relative flex justify-center' onClick={() => setMenuDisplay(prev => !prev)}>
-                  {user?.profilePic ? (
-                    <div className='flex flex-col text-white items-center'>
-                      <img src={user?.profilePic} className='w-6 h-6 rounded-full' alt={user?.name} />
-                      <span className="text-xs">You</span>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col text-white items-center">
-                      <FiUser className="w-6 h-6" />
-                      <span className="text-xs">You</span>
-                    </div>
-                  )}
-                </div>
+        <footer className="bg-white border-t sticky bottom-0 z-10">
+        <div className="flex justify-between items-center px-2">
+        <Link to={"/"}
+            className={`flex flex-col items-center py-2 px-4 ${activeTab === 'home' ? 'text-blue-600' : 'text-gray-600'}`}
+            onClick={() => setActiveTab('home')}
+          >
+            <Home size={20} />
+            <span className="text-xs mt-1">Home</span>
+          </Link>
+          
+          <Link to={user?._id ? "/wallet" : "/login"}
+            className={`flex flex-col items-center py-2 px-4 ${activeTab === 'wallet' ? 'text-blue-600' : 'text-gray-600'}`}
+            onClick={() => setActiveTab('wallet')}
+          >
+            <Wallet size={20} />
+            {user?._id ? (
+                <span className="text-xs mt-1">
+                  ₹{context?.walletBalance || 0}
+                </span>
               ) : (
-                <div className="flex flex-col text-white items-center">
-                  <FiUser className="w-6 h-6" />
-                  <span className="text-xs">Login</span>
+                <span className="text-xs mt-1">Wallet</span>
+              )}
+            
+          </Link>
+          
+          <Link to={"/start-new-project"} 
+            className="flex flex-col items-center py-2 px-4"
+          >
+            <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center -mt-5 shadow-lg">
+              <PlusCircle size={24} className="text-white" />
+            </div>
+            <span className="text-xs mt-1 text-blue-600">Explore</span>
+          </Link>
+          
+          <Link to={"/cart"}
+            className={`flex flex-col items-center py-2 px-4 ${activeTab === 'orders' ? 'text-blue-600' : 'text-gray-600'}`}
+            onClick={() => setActiveTab('orders')}
+          >
+            <ShoppingCart size={20} />
+            {user?._id && context?.cartProductCount > 0 && (
+                <div className="absolute -top-1 -right-1 bg-red-500 text-white w-4 h-4 rounded-full flex items-center justify-center">
+                  <p className="text-xs">{context?.cartProductCount}</p>
                 </div>
               )}
-            </Link>
-          </div>
+            <span className="text-xs mt-1">Cart</span>
+          </Link>
+          
+          <Link to={"/order"}
+            className={`flex flex-col items-center py-2 px-4 ${activeTab === 'orders' ? 'text-blue-600' : 'text-gray-600'}`}
+            onClick={() => setActiveTab('orders')}
+          >
+            <ShoppingBag size={20} />
+            <span className="text-xs mt-1">Orders</span>
+          </Link>
         </div>
+      </footer>
       </div>
     </>
   );
