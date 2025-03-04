@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { 
-  Search, ChevronRight, CheckCircle, MessageSquare, PlusCircle, 
+  Search, ChevronRight, Check, MessageSquare, PlusCircle, 
   Home, ShoppingBag, UserCircle, Wallet, LogOut, ChevronDown, 
   ExternalLink, Bell, Clock, ArrowRight, RefreshCw,
   FileText, Plus, User
@@ -179,66 +179,10 @@ const Dashboard = () => {
     return (
       <div className="flex min-h-screen bg-gray-50">
         {/* Sidebar */}
-        <aside className="w-64 bg-white border-r shadow-sm">
-          <div className="p-4 border-b">
-            <div className="flex items-center space-x-2">
-              <div className="w-10 h-10 flex items-center justify-center bg-blue-600 text-white font-bold rounded-md">
-                M
-              </div>
-              <span className="font-bold text-xl">MeraSoftware</span>
-            </div>
-          </div>
-          
-          <div className="py-4">
-            <div className="px-4 mb-2 text-xs font-semibold text-gray-500 uppercase">Main Menu</div>
-            <ul>
-              <li>
-                <a href="#" className="flex items-center px-4 py-3 text-blue-600 bg-blue-50 border-r-4 border-blue-600">
-                  <Home size={20} className="mr-3" />
-                  <span className="font-medium">Dashboard</span>
-                </a>
-              </li>
-              <li>
-                <a href="#" className="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100">
-                  <ShoppingBag size={20} className="mr-3" />
-                  <span className="font-medium">Your Orders</span>
-                </a>
-              </li>
-              <li>
-                <a href="#" className="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100">
-                  <UserCircle size={20} className="mr-3" />
-                  <span className="font-medium">Account</span>
-                </a>
-              </li>
-              <li>
-                <a href="#" className="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100">
-                  <Wallet size={20} className="mr-3" />
-                  <span className="font-medium">Wallet</span>
-                </a>
-              </li>
-            </ul>
-            
-            <div className="px-4 mt-6 mb-2 text-xs font-semibold text-gray-500 uppercase">Help & Support</div>
-            <ul>
-              <li>
-                <a href="#" className="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100">
-                  <MessageSquare size={20} className="mr-3" />
-                  <span className="font-medium">Contact Support</span>
-                </a>
-              </li>
-            </ul>
-          </div>
-          
-          <div className="mt-auto border-t p-4">
-            <a href="#" className="flex items-center text-red-600 hover:text-red-700">
-              <LogOut size={20} className="mr-3" />
-              <span className="font-medium">Logout</span>
-            </a>
-          </div>
-        </aside>
+        
         
         <div className="flex-1 flex flex-col">
-          <header className="bg-white shadow-sm border-b px-6 py-3">
+          {/* <header className="bg-white shadow-sm border-b px-6 py-3">
             <div className="flex items-center justify-between">
               <h1 className="text-2xl font-bold text-gray-800">Dashboard</h1>
               
@@ -248,32 +192,33 @@ const Dashboard = () => {
                 <div className="h-10 bg-gray-200 rounded w-32"></div>
               </div>
             </div>
-          </header>
+          </header> */}
           
           <main className="flex-1 p-6 overflow-auto">
             <div className="flex justify-between items-center mb-6">
               <div>
-                <div className="text-sm text-gray-500 mb-1">Welcome back,</div>
-                <h2 className="text-xl font-bold text-gray-800">Let's see your projects</h2>
+                <div className="text-sm animate-pulse h-6 text-gray-500 mb-1 rounded w-24 bg-gray-200 "></div>
+                <h2 className="text-xl animate-pulse h-6 font-bold text-gray-800 w-32 rounded bg-gray-200 "></h2>
               </div>
               
-              <div className="animate-pulse flex space-x-2">
+              {/* <div className="animate-pulse flex space-x-2">
                 <div className="h-10 bg-gray-200 rounded w-24"></div>
                 <div className="h-10 bg-gray-200 rounded w-32"></div>
-              </div>
+              </div> */}
             </div>
             
-            <div className="animate-pulse grid grid-cols-4 gap-4 mb-6">
-              <div className="h-64 bg-gray-200 rounded-xl"></div>
-              <div className="h-64 bg-gray-200 rounded-xl"></div>
-              <div className="h-64 bg-gray-200 rounded-xl"></div>
-              <div className="h-64 bg-gray-200 rounded-xl"></div>
+            {/* Mobile-friendly loading grid */}
+            <div className="animate-pulse grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+              <div className="h-48 md:h-64 bg-gray-200 rounded-xl"></div>
+              <div className="h-48 md:h-64 bg-gray-200 rounded-xl"></div>
+              <div className="h-48 md:h-64 bg-gray-200 rounded-xl"></div>
+              <div className="h-48 md:h-64 bg-gray-200 rounded-xl"></div>
             </div>
             
-            <div className="animate-pulse grid grid-cols-3 gap-6">
-              <div className="h-80 bg-gray-200 rounded-xl"></div>
-              <div className="h-80 bg-gray-200 rounded-xl"></div>
-              <div className="h-80 bg-gray-200 rounded-xl"></div>
+            <div className="animate-pulse grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="h-64 md:h-80 bg-gray-200 rounded-xl"></div>
+              <div className="h-64 md:h-80 bg-gray-200 rounded-xl"></div>
+              <div className="h-64 md:h-80 bg-gray-200 rounded-xl"></div>
             </div>
           </main>
         </div>
@@ -296,7 +241,7 @@ const Dashboard = () => {
               <h2 className="text-xl font-bold text-gray-800">Let's see your projects</h2>
             </div>
             
-            <div className="flex space-x-2">
+            {/* <div className="flex space-x-2">
               <div className="px-4 py-2 bg-white shadow-sm rounded-lg flex items-center">
                 <Wallet size={18} className="text-blue-600 mr-2" />
                 <span className="font-medium">₹{walletBalance}</span>
@@ -308,7 +253,7 @@ const Dashboard = () => {
                 <ShoppingBag size={18} className="mr-2" />
                 <span>Cart ({cartCount})</span>
               </button>
-            </div>
+            </div> */}
           </div>
           
           {/* Projects Section */}
@@ -321,78 +266,99 @@ const Dashboard = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
               {/* Active Update Plan or Active Project Card - Should always be first if exists */}
               {activeUpdatePlan && (
-                <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100 hover:shadow-md transition-shadow">
-                  <div className="h-2 bg-blue-500"></div>
-                  <div className="p-5">
-                    <div className="flex justify-between items-start mb-3">
-                      <div>
-                        <div className="text-xs font-medium text-blue-600 mb-1 px-2 py-0.5 bg-blue-50 rounded-full inline-block">
-                          Active Plan
-                        </div>
-                        <h4 className="font-semibold">{activeUpdatePlan.productId?.serviceName || "Website Updates"}</h4>
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        <div>Purchased: {formatDate(activeUpdatePlan.createdAt)}</div>
-                      </div>
-                    </div>
-                    
-                    <div className="mb-4 text-sm text-gray-600">
-                      <div className="flex items-center justify-between mb-1">
-                        <span>Updates Remaining</span>
-                        <span className="font-medium">
-                          {activeUpdatePlan.productId?.updateCount - (activeUpdatePlan.updatesUsed || 0)} of {activeUpdatePlan.productId?.updateCount}
-                        </span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-1.5 mb-3">
-                        <div 
-                          className="bg-blue-600 h-1.5 rounded-full" 
-                          style={{ 
-                            width: `${((activeUpdatePlan.productId?.updateCount - (activeUpdatePlan.updatesUsed || 0)) / activeUpdatePlan.productId?.updateCount) * 100}%` 
-                          }}
-                        ></div>
-                      </div>
-                      
-                      <div className="flex items-center justify-between mb-1">
-                        <span>Validity</span>
-                        <span className="font-medium flex items-center">
-                          <Clock className="w-3 h-3 mr-1" />
-                          {calculateRemainingDays(activeUpdatePlan)} days left
-                        </span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-1.5 mb-2">
-                        <div 
-                          className="bg-green-600 h-1.5 rounded-full" 
-                          style={{ 
-                            width: `${(calculateRemainingDays(activeUpdatePlan) / activeUpdatePlan.productId?.validityPeriod) * 100}%` 
-                          }}
-                        ></div>
-                      </div>
-                    </div>
-                    
-                    <div className="flex justify-between">
-                      <button 
-                        onClick={handleRequestUpdate}
-                        disabled={(activeUpdatePlan.updatesUsed || 0) >= activeUpdatePlan.productId?.updateCount || calculateRemainingDays(activeUpdatePlan) <= 0}
-                        className={`px-3 py-1.5 text-sm rounded-lg flex items-center ${
-                          (activeUpdatePlan.updatesUsed || 0) >= activeUpdatePlan.productId?.updateCount || calculateRemainingDays(activeUpdatePlan) <= 0
-                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                            : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
-                        }`}
-                      >
-                        <RefreshCw size={14} className="mr-1" /> 
-                        Request Update
-                      </button>
-                      <button 
-                        className="px-3 py-1.5 text-sm text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 flex items-center"
-                        onClick={() => navigate(`/plan-details/${activeUpdatePlan._id}`)}
-                      >
-                        <ExternalLink size={14} className="mr-1" /> 
-                        Details
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
+  <div className="flex-shrink-0 bg-gray-100 border rounded-xl overflow-hidden shadow-md relative">
+    {/* Card background with highlight effect */}
+    <div className="h-2 bg-blue-500"></div>
+    
+    {/* Main content container */}
+    <div className="relative z-10 p-4">
+      {/* Status indicator pill - Now inside main content */}
+      <div className="flex justify-start mb-1">
+        <div className="px-2 py-0.5 bg-white rounded-full shadow-sm flex items-center">
+          <div className="w-1.5 h-1.5 bg-blue-400 rounded-full mr-1 animate-pulse"></div>
+          <span className="text-xs font-medium text-gray-700">Active Plan</span>
+        </div>
+      </div>
+      
+      {/* Plan name and updates indicator side by side */}
+      <div className="flex justify-between items-center mb-3">
+        <div className="flex flex-col justify-center">
+          <h2 className="text-lg font-bold text-gray-800">{activeUpdatePlan.productId?.serviceName || "Website Updates"}</h2>
+          <span className="text-xs text-gray-500">Purchased: {formatDate(activeUpdatePlan.createdAt)}</span>
+        </div>
+        
+        {/* Updates circle indicator (now on right) */}
+        <div className="relative w-16 h-16 rounded-full bg-white shadow-md flex items-center justify-center">
+          <svg viewBox="0 0 100 100" width="64" height="64">
+            {/* Background ring */}
+            <circle
+              cx="50"
+              cy="50"
+              r="42"
+              fill="none"
+              stroke="#e2e8f0"
+              strokeWidth="8"
+            />
+            
+            {/* Progress arc */}
+            <circle
+              cx="50"
+              cy="50"
+              r="42"
+              fill="none"
+              stroke="#3b82f6"
+              strokeWidth="8"
+              strokeLinecap="round"
+              strokeDasharray={`${((activeUpdatePlan.productId?.updateCount - (activeUpdatePlan.updatesUsed || 0)) / activeUpdatePlan.productId?.updateCount) * 264} 264`}
+              transform="rotate(-90 50 50)"
+            />
+            
+            {/* Inner text */}
+            <text x="50" y="45" textAnchor="middle" fontSize="24" fontWeight="bold" fill="#3b82f6">
+              {activeUpdatePlan.productId?.updateCount - (activeUpdatePlan.updatesUsed || 0)}
+            </text>
+            <text x="50" y="65" textAnchor="middle" fontSize="10" fill="#64748b">
+              left
+            </text>
+          </svg>
+        </div>
+      </div>
+      
+      {/* Days left bar */}
+      <div className="mb-5">
+        <div className="flex items-center justify-between mb-1">
+          <div className="flex items-center">
+            <Clock size={12} className="text-gray-400 mr-1" />
+            <span className="text-xs text-gray-600">Days Left</span>
+          </div>
+          <span className="text-xs font-medium text-gray-700">{calculateRemainingDays(activeUpdatePlan)} days</span>
+        </div>
+        <div className="w-full h-2 bg-white rounded-full shadow-inner overflow-hidden">
+          <div
+            className="h-full bg-gradient-to-r from-blue-400 to-blue-500 rounded-full"
+            style={{ width: `${(calculateRemainingDays(activeUpdatePlan) / activeUpdatePlan.productId?.validityPeriod) * 100}%` }}
+          ></div>
+        </div>
+      </div>
+      
+      {/* Action buttons */}
+      <div className="flex justify-between gap-2">
+        <button 
+          onClick={handleRequestUpdate}
+          disabled={(activeUpdatePlan.updatesUsed || 0) >= activeUpdatePlan.productId?.updateCount || calculateRemainingDays(activeUpdatePlan) <= 0}
+          className={`flex-1 py-2 rounded-md flex items-center justify-center text-sm font-medium transition-all ${
+            (activeUpdatePlan.updatesUsed || 0) >= activeUpdatePlan.productId?.updateCount || calculateRemainingDays(activeUpdatePlan) <= 0
+              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+              : 'bg-white text-blue-600 shadow-sm hover:shadow-md'
+          }`}
+        >
+          <RefreshCw size={14} className="mr-1" /> 
+          Request Update
+        </button>
+      </div>
+    </div>
+  </div>
+          )}
 
               {/* Active Project Card */}
               {activeProject && !activeUpdatePlan && (
@@ -447,82 +413,91 @@ const Dashboard = () => {
               
               {/* Completed Projects Cards - Show up to 2 */}
               {completedProjects.slice(0, 2).map((project, index) => {
-                const isUpdatePlan = project.productId?.category?.toLowerCase() === 'website_updates';
-                
-                return (
-                <div key={project._id} className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100 hover:shadow-md transition-shadow">
-                  <div className="h-2 bg-green-500"></div>
-                  <div className="p-5">
-                    <div className="flex justify-between items-start mb-3">
-                      <div>
-                        <div className="text-xs font-medium text-green-600 mb-1 px-2 py-0.5 bg-green-50 rounded-full inline-block">
-                          Completed
-                        </div>
-                        <h4 className="font-semibold">{project.productId?.serviceName || "Website Project"}</h4>
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        <div>{isUpdatePlan ? 'Ended' : 'Completed'}: {formatDate(project.updatedAt || project.createdAt)}</div>
-                      </div>
-                    </div>
-                    
-                    <div className="mb-4 text-sm text-gray-600">
-                      {isUpdatePlan ? (
-                        <>
-                          <div className="flex items-center">
-                            <CheckCircle size={16} className="text-green-500 mr-2" />
-                            <span>Updates Used: {project.updatesUsed || 0} of {project.productId?.updateCount || 0}</span>
-                          </div>
-                          <div className="flex items-center mt-1">
-                            <CheckCircle size={16} className="text-green-500 mr-2" />
-                            <span>Plan Completed</span>
-                          </div>
-                        </>
-                      ) : (
-                        <>
-                          <div className="flex items-center">
-                            <CheckCircle size={16} className="text-green-500 mr-2" />
-                            <span>Successfully Deployed</span>
-                          </div>
-                          <div className="flex items-center mt-1">
-                            <CheckCircle size={16} className="text-green-500 mr-2" />
-                            <span>All Features Working</span>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                    
-                    <div className="flex justify-between">
-                      <button 
-                        className="px-3 py-1.5 text-sm bg-green-50 text-green-600 rounded-lg hover:bg-green-100"
-                        onClick={() => handleViewProjectDetails(project._id)}
-                      >
-                        View {isUpdatePlan ? 'Details' : 'Project'}
-                      </button>
-                      <button 
-                        className="px-3 py-1.5 text-sm text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 flex items-center"
-                        onClick={() => navigate(`/project-details/${project._id}`)}
-                      >
-                        <ExternalLink size={14} className="mr-1" /> 
-                        {isUpdatePlan ? 'Details' : 'Report'}
-                      </button>
-                    </div>
-                  </div>
+  const isUpdatePlan = project.productId?.category?.toLowerCase() === 'website_updates';
+  
+  return (
+    <div key={project._id} className="flex-shrink-0 border  bg-gray-100 rounded-xl overflow-hidden shadow-md relative">
+      {/* Card background with highlight effect */}
+      <div className="h-2 bg-green-500"></div>
+      
+      {/* Main content container */}
+      <div className="relative z-10 p-4">
+        {/* Status label */}
+        <div className="flex justify-start mb-1">
+        <div className="px-2 py-0.5 bg-white rounded-full shadow-sm flex items-center">
+          <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full mr-1 animate-pulse"></div>
+          <span className="text-xs font-medium text-emerald-600">Completed</span>
+        </div>
+      </div>
+        
+        {/* Project name */}
+        <h2 className="text-lg font-bold text-gray-800 mb-1">{project.productId?.serviceName || "Website Project"}</h2>
+        <span className="text-xs text-gray-500 block mb-3">
+          {isUpdatePlan ? 'Ended' : 'Completed'}: {formatDate(project.updatedAt || project.createdAt)}
+        </span>
+        
+        {/* Status items */}
+        <div className="mb-4">
+          {isUpdatePlan ? (
+            <>
+              <div className="flex items-center mb-2">
+                <div className="w-5 h-5 bg-white rounded-full shadow-sm flex items-center justify-center mr-2">
+                  <Check size={12} className="text-emerald-500" />
                 </div>
-              );
-              })}
+                <span className="text-sm text-gray-700">
+                  Updates Used: {project.updatesUsed || 0} of {project.productId?.updateCount || 0}
+                </span>
+              </div>
+              <div className="flex items-center mb-2">
+                <div className="w-5 h-5 bg-white rounded-full shadow-sm flex items-center justify-center mr-2">
+                  <Check size={12} className="text-emerald-500" />
+                </div>
+                <span className="text-sm text-gray-700">Plan Completed</span>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="flex items-center mb-2">
+                <div className="w-5 h-5 bg-white rounded-full shadow-sm flex items-center justify-center mr-2">
+                  <Check size={12} className="text-emerald-500" />
+                </div>
+                <span className="text-sm text-gray-700">Successfully Deployed</span>
+              </div>
+              <div className="flex items-center mb-2">
+                <div className="w-5 h-5 bg-white rounded-full shadow-sm flex items-center justify-center mr-2">
+                  <Check size={12} className="text-emerald-500" />
+                </div>
+                <span className="text-sm text-gray-700">All Features Working</span>
+              </div>
+            </>
+          )}
+        </div>
+        
+        {/* Action button */}
+        <button 
+          className="w-full py-2 bg-white rounded-md shadow-sm hover:shadow-md transition-shadow flex items-center justify-center text-emerald-600 text-sm font-medium group"
+          onClick={() => handleViewProjectDetails(project._id)}
+        >
+          <span>View {isUpdatePlan ? 'Details' : 'Project'}</span>
+          <ChevronRight size={14} className="ml-1 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300" />
+        </button>
+      </div>
+    </div>
+  );
+            })}
               
               {/* Start New Project Card - Only shown when no active project/update plan */}
               {showNewProjectButton && (
-                <div className="bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-xl shadow-lg overflow-hidden text-white hover:shadow-xl transition-all p-6 flex flex-col items-center justify-center text-center transform hover:-translate-y-1">
+                <div className="bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-xl shadow-lg overflow-hidden text-white hover:shadow-xl transition-all px-6 py-4 flex flex-col items-center justify-center text-center transform hover:-translate-y-1">
                   <div>
-                    <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mb-4 mx-auto backdrop-blur-sm">
-                      <PlusCircle size={32} />
+                    <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mb-2 mx-auto backdrop-blur-sm">
+                      <PlusCircle size={28} />
                     </div>
-                    <h4 className="font-bold text-xl mb-2">Start a New Project</h4>
-                    <p className="text-blue-100 text-sm mb-5">Begin your next success story with our team</p>
+                    <h4 className="font-bold text-xl mb-1">Start a New Project</h4>
+                    <p className="text-blue-100 text-sm mb-3">Begin your next success story with our team</p>
                     
                     <button 
-                      className="w-full py-2.5 bg-white text-blue-600 rounded-lg font-medium hover:bg-blue-50 transition-colors shadow-md"
+                      className="w-full py-2 bg-white text-blue-600 rounded-lg text-sm hover:bg-blue-50 transition-colors shadow-md"
                       onClick={handleStartProject}
                     >
                       Create Project
@@ -532,32 +507,47 @@ const Dashboard = () => {
               )}
               
               {/* View All Projects Card - Always shown */}
-              <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100 hover:shadow-md transition-shadow">
+            <div className="flex-shrink-0 bg-gray-100 border  rounded-xl overflow-hidden shadow-md relative">
+                {/* Card background with highlight effect */}
                 <div className="h-2 bg-purple-500"></div>
-                <div className="p-5 h-full flex flex-col">
-                  <div className="mb-4">
-                    <h4 className="font-semibold">View All Projects</h4>
-                    <p className="text-sm text-gray-600 mt-2">Browse your complete project history and portfolio.</p>
-                  </div>
-                  
-                  <div className="flex-grow">
-                    <div className="flex items-center bg-purple-50 p-3 rounded-lg mb-4">
-                      <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center mr-3">
-                        <ExternalLink size={18} className="text-purple-600" />
+                
+                {/* Main content container */}
+                <div className="relative z-10 p-4">
+                  {/* Status label */}
+                  <div className="flex justify-start mb-1">
+                      <div className="px-2 py-0.5 bg-white rounded-full shadow-sm flex items-center">
+                        <div className="w-1.5 h-1.5 bg-purple-500 rounded-full mr-1 animate-pulse"></div>
+                        <span className="text-xs font-medium text-purple-600">History</span>
                       </div>
-                      <div>
-                        <div className="font-medium">All Projects</div>
-                        <div className="text-xs text-gray-500">View your entire portfolio</div>
+                    </div>
+
+                  {/* Title and description */}
+                  <h2 className="text-lg font-bold text-gray-800 mb-1">View All Projects</h2>
+                  <p className="text-xs text-gray-500 mb-9">Browse your complete project history and portfolio.</p>
+                  
+                  {/* Project section */}
+                  <div className="">
+                    <div className="p-3 bg-white rounded-lg shadow-sm">
+                      <div className="flex items-center">
+                        <div className="w-8 h-8 bg-purple-100 rounded-lg shadow-inner flex items-center justify-center mr-2">
+                          <ExternalLink size={14} className="text-purple-500" />
+                        </div>
+                        <div>
+                          <h3 className="text-sm text-gray-800 font-medium">All Projects</h3>
+                          <p className="text-xs text-gray-500">View your entire portfolio</p>
+                        </div>
                       </div>
                     </div>
                   </div>
                   
-                  <button 
-                    className="w-full mt-auto py-2 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700"
+                  {/* Action button */}
+                  {/* <button 
+                    className="w-full py-2 bg-purple-600 text-white rounded-md shadow-sm hover:shadow-md transition-shadow flex items-center justify-center text-sm font-medium group"
                     onClick={handleViewAllProjects}
                   >
-                    Browse All Projects
-                  </button>
+                    <span>Browse All Projects</span>
+                    <ChevronRight size={14} className="ml-1 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300" />
+                  </button> */}
                 </div>
               </div>
             </div>
@@ -606,7 +596,7 @@ const Dashboard = () => {
                           <div className="font-medium">{order.productId?.serviceName || "Service"}</div>
                         </div>
                         <div className="text-sm text-gray-500">Purchased on: {formatDate(order.createdAt)}</div>
-                        <div className="text-sm text-gray-500">Amount: ₹{order.productId?.price || 0}</div>
+                        <div className="text-sm text-gray-500">Amount: ₹{order.price || 0}</div>
                       </div>
                     ))
                   )}
@@ -815,12 +805,12 @@ const Dashboard = () => {
                             <div className="mb-4 text-sm text-gray-600">
                               {isUpdatePlan ? (
                                 <div className="flex items-center">
-                                  <CheckCircle size={16} className="text-green-500 mr-2" />
+                                  <Check size={16} className="text-green-500 mr-2" />
                                   <span>Updates Used: {project.updatesUsed || 0} of {project.productId?.updateCount || 0}</span>
                                 </div>
                               ) : (
                                 <div className="flex items-center">
-                                  <CheckCircle size={16} className="text-green-500 mr-2" />
+                                  <Check size={16} className="text-green-500 mr-2" />
                                   <span>Successfully Completed</span>
                                 </div>
                               )}

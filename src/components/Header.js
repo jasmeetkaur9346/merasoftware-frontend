@@ -228,7 +228,7 @@ if(value){
 
     {/* Mobile Search Bar with Login and Dynamic Back Button */}
 
-    <header className="md:hidden bg-white shadow-sm px-4 py-3 sticky top-0 z-10">
+    <header className="md:hidden bg-white shadow-sm px-4 py-3 sticky top-0 z-50">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
             <div className="w-8 h-8 flex items-center justify-center bg-blue-600 text-white font-bold rounded-md mr-2">
