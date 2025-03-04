@@ -247,7 +247,7 @@ if(value){
             </div>
             
 
-            <Link to={"/login"}>
+            <Link to={user?._id ? "/profile" : "/login"}>
         {
                     user?._id && (
                       <div className='text-3xl cursor-pointer relative flex justify-center' onClick={()=>setMenuDisplay(preve => !preve)}>

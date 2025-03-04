@@ -1,253 +1,282 @@
-import React from 'react';
-import { RefreshCw, Clock, ChevronRight, Check, ExternalLink, FileText } from 'lucide-react';
+import React, { useState } from 'react';
 
-const ImprovedNeomorphicCards = () => {
-  // Subscription card data
-  const subscriptionData = {
-    planName: "Two Updates",
-    purchaseDate: "Purchased: 3 Mar 2025",
-    updatesUsed: 1,
-    totalUpdates: 2,
-    daysLeft: 45,
-    daysTotal: 60,
-    isActive: true
-  };
+const ProductCard = ({ website }) => {
+  const [showAllFeatures, setShowAllFeatures] = useState(false);
+  
+  // Determine if we need to show the "Show More" button
+  const hasMoreFeatures = website.features.length > 5;
+  const displayFeatures = showAllFeatures ? website.features : website.features.slice(0, 5);
 
-  // Project card data
-  const projectCardData = {
-    status: "Completed",
-    projectName: "Restaurant Website",
-    completionDate: "Completed: 3 Mar 2025",
-    statusItems: [
-      "Successfully Deployed"
-    ]
-  };
-  
-  // All projects card data
-  const allProjectsCardData = {
-    title: "View All Projects",
-    description: "Browse your project history",
-    sectionTitle: "All Projects",
-    sectionDescription: "View your entire portfolio"
-  };
-  
-  // In progress card data
-  const inProgressCardData = {
-    status: "In Progress",
-    projectName: "Personal Portfolio",
-    progress: 70,
-    statusItems: [
-      "Design Completed"
-    ]
-  };
-  
-  const updatesRemaining = subscriptionData.totalUpdates - subscriptionData.updatesUsed;
-  const daysLeftPercentage = (subscriptionData.daysLeft / subscriptionData.daysTotal) * 100;
-  
   return (
-    <div className="flex flex-col items-center p-8 bg-gray-100 min-h-screen">
-      <h1 className="text-2xl font-bold mb-8">Neomorphic Card Designs</h1>
+    <div className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 flex flex-col h-full border border-gray-200">
+      {/* Card Header */}
+      <div className="flex flex-col justify-start text-left bg-blue-50 px-2 py-3 border-b border-gray-200">
+        <h3 className="md:text-lg text-xs font-bold text-left text-gray-800">{website.title}</h3>
+        <p className="text-xs text-gray-500 mt-1 text-left">{website.type}</p>
+      </div>
       
-      <div className="flex flex-row gap-4 w-full max-w-6xl overflow-x-auto pb-4">
-        {/* Card 1: Subscription Card */}
-        <div className="w-64 flex-shrink-0 bg-gray-100 rounded-xl overflow-hidden shadow-md relative">
-          {/* Card background with highlight effect */}
-      <div className="absolute inset-0 bg-gradient-to-br from-white via-gray-100 to-gray-200 opacity-80"></div>
-          
-          {/* Main content container */}
-          <div className="relative z-10 p-4">
-            {/* Status indicator pill - Now inside main content */}
-            <div className="flex justify-end mb-1">
-              <div className="px-2 py-0.5 bg-white rounded-full shadow-sm flex items-center">
-                <div className="w-1.5 h-1.5 bg-blue-400 rounded-full mr-1 animate-pulse"></div>
-                <span className="text-xs font-medium text-gray-700">Active</span>
-              </div>
-            </div>
-            
-            {/* Plan name and updates indicator side by side */}
-            <div className="flex justify-between items-center mb-3">
-              <div className="flex flex-col justify-center">
-                <h2 className="text-lg font-bold text-gray-800">{subscriptionData.planName}</h2>
-                <span className="text-xs text-gray-500">{subscriptionData.purchaseDate}</span>
-              </div>
-              
-              {/* Updates circle indicator (now on right) */}
-              <div className="relative w-16 h-16 rounded-full bg-white shadow-md flex items-center justify-center">
-                <svg viewBox="0 0 100 100" width="64" height="64">
-                  {/* Background ring */}
-                  <circle 
-                    cx="50" 
-                    cy="50" 
-                    r="42" 
-                    fill="none" 
-                    stroke="#e2e8f0" 
-                    strokeWidth="8"
-                  />
-                  
-                  {/* Progress arc */}
-                  <circle 
-                    cx="50" 
-                    cy="50" 
-                    r="42" 
-                    fill="none" 
-                    stroke="#3b82f6" 
-                    strokeWidth="8" 
-                    strokeLinecap="round"
-                    strokeDasharray={`${(subscriptionData.updatesUsed / subscriptionData.totalUpdates) * 264} 264`}
-                    transform="rotate(-90 50 50)"
-                  />
-                  
-                  {/* Inner text */}
-                  <text x="50" y="45" textAnchor="middle" fontSize="24" fontWeight="bold" fill="#3b82f6">
-                    {updatesRemaining}
-                  </text>
-                  <text x="50" y="65" textAnchor="middle" fontSize="10" fill="#64748b">
-                    left
-                  </text>
-                </svg>
-              </div>
-            </div>
-            
-            {/* Days left bar */}
-            <div className="mb-3">
-              <div className="flex items-center justify-between mb-1">
-                <div className="flex items-center">
-                  <Clock size={12} className="text-gray-400 mr-1" />
-                  <span className="text-xs text-gray-600">Days Left</span>
-                </div>
-                <span className="text-xs font-medium text-gray-700">{subscriptionData.daysLeft}</span>
-              </div>
-              <div className="w-full h-2 bg-white rounded-full shadow-inner overflow-hidden">
-                <div 
-                  className="h-full bg-gradient-to-r from-blue-400 to-blue-500 rounded-full"
-                  style={{ width: `${daysLeftPercentage}%` }}
-                ></div>
-              </div>
-            </div>
-            
-            {/* Action button */}
-            <button className="w-full py-2 bg-white rounded-md shadow-sm hover:shadow-md transition-shadow flex items-center justify-center text-blue-600 text-sm font-medium group">
-              <span>View Details</span>
-              <ChevronRight size={14} className="ml-1 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300" />
-            </button>
-          </div>
+      {/* Features Section */}
+      <div className="p-2 flex-grow">
+        <div className="mb-2 pb-2 border-b border-gray-100">
+          <p className="text-xs font-medium text-gray-700">Package Includes:</p>
         </div>
-
-        {/* Card 2: Completed Project */}
-        <div className="flex-shrink-0 bg-gray-100 rounded-xl overflow-hidden shadow-md relative">
-          {/* Card background with highlight effect */}
-          <div className="absolute inset-0 bg-gradient-to-br from-white via-gray-100 to-gray-200 opacity-80"></div>
-          
-          {/* Main content container */}
-          <div className="relative z-10 p-4">
-            {/* Status label */}
-            <p className="text-sm font-medium text-emerald-500 mb-1">{projectCardData.status}</p>
-            
-            {/* Project name */}
-            <h2 className="text-lg font-bold text-gray-800 mb-1">{projectCardData.projectName}</h2>
-            <span className="text-xs text-gray-500 block mb-3">{projectCardData.completionDate}</span>
-            
-            {/* Status items */}
-            <div className="mb-4">
-              {projectCardData.statusItems.map((item, index) => (
-                <div key={index} className="flex items-center mb-2">
-                  <div className="w-5 h-5 bg-white rounded-full shadow-sm flex items-center justify-center mr-2">
-                    <Check size={12} className="text-emerald-500" />
-                  </div>
-                  <span className="text-sm text-gray-700">{item}</span>
-                </div>
-              ))}
+        <ul className="text-sm space-y-2 mb-2">
+          {displayFeatures.map((feature, index) => (
+            <li key={index} className="flex items-center">
+              <svg className="h-3 w-3 text-teal-500 mr-2 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+              <span className="text-gray-600 text-xs md:text-sm">{feature}</span>
+            </li>
+          ))}
+        </ul>
+        
+        {/* Show More button if needed */}
+        {hasMoreFeatures && (
+          <button 
+            onClick={() => setShowAllFeatures(!showAllFeatures)} 
+            className="text-blue-600 text-sm font-medium hover:text-blue-800 transition-colors"
+          >
+            {showAllFeatures ? "Show Less" : "Show More"}
+          </button>
+        )}
+      </div>
+      
+      {/* Price Section - Now below features with improved layout */}
+      <div className="px-2 pb-4 border-t border-gray-100 pt-2">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <div className="bg-blue-100 rounded-lg px-2 py-1 inline-flex items-center">
+              <span className="text-sm font-bold text-blue-800">₹{website.price.toLocaleString()}</span>
             </div>
-            
-            {/* Action button */}
-            <button className="w-full py-2 bg-white rounded-md shadow-sm hover:shadow-md transition-shadow flex items-center justify-center text-emerald-600 text-sm font-medium group">
-              <span>View Project</span>
-              <ChevronRight size={14} className="ml-1 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300" />
-            </button>
+            {website.originalPrice && (
+              <div className="ml-2">
+                <span className="text-xs text-gray-500 line-through">
+                  ₹{website.originalPrice.toLocaleString()}
+                </span>
+              </div>
+            )}
+          </div>
+          {website.discount && (
+            <div className="hidden bg-teal-100 px-2 py-1 rounded">
+              <span className="font-medium text-teal-700">
+                {website.discount}% OFF
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
+      
+      {/* Button Section - Hidden on mobile */}
+      <div className="p-4 bg-gray-50 border-t border-gray-200 hidden sm:block">
+        <button className="w-full py-2 px-4 bg-blue-600 text-white font-medium rounded-md transition-colors duration-300 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
+          View Details
+        </button>
+      </div>
+    </div>
+  );
+};
+
+const WebsiteGrid = () => {
+  // Data from the image
+  const [websites] = useState([
+    {
+      id: 1,
+      title: "Local Service Website",
+      type: "Standard Websites",
+      price: 8999,
+      originalPrice: 15000,
+      discount: 40,
+      features: [
+        "Premium Theme",
+        "Free Content Updates",
+        "Free Maintenance",
+        "User Friendly"
+      ]
+    },
+    {
+      id: 2,
+      title: "Landing Page Website",
+      type: "Standard Websites",
+      price: 13599,
+      originalPrice: 16000,
+      discount: 15,
+      features: [
+        "Premium Theme",
+        "Free Content Updates",
+        "Free Maintenance",
+        "Live Chat"
+      ]
+    },
+    {
+      id: 3,
+      title: "Personal Brand Website",
+      type: "Standard Websites",
+      price: 8999,
+      originalPrice: 15000,
+      discount: 40,
+      features: [
+        "Premium Theme",
+        "Free Content Updates",
+        "Free Maintenance"
+      ]
+    },
+    {
+      id: 4,
+      title: "Educational Website",
+      type: "Standard Websites",
+      price: 23000,
+      originalPrice: 30000,
+      discount: 23,
+      features: [
+        "Premium Theme",
+        "Free Content Updates",
+        "Free Maintenance"
+      ]
+    },
+    {
+      id: 5,
+      title: "Non-Profit Website",
+      type: "Standard Websites",
+      price: 9599,
+      originalPrice: 35000,
+      discount: 72,
+      features: [
+        "Premium Theme",
+        "Free Content Updates",
+        "Free Maintenance"
+      ]
+    },
+    {
+      id: 6,
+      title: "Blogging Website",
+      type: "Dynamic Websites",
+      price: 35000,
+      originalPrice: 70000,
+      discount: 50,
+      features: [
+        "Premium Theme",
+        "Free Content Updates",
+        "Free Maintenance",
+        "Unlimited Pages",
+        "Fully Customizable",
+        "User Friendly",
+        "Mobile Optimized",
+        "Admin Panel Integration",
+        "SEO Optimized"
+      ]
+    },
+    {
+      id: 7,
+      title: "Ecommerce Website",
+      type: "Dynamic Websites",
+      price: 89999,
+      originalPrice: 160000,
+      discount: 44,
+      features: [
+        "Premium Theme",
+        "Free Content Updates",
+        "Free Maintenance",
+        "Unlimited Products",
+        "Fully Customizable",
+        "SEO Optimized",
+        "Admin Panel Integration",
+        "User Friendly",
+        "Live Chat"
+      ]
+    },
+    {
+      id: 8,
+      title: "Food Ordering Website",
+      type: "Dynamic Websites",
+      price: 59999,
+      originalPrice: 100000,
+      discount: 40,
+      features: [
+        "Premium Theme",
+        "Free Content Updates",
+        "Free Maintenance",
+        "Unlimited Pages",
+        "Mobile Optimized",
+        "User Friendly",
+        "Food Management"
+      ]
+    },
+    {
+      id: 9,
+      title: "Appointment Booking Website",
+      type: "Dynamic Websites",
+      price: 59999,
+      originalPrice: 120000,
+      discount: 50,
+      features: [
+        "Premium Theme",
+        "Free Content Updates",
+        "Free Maintenance",
+        "Appointment Booking",
+        "Fully Customizable",
+        "SEO Optimized",
+        "Unlimited Pages"
+      ]
+    },
+    {
+      id: 10,
+      title: "ABC Website",
+      type: "Dynamic Websites",
+      price: 8999,
+      originalPrice: 20000,
+      discount: 55,
+      features: [
+        "Premium Theme",
+        "Free Content Updates",
+        "Free Maintenance"
+      ]
+    }
+  ]);
+
+  return (
+    <div className="bg-gray-50 min-h-screen py-8">
+      <div className="max-w-7xl mx-auto px-4">
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center">
+            <div className="bg-blue-600 text-white p-2 rounded-md mr-3">
+              <span className="font-bold text-xl">M</span>
+            </div>
+            <h2 className="text-2xl font-bold text-gray-800">MeraSoftware</h2>
+          </div>
+          <div className="flex space-x-4">
+            <button className="px-4 py-2 bg-blue-100 text-blue-600 rounded-md font-medium hover:bg-blue-200 transition-colors">Login</button>
+            <div className="relative hidden md:block">
+              <input
+                type="text"
+                placeholder="Search for services..."
+                className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent"
+              />
+              <svg className="h-5 w-5 text-gray-400 absolute left-3 top-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+              </svg>
+            </div>
           </div>
         </div>
         
-        {/* Card 3: View All Projects */}
-        <div className="flex-shrink-0 bg-gray-100 rounded-xl overflow-hidden shadow-md relative">
-          {/* Card background with highlight effect */}
-          <div className="absolute inset-0 bg-gradient-to-br from-white via-gray-100 to-gray-200 opacity-80"></div>
-          
-          {/* Main content container */}
-          <div className="relative z-10 p-4">
-            {/* Title and description */}
-            <h2 className="text-lg font-bold text-gray-800 mb-1">{allProjectsCardData.title}</h2>
-            <p className="text-xs text-gray-500 mb-4">{allProjectsCardData.description}</p>
-            
-            {/* Project section */}
-            <div className="mb-4">
-              <div className="p-3 bg-white rounded-lg shadow-sm">
-                <div className="flex items-center">
-                  <div className="w-8 h-8 bg-purple-100 rounded-lg shadow-inner flex items-center justify-center mr-2">
-                    <ExternalLink size={14} className="text-purple-500" />
-                  </div>
-                  <div>
-                    <h3 className="text-sm text-gray-800 font-medium">{allProjectsCardData.sectionTitle}</h3>
-                    <p className="text-xs text-gray-500">{allProjectsCardData.sectionDescription}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            {/* Action button */}
-            <button className="w-full py-2 bg-purple-600 text-white rounded-md shadow-sm hover:shadow-md transition-shadow flex items-center justify-center text-sm font-medium group">
-              <span>Browse All</span>
-              <ChevronRight size={14} className="ml-1 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300" />
-            </button>
+        <div className="flex flex-wrap items-center justify-between mb-6">
+          <h3 className="text-xl font-semibold text-gray-800">Our Website Solutions</h3>
+          <div className="flex space-x-2 mt-2 sm:mt-0">
+            <button className="px-3 py-1 bg-blue-600 text-white rounded-md text-sm">All</button>
+            <button className="px-3 py-1 bg-white border border-gray-300 text-gray-600 rounded-md text-sm hover:bg-gray-50">Standard</button>
+            <button className="px-3 py-1 bg-white border border-gray-300 text-gray-600 rounded-md text-sm hover:bg-gray-50">Dynamic</button>
           </div>
         </div>
-
-        {/* Card 4: In Progress Card */}
-        <div className=" flex-shrink-0 bg-gray-100 rounded-xl overflow-hidden shadow-md relative">
-          {/* Card background with highlight effect */}
-          <div className="absolute inset-0 bg-gradient-to-br from-white via-gray-100 to-gray-200 opacity-80"></div>
-          
-          {/* Main content container */}
-          <div className="relative z-10 p-4">
-            {/* Status label */}
-            <p className="text-sm font-medium text-amber-500 mb-1">{inProgressCardData.status}</p>
-            
-            {/* Project name */}
-            <h2 className="text-lg font-bold text-gray-800 mb-3">{inProgressCardData.projectName}</h2>
-            
-            {/* Status items */}
-            <div className="mb-4">
-              <div className="flex items-center mb-2">
-                <div className="w-5 h-5 bg-white rounded-full shadow-sm flex items-center justify-center mr-2">
-                  <Check size={12} className="text-amber-500" />
-                </div>
-                <span className="text-sm text-gray-700">{inProgressCardData.statusItems[0]}</span>
-              </div>
-              
-              {/* Progress indicator */}
-              <div className="mt-3">
-                <div className="flex justify-between text-xs mb-1">
-                  <span className="text-gray-600">Development</span>
-                  <span className="font-medium">{inProgressCardData.progress}%</span>
-                </div>
-                <div className="w-full h-2 bg-white rounded-full shadow-inner overflow-hidden">
-                  <div 
-                    className="h-full bg-gradient-to-r from-amber-400 to-amber-500 rounded-full"
-                    style={{ width: `${inProgressCardData.progress}%` }}
-                  ></div>
-                </div>
-              </div>
-            </div>
-            
-            {/* Action button */}
-            <button className="w-full py-2 bg-white rounded-md shadow-sm hover:shadow-md transition-shadow flex items-center justify-center text-amber-600 text-sm font-medium group">
-              <span>Continue</span>
-              <ChevronRight size={14} className="ml-1 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300" />
-            </button>
-          </div>
+        
+        {/* Updated grid to show 2 cards per row on mobile */}
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+          {websites.map(website => (
+            <ProductCard key={website.id} website={website} />
+          ))}
         </div>
       </div>
     </div>
   );
 };
 
-export default ImprovedNeomorphicCards;
+export default WebsiteGrid;
