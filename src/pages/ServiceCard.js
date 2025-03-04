@@ -202,7 +202,7 @@ const ImprovedNeomorphicCards = () => {
         </div>
 
         {/* Card 4: In Progress Card */}
-        <div className="w-64 flex-shrink-0 bg-gray-100 rounded-xl overflow-hidden shadow-md relative">
+        <div className=" flex-shrink-0 bg-gray-100 rounded-xl overflow-hidden shadow-md relative">
           {/* Card background with highlight effect */}
           <div className="absolute inset-0 bg-gradient-to-br from-white via-gray-100 to-gray-200 opacity-80"></div>
           

@@ -264,6 +264,26 @@ const Dashboard = () => {
             
             {/* Project Cards - 4 cards in a single row */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+               {/* Start New Project Card - Only shown when no active project/update plan */}
+               {showNewProjectButton && (
+                <div className="bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-xl shadow-lg overflow-hidden text-white hover:shadow-xl transition-all px-6 py-4 flex flex-col items-center justify-center text-center transform hover:-translate-y-1">
+                  <div>
+                    <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mb-2 mx-auto backdrop-blur-sm">
+                      <PlusCircle size={28} />
+                    </div>
+                    <h4 className="font-bold text-xl mb-1">Start a New Project</h4>
+                    <p className="text-blue-100 text-sm mb-3">Begin your next success story with our team</p>
+                    
+                    <button 
+                      className="w-full py-2 bg-white text-blue-600 rounded-lg text-sm hover:bg-blue-50 transition-colors shadow-md"
+                      onClick={handleStartProject}
+                    >
+                      Create Project
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {/* Active Update Plan or Active Project Card - Should always be first if exists */}
               {activeUpdatePlan && (
   <div className="flex-shrink-0 bg-gray-100 border rounded-xl overflow-hidden shadow-md relative">
@@ -314,11 +334,8 @@ const Dashboard = () => {
             />
             
             {/* Inner text */}
-            <text x="50" y="45" textAnchor="middle" fontSize="24" fontWeight="bold" fill="#3b82f6">
+            <text x="50" y="62" textAnchor="middle" fontSize="40" fontWeight="bold" fill="#3b82f6">
               {activeUpdatePlan.productId?.updateCount - (activeUpdatePlan.updatesUsed || 0)}
-            </text>
-            <text x="50" y="65" textAnchor="middle" fontSize="10" fill="#64748b">
-              left
             </text>
           </svg>
         </div>
@@ -358,58 +375,65 @@ const Dashboard = () => {
       </div>
     </div>
   </div>
-          )}
+            )}
 
               {/* Active Project Card */}
               {activeProject && !activeUpdatePlan && (
-                <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100 hover:shadow-md transition-shadow">
-                  <div className="h-2 bg-blue-500"></div>
-                  <div className="p-5">
-                    <div className="flex justify-between items-start mb-3">
-                      <div>
-                        <div className="text-xs font-medium text-blue-600 mb-1 px-2 py-0.5 bg-blue-50 rounded-full inline-block">
-                          In Progress
-                        </div>
-                        <h4 className="font-semibold">{activeProject.productId?.serviceName || "Website Development"}</h4>
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        <div>Started: {formatDate(activeProject.createdAt)}</div>
-                      </div>
-                    </div>
-                    
-                    <div className="mb-4 text-sm text-gray-600">
-                      <div className="flex items-center justify-between mb-1">
-                        <span>Progress</span>
-                        <span className="font-medium">{activeProject.projectProgress || 0}%</span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-1.5 mb-2">
-                        <div 
-                          className="bg-blue-600 h-1.5 rounded-full" 
-                          style={{ 
-                            width: `${activeProject.projectProgress || 0}%` 
-                          }}
-                        ></div>
-                      </div>
-                    </div>
-                    
-                    <div className="flex justify-between">
-                      <button 
-                        className="px-3 py-1.5 text-sm bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100"
-                        onClick={() => handleViewProjectDetails(activeProject._id)}
-                      >
-                        View Project
-                      </button>
-                      <button 
-                        className="px-3 py-1.5 text-sm text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50 flex items-center"
-                        onClick={() => navigate(`/project-details/${activeProject._id}`)}
-                      >
-                        <ExternalLink size={14} className="mr-1" /> 
-                        Details
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
+  <div className="flex-shrink-0 border bg-gray-100 rounded-xl overflow-hidden shadow-md relative">
+    {/* Card background with highlight effect */}
+    <div className="h-2 bg-amber-500"></div>
+    
+    {/* Main content container */}
+    <div className="relative z-10 p-4">
+      {/* Status label */}
+      <div className="flex justify-start mb-1">
+        <div className="px-2 py-0.5 bg-white rounded-full shadow-sm flex items-center">
+          <div className="w-1.5 h-1.5 bg-amber-400 rounded-full mr-1 animate-pulse"></div>
+          <span className="text-xs font-medium text-amber-500">In Progress</span>
+        </div>
+      </div>
+      
+      {/* Project name */}
+      <h2 className="text-lg font-bold text-gray-800 mb-1">{activeProject.productId?.serviceName || "Website Development"}</h2>
+      <span className="text-xs text-gray-500 block mb-3">
+        Started: {formatDate(activeProject.createdAt)}
+      </span>
+      
+      {/* Status items */}
+      <div className="mb-4">
+        <div className="flex items-center mb-2">
+          <div className="w-5 h-5 bg-white rounded-full shadow-sm flex items-center justify-center mr-2">
+            <Check size={12} className="text-amber-500" />
+          </div>
+          <span className="text-sm text-gray-700">Development in progress</span>
+        </div>
+        
+        {/* Progress indicator */}
+        <div className="mt-3">
+          <div className="flex justify-between text-xs mb-1">
+            <span className="text-gray-600">Progress</span>
+            <span className="font-medium">{activeProject.projectProgress || 0}%</span>
+          </div>
+          <div className="w-full h-2 bg-white rounded-full shadow-inner overflow-hidden">
+            <div
+              className="h-full bg-gradient-to-r from-amber-400 to-amber-500 rounded-full"
+              style={{ width: `${activeProject.projectProgress || 0}%` }}
+            ></div>
+          </div>
+        </div>
+      </div>
+      
+      {/* Action button */}
+      <button 
+        className="w-full py-2 bg-white rounded-md shadow-sm hover:shadow-md transition-shadow flex items-center justify-center text-amber-600 text-sm font-medium group"
+        onClick={() => handleViewProjectDetails(activeProject._id)}
+      >
+        <span>View Project</span>
+        <ChevronRight size={14} className="ml-1 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300" />
+      </button>
+    </div>
+  </div>
+            )}
               
               {/* Completed Projects Cards - Show up to 2 */}
               {completedProjects.slice(0, 2).map((project, index) => {
@@ -486,26 +510,6 @@ const Dashboard = () => {
   );
             })}
               
-              {/* Start New Project Card - Only shown when no active project/update plan */}
-              {showNewProjectButton && (
-                <div className="bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-xl shadow-lg overflow-hidden text-white hover:shadow-xl transition-all px-6 py-4 flex flex-col items-center justify-center text-center transform hover:-translate-y-1">
-                  <div>
-                    <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mb-2 mx-auto backdrop-blur-sm">
-                      <PlusCircle size={28} />
-                    </div>
-                    <h4 className="font-bold text-xl mb-1">Start a New Project</h4>
-                    <p className="text-blue-100 text-sm mb-3">Begin your next success story with our team</p>
-                    
-                    <button 
-                      className="w-full py-2 bg-white text-blue-600 rounded-lg text-sm hover:bg-blue-50 transition-colors shadow-md"
-                      onClick={handleStartProject}
-                    >
-                      Create Project
-                    </button>
-                  </div>
-                </div>
-              )}
-              
               {/* View All Projects Card - Always shown */}
             <div className="flex-shrink-0 bg-gray-100 border  rounded-xl overflow-hidden shadow-md relative">
                 {/* Card background with highlight effect */}
@@ -526,7 +530,7 @@ const Dashboard = () => {
                   <p className="text-xs text-gray-500 mb-9">Browse your complete project history and portfolio.</p>
                   
                   {/* Project section */}
-                  <div className="">
+                  <div className="hover:cursor-pointer hover:shadow-md transition-shadow" onClick={handleViewAllProjects}>
                     <div className="p-3 bg-white rounded-lg shadow-sm">
                       <div className="flex items-center">
                         <div className="w-8 h-8 bg-purple-100 rounded-lg shadow-inner flex items-center justify-center mr-2">
@@ -540,14 +544,6 @@ const Dashboard = () => {
                     </div>
                   </div>
                   
-                  {/* Action button */}
-                  {/* <button 
-                    className="w-full py-2 bg-purple-600 text-white rounded-md shadow-sm hover:shadow-md transition-shadow flex items-center justify-center text-sm font-medium group"
-                    onClick={handleViewAllProjects}
-                  >
-                    <span>Browse All Projects</span>
-                    <ChevronRight size={14} className="ml-1 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300" />
-                  </button> */}
                 </div>
               </div>
             </div>
