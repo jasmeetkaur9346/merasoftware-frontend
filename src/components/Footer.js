@@ -92,9 +92,9 @@ const Footer = () => {
       </footer>
 
       {/* Mobile Footer Navigation - Hidden on desktop */}
-      <div className="md:hidden">
+      <div className="md:hidden mt-24">
         {/* Bottom Navigation */}
-        <footer className="bg-white border-t sticky bottom-0 z-10">
+        <footer className="bg-white border-t fixed bottom-0 left-0 right-0 z-10">
         <div className="flex justify-between items-center px-2">
         <Link to={"/"}
             className={`flex flex-col items-center py-2 px-4 ${activeTab === 'home' ? 'text-blue-600' : 'text-gray-600'}`}
