@@ -17,6 +17,7 @@ import CookieManager from '../utils/cookieManager';
 import StorageService from '../utils/storageService';
 import {  Bell, UserCircle } from 'lucide-react';
 import { FiUser } from "react-icons/fi";
+import displayCurrency from "../helpers/displayCurrency" 
 
 const Header = () => {
   const user = useSelector(state => state?.user?.user)
@@ -143,7 +144,7 @@ if(value){
        {user?._id && (
               <div className='flex items-center gap-2 px-3 py-1 rounded-full'>
                 <IoWalletOutline className="text-xl text-green-600" />
-                <span className='font-medium text-green-600'>₹{context.walletBalance}</span>
+                <span className='font-medium text-green-600'>{displayCurrency (context.walletBalance)}</span>
               </div>
             )}
 

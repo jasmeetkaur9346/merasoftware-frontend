@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { 
-  Search, ChevronRight, Check, MessageSquare, PlusCircle, 
-  Home, ShoppingBag, UserCircle, Wallet, LogOut, ChevronDown, 
-  ExternalLink, Bell, Clock, ArrowRight, RefreshCw,
-  FileText, Plus, User
+  ChevronRight, Check, PlusCircle, 
+   ShoppingBag,  
+  ExternalLink,  Clock,  RefreshCw,
+  FileText,
 } from 'lucide-react';
 import SummaryApi from '../common';
 import Context from '../context';
