@@ -126,28 +126,28 @@ const VerticalCard = ({ loading: initialLoading, data: initialData = [], current
     }, [banners]);
 
     // Loading state
-    if (loading && data.length === 0 && !isDataFromCache) {
-        return (
-            <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-2 pb-4 mb-28'>
-                {loadingList.map((_, index) => (
-                    <div key={index} className='w-full bg-white rounded-lg shadow-sm p-0 border border-gray-200'>
-                        <div className='flex flex-col sm:flex-row'>
-                            <div className='sm:w-2/5 bg-slate-200 h-40 animate-pulse'></div>
-                            <div className='p-4 sm:w-3/5'>
-                                <div className='animate-pulse rounded-full bg-slate-200 h-6 w-3/4 mb-2'></div>
-                                <div className='animate-pulse rounded-full bg-slate-200 h-4 w-1/2 mb-4'></div>
-                                <div className='space-y-2'>
-                                    <div className='animate-pulse rounded-full bg-slate-200 h-4 w-full'></div>
-                                    <div className='animate-pulse rounded-full bg-slate-200 h-4 w-full'></div>
-                                </div>
-                                <div className='animate-pulse rounded-lg bg-slate-200 h-10 w-full mt-4'></div>
-                            </div>
-                        </div>
-                    </div>
-                ))}
-            </div>
-        );
-    }
+    // if (loading && data.length === 0 && !isDataFromCache) {
+    //     return (
+    //         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-2 pb-4 mb-28'>
+    //             {loadingList.map((_, index) => (
+    //                 <div key={index} className='w-full bg-white rounded-lg shadow-sm p-0 border border-gray-200'>
+    //                     <div className='flex flex-col sm:flex-row'>
+    //                         <div className='sm:w-2/5 bg-slate-200 h-40 animate-pulse'></div>
+    //                         <div className='p-4 sm:w-3/5'>
+    //                             <div className='animate-pulse rounded-full bg-slate-200 h-6 w-3/4 mb-2'></div>
+    //                             <div className='animate-pulse rounded-full bg-slate-200 h-4 w-1/2 mb-4'></div>
+    //                             <div className='space-y-2'>
+    //                                 <div className='animate-pulse rounded-full bg-slate-200 h-4 w-full'></div>
+    //                                 <div className='animate-pulse rounded-full bg-slate-200 h-4 w-full'></div>
+    //                             </div>
+    //                             <div className='animate-pulse rounded-lg bg-slate-200 h-10 w-full mt-4'></div>
+    //                         </div>
+    //                     </div>
+    //                 </div>
+    //             ))}
+    //         </div>
+    //     );
+    // }
 
     // Product card component - Horizontal style
     const ProductCard = ({ product }) => {
@@ -158,7 +158,7 @@ const VerticalCard = ({ loading: initialLoading, data: initialData = [], current
         const discount = Math.round(((product.price - product.sellingPrice) / product.price) * 100);
         
         return (
-            <Link to={"/product/"+product?._id} className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 border border-gray-200 flex flex-col sm:flex-row h-full">
+            <Link to={"/product/"+product?._id} className="bg-white mt-8 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 border border-gray-200 flex flex-col sm:flex-row h-full">
                 {/* Left Section */}
                 <div className="px-4 py-4 pt-6 sm:w-[200px] bg-gray-50">
                     <h3 className="text-xl font-bold text-gray-800 mb-2">{product?.serviceName}</h3>

@@ -17,6 +17,28 @@ import {
   clearOldCache 
 } from '../helpers/productDB';
 
+// Alert Modal Component
+const AlertModal = ({ isOpen, message, onClose }) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 max-w-sm w-full mx-4">
+        <h3 className="text-lg font-semibold mb-2">Notice</h3>
+        <p className="text-gray-600 mb-4">{message}</p>
+        <div className="flex justify-end">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Okay
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const ProductDetails = () => {
   const [data, setData] = useState({
     serviceName: "",
@@ -42,31 +64,30 @@ const ProductDetails = () => {
   const [quantities, setQuantities] = useState({});
 
   const [showAlert, setShowAlert] = useState(false);
-const [alertMessage, setAlertMessage] = useState('');
-
+  const [alertMessage, setAlertMessage] = useState('');
 
   const { fetchUserAddToCart } = useContext(Context);
   const navigate = useNavigate();
   const params = useParams();
 
-// Modify the calculation of total price to include quantities
-const calculateTotalPrice = () => {
-  const basePrice = data.sellingPrice;
-  const featuresPrice = selectedFeatures.reduce((sum, featureId) => {
-    const feature = additionalFeaturesData.find(f => f._id === featureId);
-    if (!feature) return sum;
+  // Calculate total price including quantities
+  const calculateTotalPrice = () => {
+    const basePrice = data.sellingPrice;
+    const featuresPrice = selectedFeatures.reduce((sum, featureId) => {
+      const feature = additionalFeaturesData.find(f => f._id === featureId);
+      if (!feature) return sum;
 
-    if (feature.upgradeType === 'component') {
-      const quantity = quantities[featureId] || data.totalPages;
-      const additionalQuantity = Math.max(0, quantity - data.totalPages);
-      return sum + (additionalQuantity * feature.sellingPrice);
-    }
+      if (feature.upgradeType === 'component') {
+        const quantity = quantities[featureId] || data.totalPages;
+        const additionalQuantity = Math.max(0, quantity - data.totalPages);
+        return sum + (additionalQuantity * feature.sellingPrice);
+      }
 
-    return sum + feature.sellingPrice;
-  }, 0);
+      return sum + feature.sellingPrice;
+    }, 0);
 
-  return basePrice + featuresPrice;
-};
+    return basePrice + featuresPrice;
+  };
 
   // Get icon from packageOptions
   const getIconForFeature = (featureName) => {
@@ -110,7 +131,7 @@ const calculateTotalPrice = () => {
       if (selectedFeatures.length > 0) {
         await Promise.all(selectedFeatures.map(featureId => {
           const quantity = quantities[featureId] || data.totalPages;
-          return addToCart(e, featureId, quantity);  // Make sure your addToCart function accepts quantity
+          return addToCart(e, featureId, quantity);
         }));
       }
 
@@ -220,7 +241,7 @@ const calculateTotalPrice = () => {
               headers: { "content-type": "application/json" },
               body: JSON.stringify({ 
                 productId: featureId,
-                category: productData.category  // Add category to the request
+                category: productData.category
               })
             }).then(res => res.json())
           );
@@ -275,66 +296,18 @@ const calculateTotalPrice = () => {
     fetchProductDetails();
   }, [params]);
 
-  // const validateWebsiteUpdate  = async () => {
-  //   try {
-  //     const response = await fetch(SummaryApi.validateUpdatePlan.url, {
-  //       method: SummaryApi.validateUpdatePlan.method,
-  //       headers: {
-  //         'Content-Type': 'application/json'
-  //       },
-  //       credentials: 'include',
-  //       body: JSON.stringify({
-  //         productId: params.id
-  //       })
-  //     });
-  
-  //     const data = await response.json();
-  //     if (!data.success) {
-  //       setAlertMessage(data.message);
-  //       setShowAlert(true);
-  //       return false;
-  //     }
-  //     return true;
-  //   } catch (error) {
-  //     console.error('Error:', error);
-  //     setAlertMessage('Something went wrong');
-  //     setShowAlert(true);
-  //     return false;
-  //   }
-  // };
-
-  // if (initialLoading) {
-  //   return (
-  //     <div className="fixed inset-0 bg-black bg-opacity-10 flex items-center justify-center z-50">
-  //       <div className="rounded-lg p-8">
-  //         <TriangleMazeLoader />
-  //       </div>
-  //     </div>
-  //   );
-  // }
-  const AlertModal = ({ isOpen, message, onClose }) => {
-    if (!isOpen) return null;
-  
+  if (initialLoading) {
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div className="bg-white rounded-lg p-6 max-w-sm w-full mx-4">
-          <h3 className="text-lg font-semibold mb-2">Notice</h3>
-          <p className="text-gray-600 mb-4">{message}</p>
-          <div className="flex justify-end">
-            <button
-              onClick={onClose}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              Okay
-            </button>
-          </div>
+      <div className="fixed inset-0 bg-black bg-opacity-10 flex items-center justify-center z-50">
+        <div className="rounded-lg p-8">
+          <TriangleMazeLoader />
         </div>
       </div>
     );
-  };
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+    <div className="min-h-screen bg-gray-100">
       {addToCartLoading && (
         <div className="fixed inset-0 bg-black bg-opacity-10 flex items-center justify-center z-50">
           <div className="rounded-lg p-8">
@@ -343,190 +316,288 @@ const calculateTotalPrice = () => {
         </div>
       )}
 
-      {/* Image Preview Section */}
-      <div className="relative">
-        <div className="w-full h-80 bg-gray-200">
-          {data.serviceImage && data.serviceImage[0] ? (
-            <img 
-              src={data.serviceImage[0]} 
-              alt={data.serviceName}
-              className="w-full h-full object-cover cursor-pointer"
-              onClick={() => setIsImageOpen(true)}
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <ImageIcon className="w-12 h-12 text-gray-400" />
-            </div>
-          )}
+      {/* Hero Section with Background Image */}
+      <section className="relative">
+        <div 
+          className="h-96 bg-center bg-cover"
+          style={{backgroundImage: data.serviceImage && data.serviceImage[0] ? `url(${data.serviceImage[0]})` : 'none'}}
+        >
+          <div className="absolute inset-0 bg-black bg-opacity-50"></div>
         </div>
-        {/* Semi-transparent header overlay */}
-        <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white p-4">
-          <h1 className="text-xl font-bold mb-1">{data.serviceName}</h1>
-          <p className="text-sm text-gray-200 capitalize">
-            {data.category?.split('_').join(' ')}
-          </p>
+        <div className="container mx-auto px-12 absolute inset-0 flex items-center">
+          <div className="max-w-xl text-white z-10">
+            <h1 className="text-5xl font-bold mb-4 leading-tight">{data.serviceName}</h1>
+            <p className="text-lg opacity-90 mb-8 capitalize">
+              {data.category?.split('_').join(' ')}
+            </p>
+            <button 
+              onClick={handleGetStarted}
+              className="inline-block bg-amber-500 text-white px-6 py-3 rounded-lg font-semibold text-base transition-all duration-300 hover:bg-amber-600 hover:-translate-y-1 hover:shadow-lg"
+            >
+              Get Started
+            </button>
+          </div>
         </div>
-      </div>
+      </section>
 
-      {/* Who is it for Section - Moved up right after image */}
-      <div className="px-4 py-6">
-        <h2 className="text-lg font-semibold mb-3">Who is it for?</h2>
-        <div className="bg-white rounded-lg shadow-sm p-4">
-          <div className="flex flex-wrap gap-2">
-            {data.perfectFor?.map((item, index) => {
-              const Icon = getPerfectForIcon(item) || perfectForOptions[0].icon;
-              return (
-                <div key={index} className="flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded-full text-sm">
-                  {React.createElement(Icon, { 
-                    className: "w-4 h-4 text-blue-600"
+      <div className="container mx-auto px-4 lg:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 py-12">
+          <div className="lg:col-span-2 flex flex-col gap-8">
+            {/* Who is it for Section */}
+            <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+              <div className="px-8 py-5 border-b border-gray-200 flex justify-between items-center">
+                <h2 className="text-xl font-semibold text-gray-900">Who is it for?</h2>
+              </div>
+              <div className="p-8">
+                <div className="flex flex-wrap gap-4">
+                  {data.perfectFor?.map((item, index) => {
+                    const Icon = getPerfectForIcon(item);
+                    return (
+                      <div 
+                        key={index} 
+                        className="bg-white p-3 rounded-lg flex items-center transition-all duration-300 border border-gray-200 hover:border-blue-600 hover:-translate-y-1 hover:shadow-md"
+                      >
+                        {Icon && React.createElement(Icon, { 
+                          className: "w-5 h-5 text-blue-600 mr-2"
+                        })}
+                        <span className="font-medium capitalize">{item}</span>
+                      </div>
+                    );
                   })}
-                  <span className="text-gray-600 capitalize">{item}</span>
                 </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-
-      {/* Features Sections */}
-      <div className="px-4 space-y-6">
-        {/* What's Included Section */}
-        <div>
-          <h2 className="text-lg font-semibold mb-3">What's Included</h2>
-          <div className="space-y-3">
-            {data.packageIncludes?.map((feature, index) => {
-              const packageOption = packageOptions.find(opt => 
-                opt.value.toLowerCase() === feature.toLowerCase() ||
-                opt.label.toLowerCase() === feature.toLowerCase()
-              );
-              const Icon = getIconForFeature(feature);
-              return (
-                <div key={index} className="flex items-start gap-3 bg-white p-3 rounded-lg shadow-sm">
-                  <div className="bg-blue-50 p-2 rounded-lg shrink-0">
-                    {React.createElement(Icon, { 
-                      className: "w-5 h-5 text-blue-600"
-                    })}
-                  </div>
-                  <div>
-                    <span className="font-medium text-gray-700 block capitalize">{feature}</span>
-                    {packageOption && (
-                      <p className="text-sm text-gray-500 mt-1">{packageOption.description}</p>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-
-
-        {/* Additional Features Section */}
-        {additionalFeaturesData.length > 0 && (
-          <div>
-            <div className="flex justify-between items-center mb-3">
-              <h2 className="text-lg font-semibold">Customize Your Plan</h2>
-              <button 
-                onClick={handleSelectAll}
-                className="text-blue-600 text-sm font-medium px-3 py-1 bg-blue-50 rounded-full"
-              >
-                {selectedFeatures.length === additionalFeaturesData.length ? 'Deselect All' : 'Select All'}
-              </button>
+              </div>
             </div>
-            <div className="space-y-3">
-            {additionalFeaturesData.map(feature => {
-                const isSelected = selectedFeatures.includes(feature._id);
+
+            {/* What's Included Section */}
+            <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+              <div className="px-8 py-5 border-b border-gray-200 flex justify-between items-center">
+                <h2 className="text-xl font-semibold text-gray-900">What's Included</h2>
+              </div>
+              <div className="p-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {data.packageIncludes?.map((feature, index) => {
+                    const packageOption = packageOptions.find(opt => 
+                      opt.value.toLowerCase() === feature.toLowerCase() ||
+                      opt.label.toLowerCase() === feature.toLowerCase()
+                    );
+                    const Icon = getIconForFeature(feature);
+                    return (
+                      <div key={index} className="flex items-start">
+                        <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4 text-blue-600 flex-shrink-0">
+                          {React.createElement(Icon, { 
+                            className: "w-6 h-6"
+                          })}
+                        </div>
+                        <div>
+                          <h3 className="text-base font-semibold mb-1 text-gray-900 capitalize">{feature}</h3>
+                          <p className="text-sm text-gray-500">
+                            {packageOption?.description || "Exclusive feature included with your purchase"}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* Description Section */}
+            <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+              <div className="px-8 py-5 border-b border-gray-200">
+                <h2 className="text-xl font-semibold text-gray-900">Description</h2>
+              </div>
+              <div className="p-8">
+                {data.formattedDescriptions?.map((desc, index) => (
+                  <div 
+                    key={index} 
+                    className="prose prose-sm max-w-none mb-4"
+                    dangerouslySetInnerHTML={{ __html: desc.content }}
+                  />
+                ))}
                 
-                if (feature.upgradeType === 'component') {
-                  return (
-                    <QuantitySelector
-                      key={feature._id}
-                      feature={feature}
-                      baseProduct={data}
-                      quantity={quantities[feature._id] || data.totalPages}
-                      onQuantityChange={(newQuantity) => {
-                        setQuantities(prev => ({
-                          ...prev,
-                          [feature._id]: newQuantity
-                        }));
-                      }}
-                      isSelected={isSelected}
-                      onSelect={() => handleFeatureToggle(feature._id)}
-                    />
-                  );
-                }
-
-                const Icon = getIconForFeature(feature.serviceName);
-                return (
-                  <div
-                    key={feature._id}
-                    className="flex items-start gap-3 p-4 bg-white rounded-lg border shadow-sm"
-                    onClick={() => handleFeatureToggle(feature._id)}
-                  >
-                    <div className="shrink-0">
-                      {React.createElement(Icon, { 
-                        className: "w-5 h-5 text-gray-400"
-                      })}
-                    </div>
-                    <div className="flex-grow">
-                      <p className="font-medium text-gray-700">{feature.serviceName}</p>
-                      <p className="text-sm font-medium text-blue-600 mt-1">
-                        ₹{feature.sellingPrice?.toLocaleString()}
-                      </p>
-                    </div>
-                    <div className="shrink-0 w-5 h-5 mt-1 rounded border border-gray-300 flex items-center justify-center">
-                      {isSelected && <Check className="w-4 h-4 text-blue-600" />}
-                    </div>
-                  </div>
-                );
-              })}
+                {data.description && (
+                  <div 
+                    className="prose prose-sm max-w-none mb-4"
+                    dangerouslySetInnerHTML={{ __html: data.description }}
+                  />
+                )}
+                
+                {data.websiteTypeDescription && (
+                  <div 
+                    className="prose prose-sm max-w-none"
+                    dangerouslySetInnerHTML={{ __html: data.websiteTypeDescription }}
+                  />
+                )}
+              </div>
             </div>
           </div>
-        )}
 
-        {/* Description Section */}
-        <div>
-          <h2 className="text-lg font-semibold mb-3">Description</h2>
-          <div className="bg-white rounded-lg shadow-sm p-4 space-y-4">
-            {data.formattedDescriptions?.map((desc, index) => (
-              <div 
-                key={index} 
-                className="prose prose-sm max-w-none"
-                dangerouslySetInnerHTML={{ __html: desc.content }}
-              />
-            ))}
-            {data.description && (
-              <div 
-                className="prose prose-sm max-w-none"
-                dangerouslySetInnerHTML={{ __html: data.description }}
-              />
-            )}
-            {data.websiteTypeDescription && (
-              <div 
-                className="prose prose-sm max-w-none"
-                dangerouslySetInnerHTML={{ __html: data.websiteTypeDescription }}
-              />
-            )}
+          {/* Price Calculator Section */}
+          <div className="lg:col-span-1">
+            <div className="sticky top-24">
+              <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+                <div className="bg-blue-600 text-white px-8 py-5 rounded-t-lg">
+                  <h2 className="text-xl font-semibold">Customize Your Plan</h2>
+                </div>
+                <div className="p-8">
+                  {/* Base Product Display */}
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center">
+                      <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-4 text-blue-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <circle cx="9" cy="21" r="1"></circle>
+                          <circle cx="20" cy="21" r="1"></circle>
+                          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                        </svg>
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-semibold">{data.serviceName}</h3>
+                        <p className="text-xs text-gray-500 capitalize">{data.category?.split('_').join(' ')}</p>
+                      </div>
+                    </div>
+                    <div className="font-semibold text-blue-600">₹{data.sellingPrice?.toLocaleString()}</div>
+                  </div>
+
+                  {/* Additional Features Section */}
+                  {additionalFeaturesData.map(feature => {
+                    const isSelected = selectedFeatures.includes(feature._id);
+                    const Icon = feature.upgradeType === "component" ? 
+                      () => <span className="text-xl">W</span> :
+                      feature.upgradeType === "dynamic_page" || feature.serviceName.toLowerCase().includes("dynamic") ? 
+                        () => <span className="text-xl">D</span> :
+                      feature.upgradeType === "live_chat" || feature.serviceName.toLowerCase().includes("chat") ? 
+                        () => <span className="text-xl">L</span> : 
+                      feature.serviceName.toLowerCase().includes("gallery") ?
+                        () => <span className="text-xl">D</span> :
+                      () => <span className="text-xl">{feature.serviceName.charAt(0).toUpperCase()}</span>;
+                    
+                    if (feature.upgradeType === 'component') {
+                      return (
+                        <div key={feature._id} className="py-4 border-b border-gray-200">
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center">
+                              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-4 text-blue-600">
+                                <span className="text-xl">W</span>
+                              </div>
+                              <div>
+                                <h3 className="text-sm font-semibold">{feature.serviceName}</h3>
+                                <p className="text-xs text-gray-500">₹{feature.sellingPrice?.toLocaleString()} Per Additional Unit</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center">
+                              <div className="font-semibold text-blue-600 mr-4">₹{feature.sellingPrice?.toLocaleString()}</div>
+                              <div className="relative">
+                                <input 
+                                  type="checkbox" 
+                                  id={`feature-${feature._id}`}
+                                  className="sr-only"
+                                  checked={isSelected}
+                                  onChange={() => handleFeatureToggle(feature._id)}
+                                />
+                                <label 
+                                  htmlFor={`feature-${feature._id}`}
+                                  className={`h-6 w-6 rounded border flex items-center justify-center cursor-pointer ${isSelected ? 'bg-blue-600 border-blue-600 text-white' : 'border-gray-300'}`}
+                                >
+                                  {isSelected && <Check className="h-4 w-4" />}
+                                </label>
+                              </div>
+                            </div>
+                          </div>
+                          {isSelected && (
+                            <div className="flex items-center border border-gray-200 rounded-md overflow-hidden mt-2 w-32 ml-14">
+                              <button 
+                                className="w-8 h-8 bg-gray-50 flex items-center justify-center text-base hover:bg-gray-200 transition-colors"
+                                onClick={() => {
+                                  if (quantities[feature._id] > data.totalPages) {
+                                    setQuantities({
+                                      ...quantities,
+                                      [feature._id]: quantities[feature._id] - 1
+                                    });
+                                  }
+                                }}
+                              >-</button>
+                              <input 
+                                type="text" 
+                                className="w-16 h-8 border-none text-center font-semibold text-sm" 
+                                value={quantities[feature._id] || data.totalPages}
+                                readOnly 
+                              />
+                              <button 
+                                className="w-8 h-8 bg-gray-50 flex items-center justify-center text-base hover:bg-gray-200 transition-colors"
+                                onClick={() => {
+                                  setQuantities({
+                                    ...quantities,
+                                    [feature._id]: (quantities[feature._id] || data.totalPages) + 1
+                                  });
+                                }}
+                              >+</button>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div key={feature._id} className="py-4 border-b border-gray-200 flex items-center justify-between">
+                        <div className="flex items-center">
+                          <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-4 text-blue-600">
+                            {React.createElement(Icon)}
+                          </div>
+                          <div>
+                            <h3 className="text-sm font-semibold">{feature.serviceName}</h3>
+                          </div>
+                        </div>
+                        <div className="flex items-center">
+                          <div className="font-semibold text-blue-600 mr-4">₹{feature.sellingPrice?.toLocaleString()}</div>
+                          <div className="relative">
+                            <input 
+                              type="checkbox" 
+                              id={`feature-${feature._id}`}
+                              className="sr-only"
+                              checked={isSelected}
+                              onChange={() => handleFeatureToggle(feature._id)}
+                            />
+                            <label 
+                              htmlFor={`feature-${feature._id}`}
+                              className={`h-6 w-6 rounded border flex items-center justify-center cursor-pointer ${isSelected ? 'bg-blue-600 border-blue-600 text-white' : 'border-gray-300'}`}
+                            >
+                              {isSelected && <Check className="h-4 w-4" />}
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  {/* Total Price */}
+                  <div className="flex justify-between pt-6 mt-5 border-t-2 border-gray-200">
+                    <span className="text-lg font-semibold text-gray-900">Total Price:</span>
+                    <span className="text-2xl font-bold text-blue-600">₹{calculateTotalPrice()?.toLocaleString()}</span>
+                  </div>
+                  
+                  {/* Get Started Button */}
+                  <button 
+                    onClick={handleGetStarted}
+                    className="w-full bg-blue-600 text-white py-4 rounded-lg text-base font-semibold mt-8 transition-all duration-300 hover:bg-blue-700 hover:-translate-y-1 hover:shadow-lg"
+                  >
+                    Get Started
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Fixed Bottom Bar */}
-      {/* Get Started Section */}
-      <div className="fixed bottom-[56px] left-0 right-0 bg-white border-t shadow-lg z-50">
-        <div className="px-4 py-3">
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-sm text-gray-500">Total Price</p>
-            <p className="text-lg font-bold text-gray-900">₹{calculateTotalPrice()?.toLocaleString()}</p>
-          </div>
-          <button 
-            onClick={handleGetStarted}
-            className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors"
-          >
-            Get Started
-          </button>
+      {/* Recommended Products Section */}
+      {data.category && (
+        <div className="container mx-auto px-4 lg:px-8 pb-12">
+          <VerticalCardProduct 
+            category={data.category} 
+            heading="Recommended Products"
+          />
         </div>
-      </div>
+      )}
 
       {/* Cart Popup */}
       <CartPopup 
@@ -552,14 +623,7 @@ const calculateTotalPrice = () => {
         </div>
       )}
 
-      {/* Recommended Products */}
-      {data.category && (
-        <VerticalCardProduct 
-          category={data.category} 
-          heading="Recommended Products"
-        />
-      )}
-
+      {/* Alert Modal */}
       <AlertModal 
         isOpen={showAlert}
         message={alertMessage}
