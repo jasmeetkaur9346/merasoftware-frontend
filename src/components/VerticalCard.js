@@ -8,7 +8,9 @@ const VerticalCard = ({ loading: initialLoading, data: initialData = [], current
     const [banners, setBanners] = useState([]);
     const [loading, setLoading] = useState(initialLoading);
     const [data, setData] = useState(initialData);
+    const [filteredData, setFilteredData] = useState([]);
     const [isDataFromCache, setIsDataFromCache] = useState(false);
+    const [activeFilter, setActiveFilter] = useState('All');
 
     // Function to shuffle array
     const shuffleArray = (array) => {
@@ -19,6 +21,18 @@ const VerticalCard = ({ loading: initialLoading, data: initialData = [], current
         }
         return newArray;
     };
+
+    // Apply filter when data or activeFilter changes
+    useEffect(() => {
+        if (activeFilter === 'All') {
+            setFilteredData(data);
+        } else {
+            const filtered = data.filter(product => 
+                product.category.split('_').join(' ').toLowerCase().includes(activeFilter.toLowerCase())
+            );
+            setFilteredData(filtered);
+        }
+    }, [data, activeFilter]);
 
     useEffect(() => {
         const loadDataWithCache = async () => {
@@ -125,29 +139,65 @@ const VerticalCard = ({ loading: initialLoading, data: initialData = [], current
         return null;
     }, [banners]);
 
+    // Filter Button Component
+    const FilterButton = ({ title, isActive, onClick }) => (
+        <button
+            onClick={onClick}
+            className={`px-4 py-1 text-sm font-medium rounded-md transition-colors ${
+                isActive 
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-100'
+            }`}
+        >
+            {title}
+        </button>
+    );
+
+    const getIconColor = (category) => {
+        const categoryLower = category.toLowerCase();
+        if (categoryLower.includes('standard')) {
+          return 'text-blue-500'; // Standard Websites के लिए नीला
+        } else if (categoryLower.includes('dynamic')) {
+          return 'text-purple-500'; // Dynamic Websites के लिए बैंगनी
+        }
+        return 'text-blue-500'; // डिफॉल्ट कलर
+      };
+
     // Loading state
-    // if (loading && data.length === 0 && !isDataFromCache) {
-    //     return (
-    //         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 px-2 pb-4 mb-28'>
-    //             {loadingList.map((_, index) => (
-    //                 <div key={index} className='w-full bg-white rounded-lg shadow-sm p-0 border border-gray-200'>
-    //                     <div className='flex flex-col sm:flex-row'>
-    //                         <div className='sm:w-2/5 bg-slate-200 h-40 animate-pulse'></div>
-    //                         <div className='p-4 sm:w-3/5'>
-    //                             <div className='animate-pulse rounded-full bg-slate-200 h-6 w-3/4 mb-2'></div>
-    //                             <div className='animate-pulse rounded-full bg-slate-200 h-4 w-1/2 mb-4'></div>
-    //                             <div className='space-y-2'>
-    //                                 <div className='animate-pulse rounded-full bg-slate-200 h-4 w-full'></div>
-    //                                 <div className='animate-pulse rounded-full bg-slate-200 h-4 w-full'></div>
-    //                             </div>
-    //                             <div className='animate-pulse rounded-lg bg-slate-200 h-10 w-full mt-4'></div>
-    //                         </div>
-    //                     </div>
-    //                 </div>
-    //             ))}
-    //         </div>
-    //     );
-    // }
+    if (loading && data.length === 0 && !isDataFromCache) {
+        return (
+            <div className="px-2 pb-4 mb-28">
+                {/* Header and filter skeleton */}
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 animate-pulse">
+                    <div className="h-8 w-48 bg-gray-200 rounded mb-4 md:mb-0"></div>
+                    <div className="flex space-x-2">
+                        <div className="h-8 w-16 bg-gray-200 rounded"></div>
+                        <div className="h-8 w-40 bg-gray-200 rounded"></div>
+                        <div className="h-8 w-40 bg-gray-200 rounded"></div>
+                    </div>
+                </div>
+                
+                <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
+                    {loadingList.map((_, index) => (
+                        <div key={index} className='w-full bg-white rounded-lg shadow-sm p-0 border border-gray-200'>
+                            <div className='flex flex-col sm:flex-row'>
+                                <div className='sm:w-2/5 bg-slate-200 h-40 animate-pulse'></div>
+                                <div className='p-4 sm:w-3/5'>
+                                    <div className='animate-pulse rounded-full bg-slate-200 h-6 w-3/4 mb-2'></div>
+                                    <div className='animate-pulse rounded-full bg-slate-200 h-4 w-1/2 mb-4'></div>
+                                    <div className='space-y-2'>
+                                        <div className='animate-pulse rounded-full bg-slate-200 h-4 w-full'></div>
+                                        <div className='animate-pulse rounded-full bg-slate-200 h-4 w-full'></div>
+                                    </div>
+                                    <div className='animate-pulse rounded-lg bg-slate-200 h-10 w-full mt-4'></div>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
+    }
 
     // Product card component - Horizontal style
     const ProductCard = ({ product }) => {
@@ -158,7 +208,7 @@ const VerticalCard = ({ loading: initialLoading, data: initialData = [], current
         const discount = Math.round(((product.price - product.sellingPrice) / product.price) * 100);
         
         return (
-            <Link to={"/product/"+product?._id} className="bg-white mt-8 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 border border-gray-200 flex flex-col sm:flex-row h-full">
+            <Link to={"/product/"+product?._id} className="bg-white  rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 border border-gray-200 flex flex-col sm:flex-row h-full">
                 {/* Left Section */}
                 <div className="px-4 py-4 pt-6 sm:w-[200px] bg-gray-50">
                     <h3 className="text-xl font-bold text-gray-800 mb-2">{product?.serviceName}</h3>
@@ -182,10 +232,7 @@ const VerticalCard = ({ loading: initialLoading, data: initialData = [], current
                         )}
                     </div>
                     
-                    {/* Button - visible on all screen sizes */}
-                    {/* <button className="w-full py-2 px-4 bg-blue-600 text-white font-medium rounded-md transition-colors duration-300 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
-                        Choose Plan
-                    </button> */}
+                    
                 </div>
                 
                 {/* Right Section */}
@@ -194,7 +241,7 @@ const VerticalCard = ({ loading: initialLoading, data: initialData = [], current
                     <ul className="text-sm space-y-2 mb-4">
                         {displayFeatures.map((feature, index) => (
                             <li key={index} className="flex items-start">
-                                <svg className="h-5 w-5 text-blue-500 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <svg className={`h-5 w-5 ${getIconColor(product?.category)} mr-2 flex-shrink-0`} fill="currentColor" viewBox="0 0 20 20">
                                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                                 </svg>
                                 <span className="text-gray-600 capitalize">{feature}</span>
@@ -214,7 +261,29 @@ const VerticalCard = ({ loading: initialLoading, data: initialData = [], current
     };
 
     return (
-        <div className="px-2 pb-4 mb-28">
+        <div className="px-2 pb-4 mb-28 mt-8">
+            {/* Header with title and filter buttons */}
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+                <h2 className="text-2xl font-bold text-gray-800 mb-4 md:mb-0">Our Website Solutions</h2>
+                <div className="flex space-x-2">
+                    <FilterButton 
+                        title="All" 
+                        isActive={activeFilter === 'All'}
+                        onClick={() => setActiveFilter('All')}
+                    />
+                    <FilterButton 
+                        title="Standard Websites" 
+                        isActive={activeFilter === 'Standard Websites'}
+                        onClick={() => setActiveFilter('Standard Websites')}
+                    />
+                    <FilterButton 
+                        title="Dynamic Websites" 
+                        isActive={activeFilter === 'Dynamic Websites'}
+                        onClick={() => setActiveFilter('Dynamic Websites')}
+                    />
+                </div>
+            </div>
+
             {/* Show top banner */}
             {getBannerForPosition(-1) && (
                 <div 
@@ -247,9 +316,16 @@ const VerticalCard = ({ loading: initialLoading, data: initialData = [], current
                 </div>
             )}
 
+            {/* No results message */}
+            {filteredData.length === 0 && !loading && (
+                <div className="text-center py-8">
+                    <p className="text-gray-500">No website packages found for the selected filter.</p>
+                </div>
+            )}
+
             {/* Responsive grid for cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {data.map((product, index) => (
+                {filteredData.map((product, index) => (
                     <React.Fragment key={product._id || index}>
                         <ProductCard product={product} />
                         
