@@ -230,12 +230,14 @@ if(value){
 
     <header className="md:hidden bg-white shadow-sm px-4 py-3 sticky top-0 z-50">
         <div className="flex items-center justify-between">
+          <Link to={"/"}>
           <div className="flex items-center">
             <div className="w-8 h-8 flex items-center justify-center bg-blue-600 text-white font-bold rounded-md mr-2">
               M
             </div>
             <span className="font-bold text-lg">MeraSoftware</span>
           </div>
+          </Link>
           
           <div className="flex items-center space-x-3">
             
