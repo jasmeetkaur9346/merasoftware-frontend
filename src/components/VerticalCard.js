@@ -1,43 +1,45 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import SummaryApi from '../common';
 import StorageService from '../utils/storageService';
 
 const VerticalCard = ({ loading: initialLoading, data: initialData = [], currentCategory = '' }) => {
+    const location = useLocation();
+    const queryParams = new URLSearchParams(location.search);
+    
     const loadingList = new Array(6).fill(null);
     const [banners, setBanners] = useState([]);
     const [loading, setLoading] = useState(initialLoading);
-    const [data, setData] = useState(initialData);
-    const [filteredData, setFilteredData] = useState([]);
+    const [data, setData] = useState([]);
     const [isDataFromCache, setIsDataFromCache] = useState(false);
     const [activeFilter, setActiveFilter] = useState('All');
+    const [sortOption, setSortOption] = useState('default');
 
-    // Function to shuffle array
-    const shuffleArray = (array) => {
-        const newArray = [...array];
-        for (let i = newArray.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+    // Format category name from URL format to display format
+    const formatCategoryName = useCallback((categoryValue) => {
+        return categoryValue.split('_').join(' ')
+            .split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+    }, []);
+
+    // Get unique categories from URL
+    const uniqueCategories = useMemo(() => {
+        const categoriesFromURL = queryParams.getAll('category');
+        if (categoriesFromURL.length > 0) {
+            const formattedCategories = categoriesFromURL.map(cat => formatCategoryName(cat));
+            return ['All', ...formattedCategories];
         }
-        return newArray;
-    };
+        return ['All'];
+    }, [queryParams, formatCategoryName]);
 
-    // Apply filter when data or activeFilter changes
+    // Load initial data - only runs once on mount or when initialData/currentCategory changes
     useEffect(() => {
-        if (activeFilter === 'All') {
-            setFilteredData(data);
-        } else {
-            const filtered = data.filter(product => 
-                product.category.split('_').join(' ').toLowerCase().includes(activeFilter.toLowerCase())
-            );
-            setFilteredData(filtered);
-        }
-    }, [data, activeFilter]);
-
-    useEffect(() => {
-        const loadDataWithCache = async () => {
-            // Only try to use cache if no initial data was provided
-            if (initialData.length === 0) {
+        const loadData = async () => {
+            if (initialData && initialData.length > 0) {
+                setData(initialData);
+                setLoading(false);
+            } else {
                 const cachedProducts = StorageService.getProductsData(currentCategory);
                 
                 if (cachedProducts && cachedProducts.length > 0) {
@@ -46,19 +48,15 @@ const VerticalCard = ({ loading: initialLoading, data: initialData = [], current
                     setIsDataFromCache(true);
                     setLoading(false);
                 }
-            } else {
-                // If data is provided as prop, use it
-                setData(initialData);
-                setLoading(false);
             }
         };
         
-        loadDataWithCache();
+        loadData();
     }, [initialData, currentCategory]);
 
+    // Fetch banners - only runs once on mount or when currentCategory changes
     useEffect(() => {
         const fetchBanners = async () => {
-            // Try to get banners from localStorage first
             const cachedBanners = StorageService.getProductBanners(currentCategory);
             
             if (cachedBanners) {
@@ -67,7 +65,6 @@ const VerticalCard = ({ loading: initialLoading, data: initialData = [], current
                 return;
             }
             
-            // If not in cache or expired, fetch from API
             try {
                 const response = await fetch(SummaryApi.allBanner.url);
                 const responseData = await response.json();
@@ -84,16 +81,20 @@ const VerticalCard = ({ loading: initialLoading, data: initialData = [], current
                         }
                         groupedBanners[banner.displayOrder].push(banner);
                     });
-
+                    
+                    // Shuffle banners in groups where there are multiple banners
                     Object.keys(groupedBanners).forEach(order => {
                         if (groupedBanners[order].length > 1) {
-                            groupedBanners[order] = shuffleArray(groupedBanners[order]);
+                            const newArray = [...groupedBanners[order]];
+                            for (let i = newArray.length - 1; i > 0; i--) {
+                                const j = Math.floor(Math.random() * (i + 1));
+                                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+                            }
+                            groupedBanners[order] = newArray;
                         }
                     });
 
                     setBanners(groupedBanners);
-                    
-                    // Store in localStorage for future use
                     StorageService.setProductBanners(currentCategory, groupedBanners);
                 }
             } catch (error) {
@@ -102,13 +103,19 @@ const VerticalCard = ({ loading: initialLoading, data: initialData = [], current
         };
 
         fetchBanners();
-
+        
+        // Set up banner rotation interval
         const intervalId = setInterval(() => {
             setBanners(prevBanners => {
                 const newBanners = { ...prevBanners };
                 Object.keys(newBanners).forEach(order => {
-                    if (newBanners[order].length > 1) {
-                        newBanners[order] = shuffleArray(newBanners[order]);
+                    if (newBanners[order] && newBanners[order].length > 1) {
+                        const newArray = [...newBanners[order]];
+                        for (let i = newArray.length - 1; i > 0; i--) {
+                            const j = Math.floor(Math.random() * (i + 1));
+                            [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+                        }
+                        newBanners[order] = newArray;
                     }
                 });
                 return newBanners;
@@ -117,6 +124,44 @@ const VerticalCard = ({ loading: initialLoading, data: initialData = [], current
 
         return () => clearInterval(intervalId);
     }, [currentCategory]);
+
+    // Apply filter and sort using useMemo instead of useEffect
+    const filteredAndSortedData = useMemo(() => {
+        if (!data || data.length === 0) return [];
+
+        let result = [...data];
+        
+        // First apply the category filter
+        if (activeFilter !== 'All') {
+            // Convert activeFilter back to URL format for comparison
+            const activeFilterURLFormat = activeFilter.toLowerCase().split(' ').join('_');
+            
+            result = result.filter(product => 
+                product.category && product.category.toLowerCase() === activeFilterURLFormat
+            );
+        }
+        
+        // Then apply sorting
+        switch (sortOption) {
+            case 'price-low-high':
+                result.sort((a, b) => (a.sellingPrice || 0) - (b.sellingPrice || 0));
+                break;
+            case 'price-high-low':
+                result.sort((a, b) => (b.sellingPrice || 0) - (a.sellingPrice || 0));
+                break;
+            case 'name-a-z':
+                result.sort((a, b) => (a.serviceName || '').localeCompare(b.serviceName || ''));
+                break;
+            case 'name-z-a':
+                result.sort((a, b) => (b.serviceName || '').localeCompare(a.serviceName || ''));
+                break;
+            default:
+                // Keep default order
+                break;
+        }
+        
+        return result;
+    }, [data, activeFilter, sortOption]);
 
     const getBannerForPosition = useCallback((index) => {
         if (index === -1 && banners['0'] && banners['0'].length > 0) {
@@ -154,27 +199,32 @@ const VerticalCard = ({ loading: initialLoading, data: initialData = [], current
     );
 
     const getIconColor = (category) => {
+        if (!category) return 'text-blue-500';
+        
         const categoryLower = category.toLowerCase();
         if (categoryLower.includes('standard')) {
           return 'text-blue-500'; // Standard Websites के लिए नीला
         } else if (categoryLower.includes('dynamic')) {
           return 'text-purple-500'; // Dynamic Websites के लिए बैंगनी
+        } else if (categoryLower.includes('app')) {
+          return 'text-green-500'; // App Development के लिए हरा
+        } else if (categoryLower.includes('update') || categoryLower.includes('upgrade')) {
+          return 'text-amber-500'; // Updates/Upgrades के लिए एम्बर
         }
         return 'text-blue-500'; // डिफॉल्ट कलर
-      };
+    };
 
     // Loading state
-    if (loading && data.length === 0 && !isDataFromCache) {
+    if (loading && (!data || data.length === 0) && !isDataFromCache) {
         return (
             <div className="px-2 pb-4 mb-28">
                 {/* Header and filter skeleton */}
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 animate-pulse">
-                    <div className="h-8 w-48 bg-gray-200 rounded mb-4 md:mb-0"></div>
-                    <div className="flex space-x-2">
+                    <div className="flex space-x-2 mb-4 md:mb-0">
                         <div className="h-8 w-16 bg-gray-200 rounded"></div>
                         <div className="h-8 w-40 bg-gray-200 rounded"></div>
-                        <div className="h-8 w-40 bg-gray-200 rounded"></div>
                     </div>
+                    <div className="h-8 w-40 bg-gray-200 rounded"></div>
                 </div>
                 
                 <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
@@ -205,14 +255,16 @@ const VerticalCard = ({ loading: initialLoading, data: initialData = [], current
         const displayFeatures = product?.packageIncludes?.slice(0, 4) || [];
         const hasMoreFeatures = product?.packageIncludes?.length > 4;
         
-        const discount = Math.round(((product.price - product.sellingPrice) / product.price) * 100);
+        const discount = product.price && product.sellingPrice 
+            ? Math.round(((product.price - product.sellingPrice) / product.price) * 100)
+            : 0;
         
         return (
-            <Link to={"/product/"+product?._id} className="bg-white  rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 border border-gray-200 flex flex-col sm:flex-row h-full">
+            <Link to={"/product/"+product?._id} className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 border border-gray-200 flex flex-col sm:flex-row h-full">
                 {/* Left Section */}
                 <div className="px-4 py-4 pt-6 sm:w-[200px] bg-gray-50">
                     <h3 className="text-xl font-bold text-gray-800 mb-2">{product?.serviceName}</h3>
-                    <p className="text-sm text-gray-500 mb-4 capitalize">{product?.category.split('_').join(' ')}</p>
+                    <p className="text-sm text-gray-500 mb-4 capitalize">{product?.category?.split('_').join(' ')}</p>
                     
                     {/* Price Section */}
                     <div className="mb-4">
@@ -231,8 +283,6 @@ const VerticalCard = ({ loading: initialLoading, data: initialData = [], current
                             </div>
                         )}
                     </div>
-                    
-                    
                 </div>
                 
                 {/* Right Section */}
@@ -262,25 +312,38 @@ const VerticalCard = ({ loading: initialLoading, data: initialData = [], current
 
     return (
         <div className="px-2 pb-4 mb-28 mt-8">
-            {/* Header with title and filter buttons */}
+            {/* Header with filter buttons and sorting options */}
             <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-                <h2 className="text-2xl font-bold text-gray-800 mb-4 md:mb-0">Our Website Solutions</h2>
-                <div className="flex space-x-2">
-                    <FilterButton 
-                        title="All" 
-                        isActive={activeFilter === 'All'}
-                        onClick={() => setActiveFilter('All')}
-                    />
-                    <FilterButton 
-                        title="Standard Websites" 
-                        isActive={activeFilter === 'Standard Websites'}
-                        onClick={() => setActiveFilter('Standard Websites')}
-                    />
-                    <FilterButton 
-                        title="Dynamic Websites" 
-                        isActive={activeFilter === 'Dynamic Websites'}
-                        onClick={() => setActiveFilter('Dynamic Websites')}
-                    />
+                {/* Filter Buttons */}
+                <div className="flex space-x-2 flex-wrap mb-4 md:mb-0">
+                    {uniqueCategories.map(category => (
+                        <FilterButton 
+                            key={category}
+                            title={category} 
+                            isActive={activeFilter === category}
+                            onClick={() => setActiveFilter(category)}
+                        />
+                    ))}
+                </div>
+
+                {/* Sorting Dropdown */}
+                <div className="relative inline-block">
+                    <select
+                        value={sortOption}
+                        onChange={(e) => setSortOption(e.target.value)}
+                        className="block appearance-none w-full bg-white border border-gray-300 text-gray-700 py-2 px-4 pr-8 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                    >
+                        <option value="default">Sort By</option>
+                        <option value="price-low-high">Price: Low to High</option>
+                        <option value="price-high-low">Price: High to Low</option>
+                        <option value="name-a-z">Name: A to Z</option>
+                        <option value="name-z-a">Name: Z to A</option>
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                        <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                        </svg>
+                    </div>
                 </div>
             </div>
 
@@ -317,15 +380,15 @@ const VerticalCard = ({ loading: initialLoading, data: initialData = [], current
             )}
 
             {/* No results message */}
-            {filteredData.length === 0 && !loading && (
+            {filteredAndSortedData.length === 0 && !loading && (
                 <div className="text-center py-8">
-                    <p className="text-gray-500">No website packages found for the selected filter.</p>
+                    <p className="text-gray-500">No packages found for the selected filter.</p>
                 </div>
             )}
 
             {/* Responsive grid for cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredData.map((product, index) => (
+                {filteredAndSortedData.map((product, index) => (
                     <React.Fragment key={product._id || index}>
                         <ProductCard product={product} />
                         
