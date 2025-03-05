@@ -16,7 +16,7 @@ import { IoWalletOutline } from "react-icons/io5";
 import CookieManager from '../utils/cookieManager';
 import StorageService from '../utils/storageService';
 import {  Bell, UserCircle } from 'lucide-react';
-
+import { FiUser } from "react-icons/fi";
 
 const Header = () => {
   const user = useSelector(state => state?.user?.user)
@@ -248,21 +248,24 @@ if(value){
             
 
             <Link to={user?._id ? "/profile" : "/login"}>
-        {
-                    user?._id && (
-                      <div className='text-3xl cursor-pointer relative flex justify-center' onClick={()=>setMenuDisplay(preve => !preve)}>
-                        {
-                          user?.profilePic ? (
-                            <img src={user?.profilePic} className='w-8 h-8 rounded-full' alt={user?.name} />
-                          ) : (
-                            <UserCircle className="text-white text-2xl"/>
-                          )
-                        }
-                      </div>
-                    )
-                  }
-                  
-        </Link>
+  {user?._id ? (
+    // When user is logged in, show profile picture or user icon
+    <div className="flex flex-col items-center cursor-pointer">
+      {user?.profilePic ? (
+        <img src={user?.profilePic} className="w-8 h-8 rounded-full" alt={user?.name} />
+      ) : (
+        <UserCircle className="w-8 h-8 " />
+      )}
+     
+    </div>
+  ) : (
+    // When user is NOT logged in, show login icon and text
+    <div className="flex flex-col items-center cursor-pointer">
+      <FiUser className="w-6 h-6 " />
+      
+    </div>
+  )}
+</Link>
           </div>
         </div>
         
