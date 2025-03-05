@@ -4,14 +4,15 @@ import { CgClose } from "react-icons/cg";
 import { FaCloudUploadAlt } from "react-icons/fa";
 import uploadImage from '../helpers/uploadImage';
 import DisplayImage from './DisplayImage';
-import { MdDelete } from "react-icons/md";
+import { MdDelete, MdAdd } from "react-icons/md";
 import SummaryApi from '../common';
 import {toast} from 'react-toastify'
 import Select from 'react-select'
-import packageOptions from '../helpers/packageOptions';
-import perfectForOptions from '../helpers/perfectForOptions';
+import packageOptions, { CustomPackageOption, CustomPackageValue } from '../helpers/packageOptions';
+import perfectForOptions, { CustomPerfectForOption, CustomPerfectForValue } from '../helpers/perfectForOptions';
 import defaultFields from '../helpers/defaultFields';
 import RichTextEditor from '../helpers/richTextEditor';
+import PackageSelect from './PackageSelect';
 import keyBenefitsOptions, { CustomKeyBenefitOption, CustomKeyBenefitValue } from '../helpers/keyBenefitOptions';
 import compatibleWithOptions, { CustomCompatibleOption, CustomCompatibleValue} from '../helpers/compatibleWithOptions';
 
@@ -38,7 +39,7 @@ const AdminEditProduct = ({
         serviceImage: productData?.serviceImage || [],
         price: productData?.price,
         sellingPrice: productData?.sellingPrice,
-        description: productData?.description,
+        formattedDescriptions: productData?.formattedDescriptions || [''],
         websiteTypeDescription: productData?.websiteTypeDescription || "",
         // Website service specific fields
         isWebsiteService: productData?.isWebsiteService || false,
@@ -47,9 +48,12 @@ const AdminEditProduct = ({
         // New feature upgrade fields
         isFeatureUpgrade: productData?.isFeatureUpgrade || false,
         upgradeType: productData?.upgradeType || "",
-        compatibleWith: productData?.compatibleWith || [],
+        compatibleCategories: productData?.compatibleCategories || [],
         keyBenefits: productData?.keyBenefits || [],
         additionalFeatures: productData?.additionalFeatures || [],
+        // Website update fields
+        validityPeriod: productData?.validityPeriod || "",
+        updateCount: productData?.updateCount || "",
     });
 
     const [openFullScreenImage, setOpenFullScreenImage] = useState(false);
@@ -157,10 +161,10 @@ const AdminEditProduct = ({
     }
 
     // Add new handlers for feature-related fields
-    const handleCompatibleWithChange = (selectedOptions) => {
+    const handleCompatibleCategoriesChange = (selectedOptions) => {
       setData((prev) => ({
         ...prev,
-        compatibleWith: selectedOptions.map((option) => option.value),
+        compatibleCategories: selectedOptions.map((option) => option.value),
       }));
     };
 
@@ -192,6 +196,30 @@ const AdminEditProduct = ({
       }));
     };
 
+    // Add description field handlers
+    const handleAddDescription = () => {
+      setData(prev => ({
+          ...prev,
+          formattedDescriptions: [...prev.formattedDescriptions, '']
+      }));
+    };
+
+    const handleRemoveDescription = (index) => {
+      setData(prev => ({
+          ...prev,
+          formattedDescriptions: prev.formattedDescriptions.filter((_, i) => i !== index)
+      }));
+    };
+
+    const handleDescriptionChange = (content, index) => {
+      setData(prev => ({
+          ...prev,
+          formattedDescriptions: prev.formattedDescriptions.map((desc, i) => 
+              i === index ? content : desc
+          )
+      }));
+    };
+
     const handleUploadProduct = async (e) => {
         const file = e.target.files[0]
         const uploadImageCloudinary = await uploadImage(file)
@@ -218,6 +246,12 @@ const AdminEditProduct = ({
 
     const handleSubmit = async (e) => {
       e.preventDefault()
+
+      // Create submission data with formatted descriptions
+      const submissionData = {
+        ...data,
+        formattedDescriptions: data.formattedDescriptions.map(content => ({ content }))
+      };
       
       const response = await fetch(SummaryApi.updateProduct.url,{
         method: SummaryApi.updateProduct.method,
@@ -225,7 +259,7 @@ const AdminEditProduct = ({
         headers: {
           "content-type": "application/json"
         },
-        body: JSON.stringify(data)
+        body: JSON.stringify(submissionData)
       })
       
       const responseData = await response.json()
@@ -243,12 +277,16 @@ const AdminEditProduct = ({
 
     // Update helper functions
     const shouldShowWebsiteFields = (category) => {
-      const websiteCategories = ['standard_websites', 'dynamic_websites', 'web_applications', 'mobile_apps'];
+      const websiteCategories = ['standard_websites', 'dynamic_websites', 'cloud_software_development', 'app_development'];
       return category && websiteCategories.includes(category);
     };
 
     const shouldShowFeatureFields = (category) => {
       return category === 'feature_upgrades';
+    };
+
+    const shouldShowWebsiteUpdateFields = (category) => {
+      return category === 'website_updates';
     };
 
     // Custom Option Component for feature display
@@ -274,8 +312,13 @@ const AdminEditProduct = ({
       );
     };  
 
+    const categoryOptions = categories.map(cat => ({
+      value: cat.categoryValue,
+      label: cat.categoryName
+    }));
+
   return (
-    <div className='fixed w-full h-full bg-slate-200 bg-opacity-40 top-0 left-0 right-0 bottom-0 flex justify-center items-center'>
+    <div className='fixed w-full h-full bg-slate-200 bg-opacity-40 top-10 left-0 right-0 bottom-0 flex justify-center items-center'>
       <div className='bg-white p-4 rounder w-full max-w-2xl h-full max-h-[75%] overflow-hidden'>
 
       <div className='flex justify-between items-center pb-3'>
@@ -363,9 +406,8 @@ const AdminEditProduct = ({
             )}
 
             <label htmlFor='packageIncludes' className='mt-3'>Package Includes:</label>
-            <Select
+            <PackageSelect
               options={packageOptions}
-              isMulti
               value={data.packageIncludes.map(value => {
                 const option = packageOptions.find(opt => opt.value === value);
                 return option;
@@ -373,15 +415,16 @@ const AdminEditProduct = ({
               name='packageIncludes'
               id='packageIncludes'
               onChange={handlePackageIncludesChange}
-              className='basic-multi-select bg-slate-100 border rounded'
-              classNamePrefix='select'
+              components={{
+                Option: CustomPackageOption,
+                MultiValue: CustomPackageValue
+              }}
               placeholder="Select package options"
             />
 
             <label htmlFor='perfectFor' className='mt-3'>Perfect For:</label>
-            <Select
+            <PackageSelect
               options={perfectForOptions}
-              isMulti
               value={data.perfectFor.map(value => {
                 const option = perfectForOptions.find(opt => opt.value === value);
                 return option;
@@ -389,93 +432,129 @@ const AdminEditProduct = ({
               name='perfectFor'
               id='perfectFor'
               onChange={handlePerfectForChange}
-              className='basic-multi-select bg-slate-100 border rounded'
-              classNamePrefix='select'
+              components={{
+                Option: CustomPerfectForOption,
+                MultiValue: CustomPerfectForValue
+              }}
               placeholder="Select target audience"
             />
 
-              {compatibleFeatures.length > 0 && (
-            <div className="mt-3">
+            {compatibleFeatures.length > 0 && (
+              <div className="mt-3">
                 <label htmlFor="additionalFeatures" className="block mb-2">
                     Additional Features Available:
                 </label>
-                <Select
-                    isMulti
+                <PackageSelect
                     options={compatibleFeatures}
                     value={compatibleFeatures.filter(feature => 
                         data.additionalFeatures.includes(feature.value)
                     )}
                     onChange={handleAdditionalFeaturesChange}
-                    className="basic-multi-select bg-slate-100 border rounded"
-                    classNamePrefix="select"
                     placeholder="Select additional features"
                     components={{
                         Option: CustomFeatureOption
                     }}
                 />
-            </div>
+              </div>
             )}
           </>
         )}
 
         {/* Add new feature upgrade fields */}
         {shouldShowFeatureFields(data.category) && (
-                    <>
-                        <label htmlFor='upgradeType' className='mt-3'>Upgrade Type:</label>
-                        <select
-                            id='upgradeType'
-                            name='upgradeType'
-                            value={data.upgradeType}
-                            onChange={handleOnChange}
-                            className='p-2 bg-slate-100 border rounded'
-                            required
-                        >
-                            <option value="">Select Type</option>
-                            <option value="feature">Feature</option>
-                            <option value="component">Component</option>
-                        </select>
+          <>
+            <label htmlFor='upgradeType' className='mt-3'>Upgrade Type:</label>
+            <select
+                id='upgradeType'
+                name='upgradeType'
+                value={data.upgradeType}
+                onChange={handleOnChange}
+                className='p-2 bg-slate-100 border rounded'
+                required
+            >
+                <option value="">Select Type</option>
+                <option value="feature">Feature</option>
+                <option value="component">Component</option>
+            </select>
 
-                        <label htmlFor='compatibleWith' className='mt-3'>Compatible With:</label>
-                        <Select
-                            isMulti
-                            options={compatibleWithOptions}
-                            value={data.compatibleWith.map(value => {
-                                const option = compatibleWithOptions.find(opt => opt.value === value);
-                                return option;
-                            })}
-                            name='compatibleWith'
-                            id='compatibleWith'
-                            onChange={handleCompatibleWithChange}
-                            components={{
-                                Option: CustomCompatibleOption,
-                                MultiValue: CustomCompatibleValue
-                            }}
-                            className='basic-multi-select bg-slate-100 border rounded'
-                            classNamePrefix='select'
-                            placeholder="Select compatible platforms"
-                        />
-
-                        <label htmlFor='keyBenefits' className='mt-3'>Key Benefits:</label>
-                        <Select
-                            isMulti
-                            options={keyBenefitsOptions}
-                            value={data.keyBenefits.map(value => {
-                                const option = keyBenefitsOptions.find(opt => opt.value === value);
-                                return option;
-                            })}
-                            name='keyBenefits'
-                            id='keyBenefits'
-                            onChange={handleKeyBenefitsChange}
-                            components={{
-                                Option: CustomKeyBenefitOption,
-                                MultiValue: CustomKeyBenefitValue
-                            }}
-                            className='basic-multi-select bg-slate-100 border rounded'
-                            classNamePrefix='select'
-                            placeholder="Select key benefits"
-                        />
-                    </>
+            <label htmlFor='compatibleCategories' className='mt-3'>Compatible With:</label>
+            <Select
+                isMulti
+                options={categoryOptions}
+                value={categoryOptions.filter(option => 
+                    data.compatibleCategories.includes(option.value)
                 )}
+                name='compatibleCategories'
+                id='compatibleCategories'
+                onChange={handleCompatibleCategoriesChange}
+                className='basic-multi-select bg-slate-100 border rounded'
+                classNamePrefix='select'
+                placeholder="Select compatible platforms"
+            />
+
+            <label htmlFor='keyBenefits' className='mt-3'>Key Benefits:</label>
+            <Select
+                isMulti
+                options={keyBenefitsOptions}
+                value={data.keyBenefits.map(value => {
+                    const option = keyBenefitsOptions.find(opt => opt.value === value);
+                    return option;
+                })}
+                name='keyBenefits'
+                id='keyBenefits'
+                onChange={handleKeyBenefitsChange}
+                components={{
+                    Option: CustomKeyBenefitOption,
+                    MultiValue: CustomKeyBenefitValue
+                }}
+                className='basic-multi-select bg-slate-100 border rounded'
+                classNamePrefix='select'
+                placeholder="Select key benefits"
+            />
+          </>
+        )}
+
+        {/* Add website update fields */}
+        {shouldShowWebsiteUpdateFields(data.category) && (
+          <>
+            <label htmlFor='validityPeriod' className='mt-3'>Validity Period (months):</label>
+            <input 
+                type='number' 
+                id='validityPeriod'
+                name='validityPeriod'
+                placeholder='Enter validity period in months'
+                value={data.validityPeriod}
+                onChange={handleOnChange}
+                className='p-2 bg-slate-100 border rounded'
+                required
+            />
+
+            <label htmlFor='updateCount' className='mt-3'>Updates Count:</label>
+            <input 
+                type='number' 
+                id='updateCount'
+                name='updateCount'
+                placeholder='Enter How many updates in this plan'
+                value={data.updateCount}
+                onChange={handleOnChange}
+                className='p-2 bg-slate-100 border rounded'
+                required
+            />
+
+            <label htmlFor='compatibleCategories' className='mt-3'>Compatible With:</label>
+            <Select
+                isMulti
+                options={categoryOptions}
+                value={categoryOptions.filter(option => 
+                    data.compatibleCategories.includes(option.value)
+                )}
+                onChange={handleCompatibleCategoriesChange}
+                className='basic-multi-select bg-slate-100 border rounded'
+                classNamePrefix='select'
+                placeholder="Select compatible categories"
+            />
+          </>
+        )}
 
         <label htmlFor='serviceImage' className='mt-3'>Service Image :</label> 
         <label htmlFor='uploadImageInput'>
@@ -545,18 +624,34 @@ const AdminEditProduct = ({
           required
         />
 
-        <label htmlFor='description' className='mt-3'>Description :</label>
-        <RichTextEditor
-          name='description'
-          value={data.description}
-          onChange={(newContent) => {
-            setData(prev => ({
-              ...prev,
-              description: newContent
-            }))
-          }}
-          placeholder='Enter service description'
-        />
+        {/* Add Description Button */}
+        <div className="mt-4">
+          <button
+              type="button"
+              onClick={handleAddDescription}
+              className="flex items-center gap-1 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+              Add <MdAdd />
+          </button>
+        </div>
+
+        {/* Dynamic Rich Text Editors */}
+        {data.formattedDescriptions.map((content, index) => (
+            <div key={index} className="mt-3 relative">
+                <RichTextEditor
+                    value={content}
+                    onChange={(newContent) => handleDescriptionChange(newContent, index)}
+                    placeholder="Enter description..."
+                />
+                <button
+                    type="button"
+                    onClick={() => handleRemoveDescription(index)}
+                    className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
+                >
+                    <MdDelete size={16} />
+                </button>
+            </div>
+        ))}
 
         {shouldShowWebsiteFields(data.category) && (
           <>

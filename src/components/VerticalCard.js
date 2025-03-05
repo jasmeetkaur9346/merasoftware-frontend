@@ -348,36 +348,36 @@ const VerticalCard = ({ loading: initialLoading, data: initialData = [], current
             </div>
 
             {/* Show top banner */}
-            {getBannerForPosition(-1) && (
-                <div 
-                    className={`h-auto w-full bg-slate-200 relative rounded-lg mb-6 ${getBannerForPosition(-1).targetUrl ? 'cursor-pointer' : ''}`}
-                    onClick={() => {
-                        const banner = getBannerForPosition(-1);
-                        if (banner.targetUrl) {
-                            window.open(banner.targetUrl, '_blank', 'noopener,noreferrer');
-                        }
-                    }}
-                >
-                    <div className="hidden md:flex h-full w-full overflow-hidden">
-                        <div className='w-full h-full min-h-full min-w-full'>
-                            <img 
-                                src={getBannerForPosition(-1).currentImage}
-                                alt="Top Banner"
-                                className="w-full h-full object-cover rounded-lg"
-                            />
-                        </div>
-                    </div>
-                    <div className="flex h-full w-full overflow-hidden md:hidden rounded-lg">
-                        <div className='w-full h-full min-h-full min-w-full transition-all'>
-                            <img 
-                                src={getBannerForPosition(-1).currentImage}
-                                alt="Top Banner"
-                                className="w-full h-full object-contain rounded-lg"
-                            />
-                        </div>
-                    </div>
-                </div>
-            )}
+            {getBannerForPosition(-1) && getBannerForPosition(-1).currentImage ? (
+    <div 
+        className={`h-auto w-full bg-slate-200 relative rounded-lg mb-6 ${getBannerForPosition(-1).targetUrl ? 'cursor-pointer' : ''}`}
+        onClick={() => {
+            const banner = getBannerForPosition(-1);
+            if (banner.targetUrl) {
+                window.open(banner.targetUrl, '_blank', 'noopener,noreferrer');
+            }
+        }}
+    >
+        <div className="hidden md:flex h-full w-full overflow-hidden">
+            <div className='w-full h-full min-h-full min-w-full'>
+                <img 
+                    src={getBannerForPosition(-1).currentImage}
+                    alt="Top Banner"
+                    className="w-full h-full object-cover rounded-lg"
+                />
+            </div>
+        </div>
+        <div className="flex h-full w-full overflow-hidden md:hidden rounded-lg">
+            <div className='w-full h-full min-h-full min-w-full transition-all'>
+                <img 
+                    src={getBannerForPosition(-1).currentImage}
+                    alt="Top Banner"
+                    className="w-full h-full object-contain rounded-lg"
+                />
+            </div>
+        </div>
+    </div>
+) : null}
 
             {/* No results message */}
             {filteredAndSortedData.length === 0 && !loading && (

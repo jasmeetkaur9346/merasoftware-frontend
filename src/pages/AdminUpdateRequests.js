@@ -340,50 +340,75 @@ const AdminUpdateRequests = () => {
             </div>
             
           {/* Uploaded Files section in AdminUpdateRequests.js */}
-<div className="mb-6">
+          <div className="mb-6">
   <h4 className="font-medium mb-2">Uploaded Files</h4>
   <div className="border rounded-lg p-4">
     {selectedRequest.files && selectedRequest.files.length > 0 ? (
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {selectedRequest.files.map((file, index) => (
-          <div key={index} className="flex items-center bg-gray-50 p-3 rounded">
-            <div className="flex-shrink-0 mr-3">
-              {file.type && file.type.startsWith('image/') ? (
-                <div className="w-12 h-12 bg-blue-100 rounded flex items-center justify-center">
-                <span className="text-blue-500">IMG</span>
-              </div>
-              ) : (
-                <div className="w-12 h-12 bg-gray-200 rounded flex items-center justify-center">
-                  <span className="text-gray-500">DOC</span>
+        {selectedRequest.files.map((file, index) => {
+          // Determine file type icon and text
+          let fileTypeIcon = "DOC";
+          let fileTypeBg = "bg-gray-200";
+          let fileTypeText = "text-gray-500";
+          
+          if (file.type && file.type.startsWith('image/')) {
+            fileTypeIcon = "IMG";
+            fileTypeBg = "bg-blue-100";
+            fileTypeText = "text-blue-500";
+          } else if (file.type && file.type === 'application/pdf') {
+            fileTypeIcon = "PDF";
+            fileTypeBg = "bg-red-100";
+            fileTypeText = "text-red-500";
+          } else if (file.type && (file.type === 'application/msword' || 
+                    file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document')) {
+            fileTypeIcon = "DOC";
+            fileTypeBg = "bg-blue-100";
+            fileTypeText = "text-blue-500";
+          } else if (file.type && file.type === 'text/plain') {
+            fileTypeIcon = "TXT";
+            fileTypeBg = "bg-gray-200";
+            fileTypeText = "text-gray-500";
+          } else if (file.type && file.type === 'application/rtf') {
+            fileTypeIcon = "RTF";
+            fileTypeBg = "bg-purple-100";
+            fileTypeText = "text-purple-500";
+          }
+          
+          return (
+            <div key={index} className="flex items-center bg-gray-50 p-3 rounded">
+              <div className="flex-shrink-0 mr-3">
+                <div className={`w-12 h-12 ${fileTypeBg} rounded flex items-center justify-center`}>
+                  <span className={fileTypeText}>{fileTypeIcon}</span>
                 </div>
-              )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate">{file.originalName || file.filename}</p>
+                <p className="text-xs text-gray-500">
+                  {file.size ? `${(file.size / 1024).toFixed(1)} KB` : 'Unknown size'}
+                  {file.type ? ` • ${file.type.split('/')[1]}` : ''}
+                </p>
+              </div>
+              <div className="flex space-x-2">
+                <a 
+                  href={file.downloadLink || `https://drive.google.com/uc?export=download&id=${file.driveFileId}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-500 hover:text-blue-700"
+                >
+                  Download
+                </a>
+                <a 
+                  href={file.driveLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-500 hover:text-blue-700"
+                >
+                  View
+                </a>
+              </div>
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">{file.originalName || file.filename}</p>
-              <p className="text-xs text-gray-500">
-                {file.size ? `${(file.size / 1024).toFixed(1)} KB` : 'Unknown size'}
-              </p>
-            </div>
-            <div className="flex space-x-2">
-              <a 
-                href={file.downloadLink || `https://drive.google.com/uc?export=download&id=${file.driveFileId}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-500 hover:text-blue-700"
-              >
-                Download
-              </a>
-              <a 
-                href={file.driveLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-500 hover:text-blue-700"
-              >
-                View
-              </a>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     ) : (
       <p className="text-gray-500 text-center py-4">No files uploaded</p>

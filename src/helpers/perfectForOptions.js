@@ -26,6 +26,42 @@ import {
 } from 'react-icons/md';
 import { PiBowlFoodLight } from "react-icons/pi";
 
+import { 
+  Store, 
+  PackageOpen, 
+  ShoppingCart, 
+  Shirt, 
+  Smartphone, 
+  Sofa, 
+  Scissors, } from 'lucide-react';
+  import{
+  Stethoscope, 
+  GraduationCap, 
+  Zap, 
+  Wrench, 
+  Home, 
+  Dumbbell, 
+  BadgePercent, 
+  Package, 
+  
+  ShoppingBag, 
+  Truck } from 'lucide-react';
+  import {
+  UtensilsCrossed, 
+  Flower, 
+  Activity, 
+  BookOpen, 
+  Video, 
+  MonitorPlay, 
+  Building, 
+  Briefcase, 
+  Recycle, 
+  ListChecks, 
+  HeartHandshake 
+} from 'lucide-react';
+import { RiFirstAidKitFill } from "react-icons/ri";
+import { FaPills } from "react-icons/fa6";
+
 const perfectForOptions = [
   { 
     value: "professional portfolios", 
@@ -186,6 +222,161 @@ const perfectForOptions = [
     value: "education consultants", 
     label: "Education Consultants",
     icon: FaBriefcase
+  },
+  {
+    value: "retailers",
+    label: "Retailers",
+    icon: Store
+  },
+  {
+    value: "wholesalers",
+    label: "Wholesalers",
+    icon: PackageOpen
+  },
+  {
+    value: "grocery_stores",
+    label: "Grocery Stores",
+    icon: ShoppingCart
+  },
+  {
+    value: "clothing_stores",
+    label: "Clothing Stores",
+    icon: Shirt
+  },
+  {
+    value: "mobile_electronics_sellers",
+    label: "Mobile & Electronics Sellers",
+    icon: Smartphone
+  },
+  {
+    value: "furniture_shops",
+    label: "Furniture Shops",
+    icon: Sofa
+  },
+  {
+    value: "salons",
+    label: "Salons",
+    icon: Scissors
+  },
+  {
+    value: "clinics",
+    label: "Clinics",
+    icon: Stethoscope
+  },
+  {
+    value: "tutors",
+    label: "Tutors",
+    icon: GraduationCap
+  },
+  {
+    value: "electricians",
+    label: "Electricians",
+    icon: Zap
+  },
+  {
+    value: "mechanics",
+    label: "Mechanics",
+    icon: Wrench
+  },
+  {
+    value: "home_service_providers",
+    label: "Home Service Providers",
+    icon: Home
+  },
+  {
+    value: "personal_trainers",
+    label: "Personal Trainers",
+    icon: Dumbbell
+  },
+  {
+    value: "shopkeepers",
+    label: "Shopkeepers",
+    icon: BadgePercent
+  },
+  {
+    value: "warehouses",
+    label: "Warehouses",
+    icon: Package
+  },
+  {
+    value: "medical_stores",
+    label: "Medical Stores",
+    icon: FaPills
+  },
+  {
+    value: "supermarkets",
+    label: "Supermarkets",
+    icon: ShoppingBag
+  },
+  {
+    value: "distributors",
+    label: "Distributors",
+    icon: Truck
+  },
+  {
+    value: "food_vendors",
+    label: "Food Vendors",
+    icon: UtensilsCrossed
+  },
+  {
+    value: "medicine_shops",
+    label: "Medicine Shops",
+    icon: RiFirstAidKitFill
+  },
+  {
+    value: "florists",
+    label: "Florists",
+    icon: Flower
+  },
+  {
+    value: "small_businesses",
+    label: "Small Businesses",
+    icon: Store
+  },
+  {
+    value: "gyms",
+    label: "Gyms",
+    icon: Activity
+  },
+  {
+    value: "coaching_centers",
+    label: "Coaching Centers",
+    icon: BookOpen
+  },
+  {
+    value: "digital_content_creators",
+    label: "Digital Content Creators",
+    icon: Video
+  },
+  {
+    value: "online_learning_platforms",
+    label: "Online Learning Platforms",
+    icon: MonitorPlay
+  },
+  {
+    value: "real_estate_agents",
+    label: "Real Estate Agents",
+    icon: Building
+  },
+  {
+    value: "job_consultants",
+    label: "Job Consultants",
+    icon: Briefcase
+  },
+  {
+    value: "second_hand_goods_sellers",
+    label: "Second-Hand Goods Sellers",
+    icon: Recycle
+  },
+  {
+    value: "business_directories",
+    label: "Business Directories",
+    icon: ListChecks
+  },
+  {
+    value: "service_providers",
+    label: "Service Providers",
+    icon: HeartHandshake
   }
 ];
 

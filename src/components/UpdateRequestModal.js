@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { X, Upload, FilePlus, Send, FileText, Image } from 'lucide-react';
+import { X, Upload, Send, FileText, Image } from 'lucide-react';
 import SummaryApi from '../common';
 import { toast } from 'react-toastify';
 import TriangleMazeLoader from '../components/TriangleMazeLoader';
@@ -17,17 +17,46 @@ const UpdateRequestModal = ({ plan, onClose, onSubmitSuccess }) => {
   // File upload handling
   const handleFileUpload = async (e) => {
     const uploadedFiles = Array.from(e.target.files);
+    const maxFileSize = 5 * 1024 * 1024; // 5MB in bytes
     
-    // Validate file types
-    const validFiles = uploadedFiles.filter(file => {
-      const isValidImage = file.type.startsWith('image/jpeg') || file.type.startsWith('image/jpg');
-      const isValidDocument = file.type === 'text/plain' || file.type === 'application/rtf';
+    // Validate file types and sizes
+    const validFiles = [];
+    const invalidFiles = [];
+    
+    uploadedFiles.forEach(file => {
+      // Check file size first
+      if (file.size > maxFileSize) {
+        invalidFiles.push({ name: file.name, reason: 'size' });
+        return;
+      }
       
-      return isValidImage || isValidDocument;
+      // Check file type
+      const isValidImage = file.type.startsWith('image/jpeg') || file.type.startsWith('image/jpg');
+      const isValidDocument = file.type === 'text/plain' || 
+                              file.type === 'application/rtf' || 
+                              file.type === 'application/pdf' || 
+                              file.type === 'application/msword' || 
+                              file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+      
+      if (isValidImage || isValidDocument) {
+        validFiles.push(file);
+      } else {
+        invalidFiles.push({ name: file.name, reason: 'type' });
+      }
     });
     
-    if (validFiles.length !== uploadedFiles.length) {
-      toast.error('Only JPG, RTF and TXT files are supported');
+    // Show error messages for invalid files
+    if (invalidFiles.length > 0) {
+      const sizeErrors = invalidFiles.filter(file => file.reason === 'size');
+      const typeErrors = invalidFiles.filter(file => file.reason === 'type');
+      
+      if (sizeErrors.length > 0) {
+        toast.error(`${sizeErrors.length > 1 ? 'Some files exceed' : 'File exceeds'} the 5MB size limit`);
+      }
+      
+      if (typeErrors.length > 0) {
+        toast.error('Only JPG, PDF, DOC, RTF and TXT files are supported');
+      }
     }
     
     // Process and add valid files
@@ -179,6 +208,21 @@ const submitUpdateRequest = async () => {
   }
 };
   
+// Update the file icons to handle new file types
+const getFileIcon = (fileType) => {
+  if (fileType.startsWith('image/')) {
+    return <Image className="w-10 h-10 text-gray-400 mr-3" />;
+  } else if (fileType === 'application/pdf') {
+    return <FileText className="w-10 h-10 text-red-400 mr-3" />;
+  } else if (fileType === 'application/msword' || 
+             fileType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+    return <FileText className="w-10 h-10 text-blue-400 mr-3" />;
+  } else {
+    return <FileText className="w-10 h-10 text-gray-400 mr-3" />;
+  }
+};
+
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-lg w-full max-w-3xl max-h-[90vh] flex flex-col">
@@ -242,7 +286,7 @@ const submitUpdateRequest = async () => {
               <div className="mb-6">
                 <h4 className="font-medium mb-3">Upload Files</h4>
                 <p className="text-sm text-gray-600 mb-4">
-                  Only JPG images, TXT and RTF documents are supported. Images will be automatically compressed.
+                Only JPG images, PDF, DOC, TXT and RTF documents are supported. Max file size: 5MB. Images will be automatically compressed.
                 </p>
                 
                 {/* File upload button */}
@@ -258,7 +302,7 @@ const submitUpdateRequest = async () => {
                       ref={fileInputRef}
                       type="file"
                       multiple
-                      accept=".jpg,.jpeg,.txt,.rtf"
+                      accept=".jpg,.jpeg,.txt,.rtf,.pdf,.doc,.docx"
                       className="hidden"
                       onChange={handleFileUpload}
                     />
@@ -279,9 +323,7 @@ const submitUpdateRequest = async () => {
                               className="w-full h-full object-cover"
                             />
                           </div>
-                        ) : (
-                          <FileText className="w-10 h-10 text-gray-400 mr-3" />
-                        )}
+                        ) : getFileIcon(file.type)}
                         
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium truncate">{file.name}</p>

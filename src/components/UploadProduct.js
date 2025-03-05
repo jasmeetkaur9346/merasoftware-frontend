@@ -329,7 +329,7 @@ const CustomFeatureOption = ({ data, ...props }) => {
 };
 
   return (
-    <div className='fixed w-full h-full bg-slate-200 bg-opacity-40 top-0 left-0 right-0 bottom-0 flex justify-center items-center'>
+    <div className='fixed w-full h-full bg-slate-200 bg-opacity-40 top-10 left-0 right-0 bottom-0 flex justify-center items-center'>
       <div className='bg-white p-4 rounder w-full max-w-2xl h-full max-h-[75%] overflow-hidden'>
 
       <div className='flex justify-between items-center pb-3'>
