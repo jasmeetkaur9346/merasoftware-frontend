@@ -160,7 +160,7 @@ const VerticalCard = ({ loading: initialLoading, data: initialData = [], current
         return (
             <Link to={"/product/"+product?._id} className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 border border-gray-200 flex flex-col sm:flex-row h-full">
                 {/* Left Section */}
-                <div className="p-5 sm:w-2/5 bg-gray-50">
+                <div className="px-4 py-4 pt-6 sm:w-[200px] bg-gray-50">
                     <h3 className="text-xl font-bold text-gray-800 mb-2">{product?.serviceName}</h3>
                     <p className="text-sm text-gray-500 mb-4 capitalize">{product?.category.split('_').join(' ')}</p>
                     
@@ -189,7 +189,7 @@ const VerticalCard = ({ loading: initialLoading, data: initialData = [], current
                 </div>
                 
                 {/* Right Section */}
-                <div className="p-5 border-t sm:border-t-0 sm:border-l border-gray-200 sm:w-3/5">
+                <div className="px-4 pt-6 py-4 border-t sm:border-t-0 sm:border-l border-gray-200 sm:w-3/5">
                     <p className="text-sm font-medium text-gray-700 mb-3">Package Features:</p>
                     <ul className="text-sm space-y-2 mb-4">
                         {displayFeatures.map((feature, index) => (
