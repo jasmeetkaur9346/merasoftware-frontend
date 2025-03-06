@@ -39,15 +39,15 @@ const AdminEditProduct = ({
         serviceImage: productData?.serviceImage || [],
         price: productData?.price,
         sellingPrice: productData?.sellingPrice,
-        formattedDescriptions: productData?.formattedDescriptions || [''],
-        websiteTypeDescription: productData?.websiteTypeDescription || "",
+        formattedDescriptions: productData?.formattedDescriptions?.length > 0 
+    ? productData.formattedDescriptions.map(desc => desc.content || '') 
+    : [''],
         // Website service specific fields
         isWebsiteService: productData?.isWebsiteService || false,
         totalPages: productData?.totalPages || 4, // Default to minimum 4 pages
         checkpoints: productData?.checkpoints || [],
         // New feature upgrade fields
         isFeatureUpgrade: productData?.isFeatureUpgrade || false,
-        upgradeType: productData?.upgradeType || "",
         compatibleCategories: productData?.compatibleCategories || [],
         keyBenefits: productData?.keyBenefits || [],
         additionalFeatures: productData?.additionalFeatures || [],
@@ -121,7 +121,6 @@ const AdminEditProduct = ({
             label: feature.serviceName,
             price: feature.price,
             description: feature.description,
-            upgradeType: feature.upgradeType
           }));
           setCompatibleFeatures(formattedFeatures);
         }
@@ -130,6 +129,15 @@ const AdminEditProduct = ({
         toast.error("Error loading compatible features");
       }
     };
+    useEffect(() => {
+      if (productData?.category) {
+        const servicesWithFeatures = ['standard_websites', 'dynamic_websites', 'cloud_software_development', 'app_development'];
+        if (servicesWithFeatures.includes(productData.category)) {
+          fetchCompatibleFeatures(productData.category);
+        }
+      }
+    }, [productData]);
+
 
     const handleOnChange = (e)=> {
       const { name, value } = e.target
@@ -137,7 +145,7 @@ const AdminEditProduct = ({
       setData((preve)=>{
         if (name === "category") {
           // Fetch compatible features if it's a website service
-          const servicesWithFeatures = ['standard_websites', 'dynamic_websites', 'web_applications', 'mobile_apps'];
+          const servicesWithFeatures = ['standard_websites', 'dynamic_websites', 'cloud_software_development', 'app_development'];
           if (servicesWithFeatures.includes(value)) {
             fetchCompatibleFeatures(value);
           } else {
@@ -463,19 +471,6 @@ const AdminEditProduct = ({
         {/* Add new feature upgrade fields */}
         {shouldShowFeatureFields(data.category) && (
           <>
-            <label htmlFor='upgradeType' className='mt-3'>Upgrade Type:</label>
-            <select
-                id='upgradeType'
-                name='upgradeType'
-                value={data.upgradeType}
-                onChange={handleOnChange}
-                className='p-2 bg-slate-100 border rounded'
-                required
-            >
-                <option value="">Select Type</option>
-                <option value="feature">Feature</option>
-                <option value="component">Component</option>
-            </select>
 
             <label htmlFor='compatibleCategories' className='mt-3'>Compatible With:</label>
             <Select
@@ -653,20 +648,7 @@ const AdminEditProduct = ({
             </div>
         ))}
 
-        {shouldShowWebsiteFields(data.category) && (
-          <>
-            <label htmlFor="websiteTypeDescription" className="mt-3">Website Type Description :</label>
-            <textarea
-              className="h-28 bg-slate-100 border p-1 resize-none"
-              placeholder="enter website type details"
-              rows={4}
-              onChange={handleOnChange}
-              name="websiteTypeDescription"
-              value={data.websiteTypeDescription}
-            >
-            </textarea>
-          </>
-        )}
+       
 
         <button className='px-3 py-2 bg-red-600 text-white mb-10 hover:bg-red-700'>Update Service</button>
       </form>

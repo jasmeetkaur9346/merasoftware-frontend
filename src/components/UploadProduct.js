@@ -44,8 +44,7 @@ const UploadProduct = ({
         checkpoints: [],
         // feature upgrade fields
         isFeatureUpgrade: false,
-        upgradeType: "", // 'feature' or 'component'
-        compatibleCategories: [], 
+        compatibleWith: [], 
         keyBenefits: [], 
         additionalFeatures: [],
         validityPeriod: "",
@@ -117,7 +116,6 @@ const fetchCompatibleFeatures = async (category) => {
         label: feature.serviceName,
         price: feature.price,
         description: feature.description,
-        upgradeType: feature.upgradeType
       }));
       setCompatibleFeatures(formattedFeatures);
     }
@@ -135,24 +133,24 @@ const fetchCompatibleFeatures = async (category) => {
 
       setData((preve)=>{
       // If category changes
-    if (name === "category") {
-      // Fetch compatible features if it's a website service
-      const servicesWithFeatures = ['standard_websites', 'dynamic_websites', 'web_applications', 'mobile_apps'];
-      if (servicesWithFeatures.includes(value)) {
-        fetchCompatibleFeatures(value);
-      } else {
-        setCompatibleFeatures([]); // Clear features if not applicable
+      if (name === "category") {
+        // Define which categories should have additional features
+        const webCategories = ['standard_websites', 'dynamic_websites', 'web_applications', 'mobile_apps', 'cloud_software_development', 'app_development'];
+        
+        if (webCategories.includes(value)) {
+          fetchCompatibleFeatures(value);
+        } else {
+          setCompatibleFeatures([]); // Clear features if not applicable
+        }
+        
+        // Handle website specific fields visibility
+        setData(prev => ({
+          ...prev,
+          [name]: value,
+          isWebsiteService: webCategories.includes(value),
+          isFeatureUpgrade: value === 'feature_upgrades'
+        }));
       }
-
-      // Handle defaults if any
-      // if (defaultFields[value]) {
-      //   return {
-      //     ...preve,
-      //     [name]: value,
-      //     websiteTypeDescription: defaultFields[value].websiteTypeDescription,
-      //   };
-      // }
-    }
      // Otherwise, just update the field
         return {
           ...preve,
@@ -194,7 +192,7 @@ const fetchCompatibleFeatures = async (category) => {
     const handleCompatibleCategoriesChange  = (selectedOptions) => {
       setData((prev) => ({
         ...prev,
-        compatibleCategories: selectedOptions.map((option) => option.value),
+        compatibleWith: selectedOptions.map((option) => option.value),
       }));
     };
 
@@ -261,13 +259,13 @@ const fetchCompatibleFeatures = async (category) => {
 
       // Filter out empty descriptions
       const validDescriptions = data.formattedDescriptions.filter(
-        content => content.trim() !== ''
+        content => content && content.trim() !== ''
     );
 
       // Create submission data with additional features if applicable
   const submissionData = {
     ...data,
-    formattedDescriptions: data.formattedDescriptions.map(content => ({ content }))
+    formattedDescriptions: validDescriptions.map(content => ({ content }))
   };
       
       const response = await fetch(SummaryApi.uploadProduct.url,{
@@ -314,7 +312,7 @@ const CustomFeatureOption = ({ data, ...props }) => {
     >
       <div className="font-medium">{data.label}</div>
       <div className="text-sm text-gray-600 flex justify-between">
-        <span>{data.upgradeType === 'feature' ? 'Feature' : 'Component'}</span>
+        <span>Additional Feature</span> {/* Replace type distinction with generic label */}
         <span>₹{data.price}</span>
       </div>
       {data.description && (
@@ -453,20 +451,26 @@ const CustomFeatureOption = ({ data, ...props }) => {
 />
 
 {compatibleFeatures.length > 0 && (
-      <div className="mt-3">
-        <label htmlFor="additionalFeatures" className="block mb-2">
-          Additional Features Available:
-        </label>
-        <PackageSelect
-          options={compatibleFeatures}
-          value={compatibleFeatures.filter(feature => 
-            data.additionalFeatures.includes(feature.value)
-          )}
-          onChange={handleAdditionalFeaturesChange}
-          placeholder="Select additional features"
-        />
-      </div>
+  <div className="mt-3">
+    <label htmlFor="additionalFeatures" className="block mb-2">
+      Additional Features Available:
+    </label>
+    <PackageSelect
+      options={compatibleFeatures}
+      value={compatibleFeatures.filter(feature => 
+        data.additionalFeatures.includes(feature.value)
       )}
+      onChange={handleAdditionalFeaturesChange}
+      components={{
+        Option: CustomFeatureOption
+      }}
+      placeholder="Select additional features"
+    />
+    <p className="text-xs text-gray-500 mt-1">
+      These features will be available as upgrades for this product
+    </p>
+  </div>
+)}
               </>
             )
           }
@@ -474,35 +478,23 @@ const CustomFeatureOption = ({ data, ...props }) => {
         {
           shouldShowFeatureFields(data.category) && (
             <>
-              <label htmlFor='upgradeType' className='mt-3'>Upgrade Type:</label>
-              <select
-                id='upgradeType'
-                name='upgradeType'
-                value={data.upgradeType}
-                onChange={handleOnChange}
-                className='p-2 bg-slate-100 border rounded'
-                required
-              >
-                <option value="">Select Type</option>
-                <option value="feature">Feature</option>
-                <option value="component">Component</option>
-              </select>
+             
 
               {/* Compatible With Field */}
               <label htmlFor='compatibleCategories' className='mt-3'>Compatible With:</label>
               <Select
-                isMulti
-                options={categoryOptions}
-                value={categoryOptions.filter(option => 
-                  data.compatibleCategories.includes(option.value)
-                )}
-                name='compatibleCategories'
-                id='compatibleCategories'
-                onChange={handleCompatibleCategoriesChange}
-                className='basic-multi-select bg-slate-100 border rounded'
-                classNamePrefix='select'
-                placeholder="Select compatible platforms"
-              />
+              isMulti
+              options={categoryOptions}
+              value={categoryOptions.filter(option => 
+                data.compatibleWith.includes(option.value) // Change field name here
+              )}
+              name='compatibleWith' // Change field name here
+              id='compatibleWith' // Change field name here
+              onChange={handleCompatibleCategoriesChange}
+              className='basic-multi-select bg-slate-100 border rounded'
+              classNamePrefix='select'
+              placeholder="Select compatible platforms"
+            />
 
               {/* Key Benefits Field */}
             <label htmlFor='keyBenefits' className='mt-3'>Key Benefits:</label>
@@ -531,12 +523,12 @@ const CustomFeatureOption = ({ data, ...props }) => {
 {shouldShowWebsiteUpdateFields(data.category) && (
     <>
         {/* Validity Period Field */}
-        <label htmlFor='validityPeriod' className='mt-3'>Validity Period (months):</label>
+        <label htmlFor='validityPeriod' className='mt-3'>Validity Period (Days):</label>
         <input 
             type='number' 
             id='validityPeriod'
             name='validityPeriod'
-            placeholder='Enter validity period in months'
+            placeholder='Enter validity period in days'
             value={data.validityPeriod}
             onChange={handleOnChange}
             className='p-2 bg-slate-100 border rounded'
@@ -558,16 +550,18 @@ const CustomFeatureOption = ({ data, ...props }) => {
         {/* Compatible Categories Field */}
         <label htmlFor='compatibleCategories' className='mt-3'>Compatible With:</label>
         <Select
-            isMulti
-            options={categoryOptions}
-            value={categoryOptions.filter(option => 
-                data.compatibleCategories.includes(option.value)
-            )}
-            onChange={handleCompatibleCategoriesChange}
-            className='basic-multi-select bg-slate-100 border rounded'
-            classNamePrefix='select'
-            placeholder="Select compatible categories"
-        />
+              isMulti
+              options={categoryOptions}
+              value={categoryOptions.filter(option => 
+                data.compatibleWith.includes(option.value) // Change field name here
+              )}
+              name='compatibleWith' // Change field name here
+              id='compatibleWith' // Change field name here
+              onChange={handleCompatibleCategoriesChange}
+              className='basic-multi-select bg-slate-100 border rounded'
+              classNamePrefix='select'
+              placeholder="Select compatible platforms"
+            />
     </>
 )}
 
