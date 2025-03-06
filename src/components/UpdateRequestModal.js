@@ -4,6 +4,7 @@ import SummaryApi from '../common';
 import { toast } from 'react-toastify';
 import TriangleMazeLoader from '../components/TriangleMazeLoader';
 import imageCompression from 'browser-image-compression'; // You'll need to install this package
+import SpinningLoader from './SpinningLoader';
 
 const UpdateRequestModal = ({ plan, onClose, onSubmitSuccess }) => {
   const [message, setMessage] = useState('');
@@ -11,6 +12,7 @@ const UpdateRequestModal = ({ plan, onClose, onSubmitSuccess }) => {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef(null);
   const messageInputRef = useRef(null);
 
@@ -139,74 +141,83 @@ const UpdateRequestModal = ({ plan, onClose, onSubmitSuccess }) => {
   
   // Final submission
   // Modified submitUpdateRequest function for UpdateRequestModal.js
-const submitUpdateRequest = async () => {
-  if (loading) return;
-  
-  try {
-    setLoading(true);
+  const submitUpdateRequest = async () => {
+    if (loading) return;
     
-    // Create form data for the files
-    const formData = new FormData();
-    formData.append('planId', plan._id);
-    
-    // Add all instructions as a JSON string
-    formData.append('instructions', JSON.stringify(messages));
-    
-    // Add each file separately with the same field name 'files'
-    // FormData will automatically handle multiple files with the same field name
-    files.forEach((fileObj) => {
-      formData.append('files', fileObj.file, fileObj.name);
-    });
-    
-    console.log("Submitting update request...");
-    
-    // Submit the request
-    const response = await fetch(SummaryApi.requestUpdate.url, {
-      method: SummaryApi.requestUpdate.method,
-      credentials: 'include',
-      body: formData
-    });
-    
-    // First check if response is ok
-    if (!response.ok) {
-      let errorMsg = `Server returned ${response.status}: ${response.statusText}`;
+    try {
+      setLoading(true);
+      setIsUploading(true);
       
+      // Create form data for the files
+      const formData = new FormData();
+      formData.append('planId', plan._id);
+      
+      // Add all instructions as a JSON string
+      formData.append('instructions', JSON.stringify(messages));
+      
+      // Add each file separately with the same field name 'files'
+      files.forEach((fileObj) => {
+        formData.append('files', fileObj.file, fileObj.name);
+      });
+      
+      console.log("Submitting update request...");
+      
+      // Submit the request
       try {
-        // Try to parse the error response as JSON
-        const errorData = await response.json();
-        errorMsg = errorData.message || errorMsg;
-      } catch (parseError) {
-        // If we can't parse the error as JSON, try to get the text
-        try {
-          const errorText = await response.text();
-          errorMsg = errorText || errorMsg;
-        } catch (textError) {
-          // Fall back to the default error message
+        const response = await fetch(SummaryApi.requestUpdate.url, {
+          method: SummaryApi.requestUpdate.method,
+          credentials: 'include',
+          body: formData
+        });
+        
+        // First check if response is ok
+        if (!response.ok) {
+          let errorMsg = `Server returned ${response.status}: ${response.statusText}`;
+          
+          try {
+            // Try to parse the error response as JSON
+            const errorData = await response.json();
+            errorMsg = errorData.message || errorMsg;
+          } catch (parseError) {
+            // If we can't parse the error as JSON, try to get the text
+            try {
+              const errorText = await response.text();
+              errorMsg = errorText || errorMsg;
+            } catch (textError) {
+              // Fall back to the default error message
+            }
+          }
+          
+          throw new Error(errorMsg);
         }
+        
+        // Now parse the successful response
+        const data = await response.json();
+        
+        if (data.success) {
+          toast.success('Update request submitted successfully');
+          onSubmitSuccess?.();
+          onClose();
+        } else {
+          toast.error(data.message || 'Failed to submit update request');
+          setShowConfirmation(false);
+        }
+      } catch (error) {
+        console.error('Error submitting update request:', error);
+        toast.error(error.message || 'Failed to submit update request');
+        setShowConfirmation(false);
+      } finally {
+        setIsUploading(false);
+        setLoading(false);
       }
-      
-      throw new Error(errorMsg);
-    }
-    
-    // Now parse the successful response
-    const data = await response.json();
-    
-    if (data.success) {
-      toast.success('Update request submitted successfully');
-      onSubmitSuccess?.();
-      onClose();
-    } else {
-      toast.error(data.message || 'Failed to submit update request');
+    } catch (error) {
+      console.error('Error preparing update request:', error);
+      toast.error(error.message || 'Failed to submit update request');
       setShowConfirmation(false);
+      setIsUploading(false);
+      setLoading(false);
     }
-  } catch (error) {
-    console.error('Error submitting update request:', error);
-    toast.error(error.message || 'Failed to submit update request');
-    setShowConfirmation(false);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
   
 // Update the file icons to handle new file types
 const getFileIcon = (fileType) => {
@@ -239,10 +250,16 @@ const getFileIcon = (fileType) => {
         </div>
         
         {loading && (
-          <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-            <TriangleMazeLoader />
-          </div>
-        )}
+  <>
+    {isUploading ? (
+      <SpinningLoader totalFiles={files.length} />
+    ) : (
+      <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+        <TriangleMazeLoader />
+      </div>
+    )}
+  </>
+)}
         
         {showConfirmation ? (
           /* Confirmation Screen */

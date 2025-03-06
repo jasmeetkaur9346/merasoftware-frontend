@@ -151,6 +151,30 @@ const Dashboard = () => {
     setShowUpdateRequestModal(true);
   };
 
+  const handleUpdateRequestCompletion = () => {
+    // Update activeUpdatePlan state
+    if (activeUpdatePlan) {
+      // Create a copy of the current plan with incremented updatesUsed
+      const updatedPlan = {
+        ...activeUpdatePlan,
+        updatesUsed: (activeUpdatePlan.updatesUsed || 0) + 1
+      };
+      
+      // Check if all updates have been used
+      if (updatedPlan.updatesUsed >= updatedPlan.productId?.updateCount) {
+        // Move the plan to completed projects
+        setCompletedProjects(prev => [updatedPlan, ...prev]);
+        // Clear the active update plan
+        setActiveUpdatePlan(null);
+        // Show the start new project button
+        setShowNewProjectButton(true);
+      } else {
+        // Just update the active plan with incremented updates
+        setActiveUpdatePlan(updatedPlan);
+      }
+    }
+  };
+
   const formatDate = (date) => {
     return new Date(date).toLocaleDateString('en-GB', {
       day: 'numeric',
@@ -905,40 +929,95 @@ const Dashboard = () => {
 
       {/* Update Request Modal */}
       {showUpdateRequestModal && activeUpdatePlan && (
-        <UpdateRequestModal 
-          plan={activeUpdatePlan} 
-          onClose={() => setShowUpdateRequestModal(false)}
-          onSubmitSuccess={() => {
-            // Refresh orders data after successful update request
-            const fetchUpdatedOrders = async () => {
-              try {
-                const response = await fetch(SummaryApi.ordersList.url, {
-                  method: SummaryApi.ordersList.method,
-                  credentials: 'include'
-                });
-                
-                const data = await response.json();
-                if (data.success) {
-                  const allOrders = data.data || [];
-                  setOrders(allOrders);
-                  
-                  // Update active update plan
-                  const updatedPlan = allOrders.find(order => 
-                    order._id === activeUpdatePlan._id
-                  );
-                  if (updatedPlan) {
-                    setActiveUpdatePlan(updatedPlan);
-                  }
-                }
-              } catch (error) {
-                console.error('Error fetching updated orders:', error);
-              }
-            };
+  <UpdateRequestModal 
+    plan={activeUpdatePlan} 
+    onClose={() => setShowUpdateRequestModal(false)}
+    onSubmitSuccess={() => {
+      // First update the local state immediately
+      handleUpdateRequestCompletion();
+      
+      // Then fetch the updated data from the server
+      const fetchUpdatedOrders = async () => {
+        try {
+          const response = await fetch(SummaryApi.ordersList.url, {
+            method: SummaryApi.ordersList.method,
+            credentials: 'include'
+          });
+          
+          const data = await response.json();
+          if (data.success) {
+            // Update orders
+            const allOrders = data.data || [];
+            allOrders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            setOrders(allOrders.slice(0, 2));
             
-            fetchUpdatedOrders();
-          }}
-        />
-      )}
+            // Reprocess all data
+            const websiteProjects = allOrders.filter(order => {
+              const category = order.productId?.category?.toLowerCase();
+              return ['standard_websites', 'dynamic_websites', 'web_applications', 'mobile_apps'].includes(category) ||
+                     (category === 'website_updates');
+            });
+            
+            websiteProjects.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            setWebsiteProjects(websiteProjects);
+            
+            // Re-check if there's an active update plan
+            const updatePlan = allOrders.find(order => 
+              order.productId?.category === 'website_updates' && 
+              order.isActive &&
+              order.updatesUsed < order.productId?.updateCount &&
+              calculateRemainingDays(order) > 0
+            );
+            
+            // Set active update plan (could be null if all updates used)
+            setActiveUpdatePlan(updatePlan || null);
+            
+            // Find active (in-progress) project
+            const activeProj = websiteProjects.find(project => {
+              const category = project.productId?.category?.toLowerCase();
+              if (!category) return false;
+              
+              if (['standard_websites', 'dynamic_websites', 'web_applications', 'mobile_apps'].includes(category)) {
+                return project.projectProgress < 100 || project.currentPhase !== 'completed';
+              }
+              return false;
+            });
+            setActiveProject(activeProj || null);
+            
+            // Find completed projects
+            const completed = websiteProjects.filter(project => {
+              const category = project.productId?.category?.toLowerCase();
+              if (!category) return false;
+              
+              if (['standard_websites', 'dynamic_websites', 'web_applications', 'mobile_apps'].includes(category)) {
+                return project.projectProgress === 100 && project.currentPhase === 'completed';
+              } else if (category === 'website_updates') {
+                return !project.isActive || 
+                       (project.updatesUsed >= project.productId?.updateCount) || 
+                       (calculateRemainingDays(project) <= 0);
+              }
+              return false;
+            });
+            setCompletedProjects(completed);
+            
+            // Determine whether to show "Start New Project" button
+            const showNewProj = !activeProj && 
+              (!updatePlan || 
+               (updatePlan.updatesUsed >= updatePlan.productId?.updateCount) ||
+               (calculateRemainingDays(updatePlan) <= 0)
+              );
+            
+            setShowNewProjectButton(showNewProj);
+          }
+        } catch (error) {
+          console.error('Error fetching updated orders:', error);
+        }
+      };
+      
+      fetchUpdatedOrders();
+    }}
+  />
+)}
      </DashboardLayout>
   );
 };
