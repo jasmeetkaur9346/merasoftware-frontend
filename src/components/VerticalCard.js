@@ -277,7 +277,7 @@ const VerticalCard = ({ loading: initialLoading, data: initialData = [], current
         if (categoryLower.includes('standard')) {
           return 'text-blue-500'; 
         } else if (categoryLower.includes('dynamic')) {
-          return 'text-purple-500'; 
+          return 'text-emerald-600'; 
         } else if (categoryLower.includes('app')) {
           return 'text-green-500'; 
         } else if (categoryLower.includes('update') || categoryLower.includes('upgrade')) {
@@ -395,9 +395,9 @@ const VerticalCard = ({ loading: initialLoading, data: initialData = [], current
             : 0;
         
         return (
-            <Link to={"/product/"+product?._id} className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 border border-gray-200 flex flex-col sm:flex-row h-full">
+            <Link to={"/product/"+product?._id} className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 border border-blue-200 flex flex-col sm:flex-row h-full">
                 {/* Left Section */}
-                <div className="px-4 py-4 pt-6 sm:w-[200px] bg-gray-50">
+                <div className="px-4 py-4 pt-6 sm:w-[200px] bg-blue-100">
                     <h3 className="text-xl font-bold text-gray-800 mb-2">{product?.serviceName}</h3>
                     <p className="text-sm text-gray-500 mb-4 capitalize">{product?.category?.split('_').join(' ')}</p>
                     

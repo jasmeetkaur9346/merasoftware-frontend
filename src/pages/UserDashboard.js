@@ -311,9 +311,9 @@ const Dashboard = () => {
 
               {/* Active Update Plan or Active Project Card - Should always be first if exists */}
               {activeUpdatePlan && (
-  <div className="flex-shrink-0 bg-gray-100 border rounded-xl overflow-hidden shadow-md relative">
+  <div className="flex-shrink-0 bg-gray-50 border border-blue-200 rounded-xl overflow-hidden shadow-md relative">
     {/* Card background with highlight effect */}
-    <div className="h-2 bg-blue-500"></div>
+    <div className="h-2 bg-blue-600"></div>
     
     {/* Main content container */}
     <div className="relative z-10 p-4">
@@ -321,7 +321,7 @@ const Dashboard = () => {
       <div className="flex justify-start mb-1">
         <div className="px-2 py-0.5 bg-white rounded-full shadow-sm flex items-center">
           <div className="w-1.5 h-1.5 bg-blue-400 rounded-full mr-1 animate-pulse"></div>
-          <span className="text-xs font-medium text-blue-500">Active Plan</span>
+          <span className="text-xs font-medium text-blue-600">Active Plan</span>
         </div>
       </div>
       
@@ -377,7 +377,7 @@ const Dashboard = () => {
         </div>
         <div className="w-full h-2 bg-white rounded-full shadow-inner overflow-hidden">
           <div
-            className="h-full bg-gradient-to-r from-blue-400 to-blue-500 rounded-full"
+            className="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full"
             style={{ width: `${(calculateRemainingDays(activeUpdatePlan) / activeUpdatePlan.productId?.validityPeriod) * 100}%` }}
           ></div>
         </div>
@@ -391,7 +391,7 @@ const Dashboard = () => {
           className={`flex-1 py-2 rounded-md flex items-center justify-center text-sm font-medium transition-all ${
             (activeUpdatePlan.updatesUsed || 0) >= activeUpdatePlan.productId?.updateCount || calculateRemainingDays(activeUpdatePlan) <= 0
               ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-              : 'bg-white text-blue-600 shadow-sm hover:shadow-md'
+              : 'bg-blue-600 text-white shadow-sm hover:shadow-md'
           }`}
         >
           <RefreshCw size={14} className="mr-1" /> 
@@ -465,16 +465,16 @@ const Dashboard = () => {
   const isUpdatePlan = project.productId?.category?.toLowerCase() === 'website_updates';
   
   return (
-    <div key={project._id} className="flex-shrink-0 border  bg-gray-100 rounded-xl overflow-hidden shadow-md relative">
+    <div key={project._id} className="flex-shrink-0 border border-emerald-200  bg-gray-50 rounded-xl overflow-hidden shadow-md relative">
       {/* Card background with highlight effect */}
-      <div className="h-2 bg-green-500"></div>
+      <div className="h-2 bg-emerald-600"></div>
       
       {/* Main content container */}
       <div className="relative z-10 p-4">
         {/* Status label */}
         <div className="flex justify-start mb-1">
         <div className="px-2 py-0.5 bg-white rounded-full shadow-sm flex items-center">
-          <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full mr-1 animate-pulse"></div>
+          <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full mr-1 animate-pulse"></div>
           <span className="text-xs font-medium text-emerald-600">Completed</span>
         </div>
       </div>
@@ -491,7 +491,7 @@ const Dashboard = () => {
             <>
               <div className="flex items-center mb-2">
                 <div className="w-5 h-5 bg-white rounded-full shadow-sm flex items-center justify-center mr-2">
-                  <Check size={12} className="text-emerald-500" />
+                  <Check size={12} className="text-emerald-600" />
                 </div>
                 <span className="text-sm text-gray-700">
                   Updates Used: {project.updatesUsed || 0} of {project.productId?.updateCount || 0}
@@ -499,7 +499,7 @@ const Dashboard = () => {
               </div>
               <div className="flex items-center mb-2">
                 <div className="w-5 h-5 bg-white rounded-full shadow-sm flex items-center justify-center mr-2">
-                  <Check size={12} className="text-emerald-500" />
+                  <Check size={12} className="text-emerald-600" />
                 </div>
                 <span className="text-sm text-gray-700">Plan Completed</span>
               </div>
@@ -508,13 +508,13 @@ const Dashboard = () => {
             <>
               <div className="flex items-center mb-2">
                 <div className="w-5 h-5 bg-white rounded-full shadow-sm flex items-center justify-center mr-2">
-                  <Check size={12} className="text-emerald-500" />
+                  <Check size={12} className="text-emerald-600" />
                 </div>
                 <span className="text-sm text-gray-700">Successfully Deployed</span>
               </div>
               <div className="flex items-center mb-2">
                 <div className="w-5 h-5 bg-white rounded-full shadow-sm flex items-center justify-center mr-2">
-                  <Check size={12} className="text-emerald-500" />
+                  <Check size={12} className="text-emerald-600" />
                 </div>
                 <span className="text-sm text-gray-700">All Features Working</span>
               </div>
@@ -524,7 +524,7 @@ const Dashboard = () => {
         
         {/* Action button */}
         <button 
-          className="w-full py-2 bg-white rounded-md shadow-sm hover:shadow-md transition-shadow flex items-center justify-center text-emerald-600 text-sm font-medium group"
+          className="w-full py-2 bg-emerald-600 rounded-md shadow-sm hover:shadow-md transition-shadow flex items-center justify-center text-white text-sm font-medium group"
           onClick={() => handleViewProjectDetails(project._id)}
         >
           <span>View {isUpdatePlan ? 'Details' : 'Project'}</span>
@@ -536,7 +536,7 @@ const Dashboard = () => {
             })}
               
               {/* View All Projects Card - Always shown */}
-            <div className="flex-shrink-0 bg-gray-100 border  rounded-xl overflow-hidden shadow-md relative">
+            <div className="flex-shrink-0 bg-gray-50 border border-purple-200 rounded-xl overflow-hidden shadow-md relative">
                 {/* Card background with highlight effect */}
                 <div className="h-2 bg-purple-500"></div>
                 
