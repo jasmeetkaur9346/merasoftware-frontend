@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import Logo from '../assest/newlogo.png'
 import { GrSearch } from "react-icons/gr";
 import { FaRegCircleUser } from "react-icons/fa6";
@@ -30,12 +30,70 @@ const Header = () => {
   const URLSearch = new URLSearchParams(searchInput?.search)
   const searchQuery = URLSearch.getAll("q")
   const [search,setSearch] = useState(searchQuery)
+  const [serviceTypes, setServiceTypes] = useState([])
+  const [loading, setLoading] = useState(true)
 
   const location = useLocation();
   const showBackButton = location.pathname !== '/';
 
   const onBack = () => {
     navigate(-1); 
+  };
+
+  // Function to build query string for service type categories
+  const buildCategoryQueryString = (categoryValues) => {
+    if (!categoryValues || categoryValues.length === 0) return '';
+    return categoryValues.map(val => `category=${val}`).join('&&');
+  };
+
+  // Fetch service types for navigation
+  useEffect(() => {
+    const loadServiceTypes = async () => {
+      // First check if we have cached categories
+      const cachedCategories = StorageService.getProductsData('categories');
+      
+      if (cachedCategories) {
+        processCategories(cachedCategories);
+        setLoading(false);
+      }
+
+      // If online, fetch fresh data
+      if (isOnline) {
+        try {
+          const response = await fetch(SummaryApi.allCategory.url);
+          const data = await response.json();
+          
+          if (data.success) {
+            StorageService.setProductsData('categories', data.data);
+            processCategories(data.data);
+          }
+        } catch (error) {
+          console.error('Error fetching categories:', error);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadServiceTypes();
+  }, [isOnline]);
+
+  // Process categories to extract service types
+  const processCategories = (data) => {
+    // Extract unique service types
+    const uniqueServiceTypes = [...new Set(data.map(item => item.serviceType))];
+    
+    // Create service type objects with associated categories
+    const serviceTypeObjects = uniqueServiceTypes.map(type => {
+      const typeCategories = data.filter(cat => cat.serviceType === type);
+      
+      return {
+        serviceType: type,
+        queryCategoryValues: typeCategories.map(cat => cat.categoryValue),
+      };
+    });
+    
+    setServiceTypes(serviceTypeObjects);
   };
 
   const handleLogout = async () => {
@@ -215,12 +273,18 @@ if(value){
 
        <nav className="border-t py-3">
             <ul className="flex justify-between overflow-x-auto scrollbar-none">
-              <li><a href="#" className="text-gray-800 font-medium whitespace-nowrap hover:text-blue-600 px-3">All Services</a></li>
-              <li><a href="#" className="text-gray-800 font-medium whitespace-nowrap hover:text-blue-600 px-3">Website Development</a></li>
-              <li><a href="#" className="text-gray-800 font-medium whitespace-nowrap hover:text-blue-600 px-3">Web App Development</a></li>
-              <li><a href="#" className="text-gray-800 font-medium whitespace-nowrap hover:text-blue-600 px-3">Mobile App Development</a></li>
-              <li><a href="#" className="text-gray-800 font-medium whitespace-nowrap hover:text-blue-600 px-3">Features & Upgrades</a></li>
-              <li><a href="#" className="text-gray-800 font-medium whitespace-nowrap hover:text-blue-600 px-3">Special Offers</a></li>
+              <li><a href="/start-new-project" className="text-gray-800 font-medium whitespace-nowrap hover:text-blue-600 px-3">All Services</a></li>
+             {/* Dynamically render service types from CategoryList */}
+             {serviceTypes.map((service, index) => (
+                <li key={index}>
+                  <Link 
+                    to={`/product-category?${buildCategoryQueryString(service.queryCategoryValues)}`} 
+                    className="text-gray-800 font-medium whitespace-nowrap hover:text-blue-600 px-3"
+                  >
+                    {service.serviceType}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </nav>
           

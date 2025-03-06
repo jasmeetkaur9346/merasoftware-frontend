@@ -14,6 +14,9 @@ const VerticalCard = ({ loading: initialLoading, data: initialData = [], current
     const [isDataFromCache, setIsDataFromCache] = useState(false);
     const [activeFilter, setActiveFilter] = useState('All');
     const [sortOption, setSortOption] = useState('default');
+    // Store the current search string to detect changes
+    const [currentSearch, setCurrentSearch] = useState(location.search);
+    const [error, setError] = useState(null);
 
     // Format category name from URL format to display format
     const formatCategoryName = useCallback((categoryValue) => {
@@ -33,14 +36,133 @@ const VerticalCard = ({ loading: initialLoading, data: initialData = [], current
         return ['All'];
     }, [queryParams, formatCategoryName]);
 
-    // Load initial data - only runs once on mount or when initialData/currentCategory changes
+    // Check if search params have changed
     useEffect(() => {
-        const loadData = async () => {
-            if (initialData && initialData.length > 0) {
-                setData(initialData);
-                setLoading(false);
-            } else {
-                const cachedProducts = StorageService.getProductsData(currentCategory);
+        // Only update if the search parameters have actually changed
+        if (currentSearch !== location.search) {
+            setCurrentSearch(location.search);
+            setLoading(true);
+            setActiveFilter('All'); // Reset filter on category change
+            setError(null); // Clear any previous errors
+            
+            // Fetch products for the new category
+            const fetchNewProducts = async () => {
+                const categoriesFromURL = queryParams.getAll('category');
+                if (!categoriesFromURL || categoriesFromURL.length === 0) {
+                    setData([]);
+                    setLoading(false);
+                    return;
+                }
+                
+                // Check cache first for the first category
+                const firstCategory = categoriesFromURL[0];
+                const cachedProducts = StorageService.getProductsData(firstCategory);
+                
+                if (cachedProducts && cachedProducts.length > 0) {
+                    console.log('Using cached product data for:', firstCategory);
+                    setData(cachedProducts);
+                    setIsDataFromCache(true);
+                    setLoading(false);
+                    return;
+                }
+                
+                // Otherwise fetch from API
+                try {
+                    // Use the correct endpoint from SummaryApi
+                    // Instead of looking for product_by_category, use categoryProduct
+                    const apiUrl = SummaryApi.categoryProduct.url;
+                    
+                    // Format the query parameters
+                    const queryString = categoriesFromURL.map(cat => `category=${cat}`).join('&');
+                    
+                    console.log('Fetching products from:', `${apiUrl}?${queryString}`);
+                    const response = await fetch(`${apiUrl}?${queryString}`);
+                    const responseData = await response.json();
+                    
+                    if (responseData.success && responseData.data) {
+                        StorageService.setProductsData(firstCategory, responseData.data);
+                        setData(responseData.data);
+                        setIsDataFromCache(false);
+                    } else {
+                        // Handle API success: false response
+                        setError(responseData.message || 'Failed to fetch products from server');
+                    }
+                } catch (error) {
+                    console.error("Error fetching products:", error);
+                    setError('Failed to fetch products. Please try refreshing the page.');
+                } finally {
+                    setLoading(false);
+                }
+            };
+            
+            fetchNewProducts();
+            
+            // Also update banners for the new category
+            const fetchNewBanners = async () => {
+                const categoriesFromURL = queryParams.getAll('category');
+                const currentUrlCategory = categoriesFromURL.length > 0 ? categoriesFromURL[0] : currentCategory;
+                
+                const cachedBanners = StorageService.getProductBanners(currentUrlCategory);
+                
+                if (cachedBanners) {
+                    console.log('Using cached banners data');
+                    setBanners(cachedBanners);
+                    return;
+                }
+                
+                try {
+                    // Use the correct banner endpoint
+                    const response = await fetch(SummaryApi.allBanner.url);
+                    const responseData = await response.json();
+                    if (responseData.success && responseData.data) {
+                        const categoryBanners = responseData.data.filter(banner => 
+                            banner.isActive && 
+                            banner.position === currentUrlCategory
+                        );
+                        
+                        const groupedBanners = {};
+                        categoryBanners.forEach(banner => {
+                            if (!groupedBanners[banner.displayOrder]) {
+                                groupedBanners[banner.displayOrder] = [];
+                            }
+                            groupedBanners[banner.displayOrder].push(banner);
+                        });
+                        
+                        // Shuffle banners in groups where there are multiple banners
+                        Object.keys(groupedBanners).forEach(order => {
+                            if (groupedBanners[order].length > 1) {
+                                const newArray = [...groupedBanners[order]];
+                                for (let i = newArray.length - 1; i > 0; i--) {
+                                    const j = Math.floor(Math.random() * (i + 1));
+                                    [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+                                }
+                                groupedBanners[order] = newArray;
+                            }
+                        });
+
+                        setBanners(groupedBanners);
+                        StorageService.setProductBanners(currentUrlCategory, groupedBanners);
+                    }
+                } catch (error) {
+                    console.error("Error fetching banners:", error);
+                }
+            };
+            
+            fetchNewBanners();
+        }
+    }, [location.search, queryParams, currentCategory, currentSearch]);
+
+    // Load initial data - only runs once on mount
+    useEffect(() => {
+        if (initialData && initialData.length > 0) {
+            setData(initialData);
+            setLoading(false);
+        } else if (!data.length && !loading) {
+            // Only fetch if we don't already have data and we're not already loading
+            const categoriesFromURL = queryParams.getAll('category');
+            if (categoriesFromURL.length > 0) {
+                const firstCategory = categoriesFromURL[0];
+                const cachedProducts = StorageService.getProductsData(firstCategory);
                 
                 if (cachedProducts && cachedProducts.length > 0) {
                     console.log('Using cached products data');
@@ -49,61 +171,11 @@ const VerticalCard = ({ loading: initialLoading, data: initialData = [], current
                     setLoading(false);
                 }
             }
-        };
-        
-        loadData();
-    }, [initialData, currentCategory]);
+        }
+    }, [initialData]); // Only run on mount or initialData change
 
-    // Fetch banners - only runs once on mount or when currentCategory changes
+    // Setup banner rotation - only run once on mount
     useEffect(() => {
-        const fetchBanners = async () => {
-            const cachedBanners = StorageService.getProductBanners(currentCategory);
-            
-            if (cachedBanners) {
-                console.log('Using cached banners data');
-                setBanners(cachedBanners);
-                return;
-            }
-            
-            try {
-                const response = await fetch(SummaryApi.allBanner.url);
-                const responseData = await response.json();
-                if (responseData.success && responseData.data) {
-                    const categoryBanners = responseData.data.filter(banner => 
-                        banner.isActive && 
-                        banner.position === currentCategory
-                    );
-                    
-                    const groupedBanners = {};
-                    categoryBanners.forEach(banner => {
-                        if (!groupedBanners[banner.displayOrder]) {
-                            groupedBanners[banner.displayOrder] = [];
-                        }
-                        groupedBanners[banner.displayOrder].push(banner);
-                    });
-                    
-                    // Shuffle banners in groups where there are multiple banners
-                    Object.keys(groupedBanners).forEach(order => {
-                        if (groupedBanners[order].length > 1) {
-                            const newArray = [...groupedBanners[order]];
-                            for (let i = newArray.length - 1; i > 0; i--) {
-                                const j = Math.floor(Math.random() * (i + 1));
-                                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
-                            }
-                            groupedBanners[order] = newArray;
-                        }
-                    });
-
-                    setBanners(groupedBanners);
-                    StorageService.setProductBanners(currentCategory, groupedBanners);
-                }
-            } catch (error) {
-                console.error("Error fetching banners:", error);
-            }
-        };
-
-        fetchBanners();
-        
         // Set up banner rotation interval
         const intervalId = setInterval(() => {
             setBanners(prevBanners => {
@@ -123,9 +195,9 @@ const VerticalCard = ({ loading: initialLoading, data: initialData = [], current
         }, 5000);
 
         return () => clearInterval(intervalId);
-    }, [currentCategory]);
+    }, []); // Only run once on mount
 
-    // Apply filter and sort using useMemo instead of useEffect
+    // Apply filter and sort
     const filteredAndSortedData = useMemo(() => {
         if (!data || data.length === 0) return [];
 
@@ -203,15 +275,15 @@ const VerticalCard = ({ loading: initialLoading, data: initialData = [], current
         
         const categoryLower = category.toLowerCase();
         if (categoryLower.includes('standard')) {
-          return 'text-blue-500'; // Standard Websites के लिए नीला
+          return 'text-blue-500'; 
         } else if (categoryLower.includes('dynamic')) {
-          return 'text-purple-500'; // Dynamic Websites के लिए बैंगनी
+          return 'text-purple-500'; 
         } else if (categoryLower.includes('app')) {
-          return 'text-green-500'; // App Development के लिए हरा
+          return 'text-green-500'; 
         } else if (categoryLower.includes('update') || categoryLower.includes('upgrade')) {
-          return 'text-amber-500'; // Updates/Upgrades के लिए एम्बर
+          return 'text-amber-500'; 
         }
-        return 'text-blue-500'; // डिफॉल्ट कलर
+        return 'text-blue-500';
     };
 
     // Loading state
@@ -244,6 +316,69 @@ const VerticalCard = ({ loading: initialLoading, data: initialData = [], current
                             </div>
                         </div>
                     ))}
+                </div>
+            </div>
+        );
+    }
+
+    // Error state
+    if (error) {
+        return (
+            <div className="px-2 pb-4 mb-28 mt-8">
+                <div className="bg-red-50 border border-red-200 rounded-md p-4 mb-6">
+                    <div className="flex">
+                        <div className="flex-shrink-0">
+                            <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                            </svg>
+                        </div>
+                        <div className="ml-3">
+                            <h3 className="text-sm font-medium text-red-800">Error loading products</h3>
+                            <div className="mt-2 text-sm text-red-700">
+                                <p>{error}</p>
+                                <p className="mt-2">
+                                    <button 
+                                        onClick={() => window.location.reload()} 
+                                        className="text-red-600 hover:text-red-800 font-medium underline"
+                                    >
+                                        Try refreshing the page
+                                    </button>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                {/* Show filter UI even in error state */}
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+                    <div className="flex space-x-2 flex-wrap mb-4 md:mb-0">
+                        {uniqueCategories.map(category => (
+                            <FilterButton 
+                                key={category}
+                                title={category} 
+                                isActive={activeFilter === category}
+                                onClick={() => setActiveFilter(category)}
+                            />
+                        ))}
+                    </div>
+                    <div className="relative inline-block">
+                        <select
+                            value={sortOption}
+                            onChange={(e) => setSortOption(e.target.value)}
+                            className="block appearance-none w-full bg-white border border-gray-300 text-gray-700 py-2 px-4 pr-8 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                        >
+                            <option value="default">Sort By</option>
+                            <option value="price-low-high">Price: Low to High</option>
+                            <option value="price-high-low">Price: High to Low</option>
+                            <option value="name-a-z">Name: A to Z</option>
+                            <option value="name-z-a">Name: Z to A</option>
+                        </select>
+                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                            <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                            </svg>
+                        </div>
+                    </div>
                 </div>
             </div>
         );
@@ -349,35 +484,35 @@ const VerticalCard = ({ loading: initialLoading, data: initialData = [], current
 
             {/* Show top banner */}
             {getBannerForPosition(-1) && getBannerForPosition(-1).currentImage ? (
-    <div 
-        className={`h-auto w-full bg-slate-200 relative rounded-lg mb-6 ${getBannerForPosition(-1).targetUrl ? 'cursor-pointer' : ''}`}
-        onClick={() => {
-            const banner = getBannerForPosition(-1);
-            if (banner.targetUrl) {
-                window.open(banner.targetUrl, '_blank', 'noopener,noreferrer');
-            }
-        }}
-    >
-        <div className="hidden md:flex h-full w-full overflow-hidden">
-            <div className='w-full h-full min-h-full min-w-full'>
-                <img 
-                    src={getBannerForPosition(-1).currentImage}
-                    alt="Top Banner"
-                    className="w-full h-full object-cover rounded-lg"
-                />
-            </div>
-        </div>
-        <div className="flex h-full w-full overflow-hidden md:hidden rounded-lg">
-            <div className='w-full h-full min-h-full min-w-full transition-all'>
-                <img 
-                    src={getBannerForPosition(-1).currentImage}
-                    alt="Top Banner"
-                    className="w-full h-full object-contain rounded-lg"
-                />
-            </div>
-        </div>
-    </div>
-) : null}
+                <div 
+                    className={`h-auto w-full bg-slate-200 relative rounded-lg mb-6 ${getBannerForPosition(-1).targetUrl ? 'cursor-pointer' : ''}`}
+                    onClick={() => {
+                        const banner = getBannerForPosition(-1);
+                        if (banner.targetUrl) {
+                            window.open(banner.targetUrl, '_blank', 'noopener,noreferrer');
+                        }
+                    }}
+                >
+                    <div className="hidden md:flex h-full w-full overflow-hidden">
+                        <div className='w-full h-full min-h-full min-w-full'>
+                            <img 
+                                src={getBannerForPosition(-1).currentImage}
+                                alt="Top Banner"
+                                className="w-full h-full object-cover rounded-lg"
+                            />
+                        </div>
+                    </div>
+                    <div className="flex h-full w-full overflow-hidden md:hidden rounded-lg">
+                        <div className='w-full h-full min-h-full min-w-full transition-all'>
+                            <img 
+                                src={getBannerForPosition(-1).currentImage}
+                                alt="Top Banner"
+                                className="w-full h-full object-contain rounded-lg"
+                            />
+                        </div>
+                    </div>
+                </div>
+            ) : null}
 
             {/* No results message */}
             {filteredAndSortedData.length === 0 && !loading && (
