@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import VerticalCard from '../components/VerticalCard'
 import SummaryApi from '../common'
@@ -10,6 +10,7 @@ const CategoryProduct = () => {
     const navigate = useNavigate()
     const [loading, setLoading] = useState(false)
     const location = useLocation()
+    const dataRef = useRef([]);
     const urlSearch = new URLSearchParams(location.search)
     const urlCategoryListinArray = urlSearch.getAll("category")
     const urlCategoryListObject = {}
@@ -53,7 +54,7 @@ const CategoryProduct = () => {
           } else if(sortBy === 'dsc') {
             freshData.sort((a, b) => b.sellingPrice - a.sellingPrice);
           }
-          
+          dataRef.current = freshData; 
           setData(freshData);
           
           // Store the fresh data in localStorage
@@ -63,6 +64,11 @@ const CategoryProduct = () => {
         console.error('Error refreshing data in background:', error);
       }
     };
+
+    // Update ref when data changes
+useEffect(() => {
+  dataRef.current = data;
+}, [data]);
 
     useEffect(() => {
       let isSubscribed = true;
@@ -183,21 +189,22 @@ const CategoryProduct = () => {
     }, [selectCategory, navigate])
     
     const handleOnChangeSortBy = (e) => {
-      const { value } = e.target
-      setSortBy(value)
-
+      const { value } = e.target;
+      setSortBy(value);
+      
+      let sortedData = [...data];
       if(value === 'asc') {
-        setData(prev => [...prev].sort((a,b) => a.sellingPrice - b.sellingPrice))
+        sortedData.sort((a,b) => a.sellingPrice - b.sellingPrice);
+      } else if(value === 'dsc') {
+        sortedData.sort((a,b) => b.sellingPrice - a.sellingPrice);
       }
-
-      if(value === 'dsc') {
-        setData(prev => [...prev].sort((a,b) => b.sellingPrice - a.sellingPrice))
-      }
+      
+      setData(sortedData);
       
       // If we got data from cache, also update the cache with sorted data
       if (isDataFromCache && filterCategoryList.length > 0) {
         const categoryKey = getCategoryKey(filterCategoryList);
-        StorageService.setProductsData(categoryKey, data);
+        StorageService.setProductsData(categoryKey, sortedData); // Use sortedData, not data
       }
     }
 
@@ -234,10 +241,12 @@ const CategoryProduct = () => {
     
     return (
       <div className='container mx-auto px-4'>
-        <SingleBanner
-          serviceName={generateServiceName()}
-          bannerType="top"
-        />
+        {generateServiceName() ? (
+  <SingleBanner
+    serviceName={generateServiceName()}
+    bannerType="top"
+  />
+) : null}
           
         <div>
           <div>
