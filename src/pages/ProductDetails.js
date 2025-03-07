@@ -442,36 +442,32 @@ const ProductDetails = () => {
 
           {/* Price Calculator Section */}
           <div className="lg:col-span-1">
-  <div className="sticky top-24">
-    <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-      {shouldShowCustomizePlan(data) ? (
-        // अगर customize options हैं तो पूरा customize UI दिखाएं
-        <>
-          <div className="bg-blue-600 text-white px-8 py-5 rounded-t-lg">
-            <h2 className="text-xl font-semibold">Customize Your Plan</h2>
-          </div>
-          <div className="p-8">
-            {/* Base Product Display */}
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center">
-                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-4 text-blue-600">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="9" cy="21" r="1"></circle>
-                    <circle cx="20" cy="21" r="1"></circle>
-                    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-                  </svg>
+            <div className="sticky top-24">
+              <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+                <div className="bg-blue-600 text-white px-8 py-5 rounded-t-lg">
+                  <h2 className="text-xl font-semibold">Customize Your Plan</h2>
                 </div>
-                <div>
-                  <h3 className="text-sm font-semibold">{data.serviceName}</h3>
-                  <p className="text-xs text-gray-500 capitalize">{data.category?.split('_').join(' ')}</p>
-                </div>
-              </div>
-              <div className="font-semibold text-blue-600">₹{data.sellingPrice?.toLocaleString()}</div>
-            </div>
+                <div className="p-8">
+                  {/* Base Product Display */}
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center">
+                      <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-4 text-blue-600">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <circle cx="9" cy="21" r="1"></circle>
+                          <circle cx="20" cy="21" r="1"></circle>
+                          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                        </svg>
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-semibold">{data.serviceName}</h3>
+                        <p className="text-xs text-gray-500 capitalize">{data.category?.split('_').join(' ')}</p>
+                      </div>
+                    </div>
+                    <div className="font-semibold text-blue-600">₹{data.sellingPrice?.toLocaleString()}</div>
+                  </div>
 
-            {/* Additional Features Section */}
-             {/* Additional Features Section */}
-             {additionalFeaturesData.map(feature => {
+                  {/* Additional Features Section */}
+                  {additionalFeaturesData.map(feature => {
                     const isSelected = selectedFeatures.includes(feature._id);
                     const Icon = feature.upgradeType === "component" ? 
                       () => <span className="text-xl">W</span> :
@@ -581,59 +577,23 @@ const ProductDetails = () => {
                     );
                   })}
 
-            {/* Total Price */}
-            <div className="flex justify-between pt-6 mt-5 border-t-2 border-gray-200">
-              <span className="text-lg font-semibold text-gray-900">Total Price:</span>
-              <span className="text-2xl font-bold text-blue-600">₹{calculateTotalPrice()?.toLocaleString()}</span>
-            </div>
-          </div>
-        </>
-      ) : (
-        // अगर customize options नहीं हैं तो सिंपल प्राइस डिस्प्ले दिखाएं
-        <>
-          <div className="bg-blue-600 text-white px-8 py-5 rounded-t-lg">
-            <h2 className="text-xl font-semibold">Price</h2>
-          </div>
-          <div className="p-8">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center">
-                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-4 text-blue-600">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="9" cy="21" r="1"></circle>
-                    <circle cx="20" cy="21" r="1"></circle>
-                    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="text-sm font-semibold">{data.serviceName}</h3>
-                  <p className="text-xs text-gray-500 capitalize">{data.category?.split('_').join(' ')}</p>
+                  {/* Total Price */}
+                  <div className="flex justify-between pt-6 mt-5 border-t-2 border-gray-200">
+                    <span className="text-lg font-semibold text-gray-900">Total Price:</span>
+                    <span className="text-2xl font-bold text-blue-600">₹{calculateTotalPrice()?.toLocaleString()}</span>
+                  </div>
+                  
+                  {/* Get Started Button */}
+                  <button 
+                    onClick={handleGetStarted}
+                    className="w-full bg-blue-600 text-white py-4 rounded-lg text-base font-semibold mt-8 transition-all duration-300 hover:bg-blue-700 hover:-translate-y-1 hover:shadow-lg"
+                  >
+                    Get Started
+                  </button>
                 </div>
               </div>
-              <div className="font-semibold text-blue-600">₹{data.sellingPrice?.toLocaleString()}</div>
-            </div>
-            <div className="flex justify-between pt-4 border-t border-gray-200">
-              <span className="text-lg font-semibold text-gray-900">Total Price:</span>
-              <span className="text-2xl font-bold text-blue-600">₹{data.sellingPrice?.toLocaleString()}</span>
             </div>
           </div>
-        </>
-      )}
-      
-      {/* Get Started Button */}
-      <div className='px-8'>
-      <button 
-        onClick={handleGetStarted}
-        className="w-full bg-blue-600 text-white py-4 rounded-lg text-base font-semibold mt-4 mx-auto px-8 mb-8 transition-all duration-300 hover:bg-blue-700 hover:-translate-y-1 hover:shadow-lg"
-      >
-        Get Started
-      </button>
-      </div>
-
-    </div>
-  </div>
-</div>
-
-
 
         </div>
       </div>

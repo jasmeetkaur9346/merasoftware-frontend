@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react'
 import { CgClose } from "react-icons/cg";
-// import productCategory from '../helpers/productCategory';
 import { FaCloudUploadAlt } from "react-icons/fa";
 import uploadImage from '../helpers/uploadImage';
 import DisplayImage from './DisplayImage';
@@ -10,11 +9,9 @@ import {toast} from 'react-toastify'
 import Select from 'react-select'
 import packageOptions, { CustomPackageOption, CustomPackageValue } from '../helpers/packageOptions';
 import perfectForOptions, { CustomPerfectForOption, CustomPerfectForValue } from '../helpers/perfectForOptions';
-// import defaultFields from '../helpers/defaultFields';
 import RichTextEditor from '../helpers/richTextEditor';
 import PackageSelect from './PackageSelect';
 import keyBenefitsOptions, { CustomKeyBenefitOption, CustomKeyBenefitValue } from '../helpers/keyBenefitOptions';
-// import compatibleWithOptions, { CustomCompatibleOption, CustomCompatibleValue} from '../helpers/compatibleWithOptions';
 
 const UploadProduct = ({
     onClose,
