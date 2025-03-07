@@ -289,6 +289,10 @@ const SummaryApi = {
         url : `${backendDomain}/api/update-file-settings`,
         method: "post"
       },
+      downloadAllFiles:{
+        url: `${backendDomain}/api/download-all-files/:requestId`,
+        method: "get"
+      },
     wallet : {
         balance :{
             url : `${backendDomain}/api/wallet/balance`,

@@ -209,26 +209,26 @@ const AdminUpdateRequests = () => {
 // before the return statement
 
 // Function to download a single file from URL
-const downloadFile = async (url, filename) => {
-  try {
-    const response = await fetch(url);
-    const blob = await response.blob();
-    const downloadUrl = window.URL.createObjectURL(blob);
+// const downloadFile = async (url, filename) => {
+//   try {
+//     const response = await fetch(url);
+//     const blob = await response.blob();
+//     const downloadUrl = window.URL.createObjectURL(blob);
     
-    const link = document.createElement('a');
-    link.href = downloadUrl;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(downloadUrl);
+//     const link = document.createElement('a');
+//     link.href = downloadUrl;
+//     link.download = filename;
+//     document.body.appendChild(link);
+//     link.click();
+//     document.body.removeChild(link);
+//     window.URL.revokeObjectURL(downloadUrl);
     
-    return true;
-  } catch (error) {
-    console.error(`Error downloading ${filename}:`, error);
-    return false;
-  }
-};
+//     return true;
+//   } catch (error) {
+//     console.error(`Error downloading ${filename}:`, error);
+//     return false;
+//   }
+// };
 
 // Function to handle downloading all files in sequence
 const handleDownloadAll = async () => {
@@ -237,35 +237,25 @@ const handleDownloadAll = async () => {
     return;
   }
   
-  // Show toast notification
-  toast.info(`Downloading ${selectedRequest.files.length} files...`);
-  
-  // Create array to track failed downloads
-  const failedDownloads = [];
-  
-  // Download files sequentially to avoid browser limitations
-  for (let i = 0; i < selectedRequest.files.length; i++) {
-    const file = selectedRequest.files[i];
-    const downloadUrl = file.downloadLink || `https://drive.google.com/uc?export=download&id=${file.driveFileId}`;
-    const filename = file.originalName || file.filename;
+  try {
+    // Show toast notification
+    toast.info(`Preparing ${selectedRequest.files.length} files for download...`);
     
-    // Add small delay between downloads to avoid overwhelming the browser
-    if (i > 0) {
-      await new Promise(resolve => setTimeout(resolve, 500));
-    }
+    // Generate the URL with the request ID
+    const downloadUrl = SummaryApi.downloadAllFiles.url.replace(':requestId', selectedRequest._id);
     
-    const success = await downloadFile(downloadUrl, filename);
-    if (!success) {
-      failedDownloads.push(filename);
-    }
-  }
-  
-  // Show completion notification
-  if (failedDownloads.length === 0) {
-    toast.success(`Successfully downloaded all ${selectedRequest.files.length} files`);
-  } else {
-    toast.warning(`Downloaded ${selectedRequest.files.length - failedDownloads.length} files. ${failedDownloads.length} files failed.`);
-    console.error('Failed to download:', failedDownloads);
+    // Create a hidden link and trigger the download
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.target = '_blank'; // Opens in a new tab and triggers download
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    toast.success('Download started');
+  } catch (error) {
+    console.error('Error initiating download:', error);
+    toast.error('Failed to download files');
   }
 };
   
