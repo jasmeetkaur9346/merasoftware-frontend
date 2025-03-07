@@ -205,6 +205,69 @@ const AdminUpdateRequests = () => {
       toast.error('Failed to complete request');
     }
   };
+  // Add these functions inside your AdminUpdateRequests component
+// before the return statement
+
+// Function to download a single file from URL
+const downloadFile = async (url, filename) => {
+  try {
+    const response = await fetch(url);
+    const blob = await response.blob();
+    const downloadUrl = window.URL.createObjectURL(blob);
+    
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(downloadUrl);
+    
+    return true;
+  } catch (error) {
+    console.error(`Error downloading ${filename}:`, error);
+    return false;
+  }
+};
+
+// Function to handle downloading all files in sequence
+const handleDownloadAll = async () => {
+  if (!selectedRequest || !selectedRequest.files || selectedRequest.files.length === 0) {
+    toast.info('No files to download');
+    return;
+  }
+  
+  // Show toast notification
+  toast.info(`Downloading ${selectedRequest.files.length} files...`);
+  
+  // Create array to track failed downloads
+  const failedDownloads = [];
+  
+  // Download files sequentially to avoid browser limitations
+  for (let i = 0; i < selectedRequest.files.length; i++) {
+    const file = selectedRequest.files[i];
+    const downloadUrl = file.downloadLink || `https://drive.google.com/uc?export=download&id=${file.driveFileId}`;
+    const filename = file.originalName || file.filename;
+    
+    // Add small delay between downloads to avoid overwhelming the browser
+    if (i > 0) {
+      await new Promise(resolve => setTimeout(resolve, 500));
+    }
+    
+    const success = await downloadFile(downloadUrl, filename);
+    if (!success) {
+      failedDownloads.push(filename);
+    }
+  }
+  
+  // Show completion notification
+  if (failedDownloads.length === 0) {
+    toast.success(`Successfully downloaded all ${selectedRequest.files.length} files`);
+  } else {
+    toast.warning(`Downloaded ${selectedRequest.files.length - failedDownloads.length} files. ${failedDownloads.length} files failed.`);
+    console.error('Failed to download:', failedDownloads);
+  }
+};
   
   // Status badge component
   const StatusBadge = ({ status }) => {
@@ -341,7 +404,20 @@ const AdminUpdateRequests = () => {
             
           {/* Uploaded Files section in AdminUpdateRequests.js */}
           <div className="mb-6">
+          <div className="flex justify-between items-center mb-2">
   <h4 className="font-medium mb-2">Uploaded Files</h4>
+  {selectedRequest.files && selectedRequest.files.length > 0 && (
+      <button
+        onClick={handleDownloadAll}
+        className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 flex items-center"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+        </svg>
+        Download All
+      </button>
+    )}
+  </div>
   <div className="border rounded-lg p-4">
     {selectedRequest.files && selectedRequest.files.length > 0 ? (
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
