@@ -309,6 +309,18 @@ const ProductDetails = () => {
     return true;
   };
 
+  const customStyles = `
+  .description-content.prose hr {
+    margin-top: 14px !important;
+    margin-bottom: 14px !important;
+    height: 1px !important;
+  }
+
+  .description-content.prose p {
+    margin-bottom: 0.5rem !important;
+  }
+`;
+
   const shouldShowCustomizePlan = (productData) => {
     // केवल तभी दिखाएं जब additional features हों
     return productData.additionalFeatures && 
@@ -362,7 +374,7 @@ const ProductDetails = () => {
 
       <div className="container mx-auto px-4 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 py-12">
-          <div className="lg:col-span-2 flex flex-col gap-8">
+          <div className="lg:col-span-2 flex flex-col gap-1">
             {/* Who is it for Section */}
             {shouldShowSection(data.category, 'perfectFor') && data.perfectFor?.length > 0 && (
               <div className="bg-white rounded-lg shadow-lg overflow-hidden">
@@ -424,14 +436,17 @@ const ProductDetails = () => {
                 </div>
               </div>
             )}
+            
+            
 
          {/* Description Section - हर formattedDescription को अलग box में दिखाएं */}
          {data.formattedDescriptions?.map((desc, index) => (
-              <div key={index} className="bg-white rounded-lg shadow-lg overflow-hidden">
+              <div key={index} className="bg-white shadow-lg overflow-hidden">
                 {/* कोई heading नहीं */}
-                <div className="p-8">
+                <style>{customStyles}</style>
+                <div className="px-6 py-4">
                   <div 
-                    className="prose prose-sm max-w-none"
+                    className="prose prose-sm max-w-none description-content"
                     dangerouslySetInnerHTML={{ __html: desc.content }}
                   />
                 </div>

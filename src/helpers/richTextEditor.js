@@ -7,7 +7,7 @@ import { useEditor, EditorContent } from '@tiptap/react';
 import Color from '@tiptap/extension-color';
 import TextStyle from '@tiptap/extension-text-style';
 import Underline from '@tiptap/extension-underline';
-import { Node } from '@tiptap/core';
+import { Node, Extension  } from '@tiptap/core';
 import HorizontalRule from '@tiptap/extension-horizontal-rule';
 
 // Import icons
@@ -203,6 +203,55 @@ const IconSelector = ({ onSelectIcon, onClose }) => {
   );
 };
 
+const FontSize = Extension.create({
+  name: 'fontSize',
+
+  addOptions() {
+    return {
+      types: ['textStyle'],
+    }
+  },
+
+  addGlobalAttributes() {
+    return [
+      {
+        types: this.options.types,
+        attributes: {
+          fontSize: {
+            default: null,
+            parseHTML: element => element.style.fontSize?.replace('px', ''),
+            renderHTML: attributes => {
+              if (!attributes.fontSize) {
+                return {}
+              }
+
+              return {
+                style: `font-size: ${attributes.fontSize}px`,
+              }
+            },
+          },
+        },
+      },
+    ]
+  },
+
+  addCommands() {
+    return {
+      setFontSize: fontSize => ({ chain }) => {
+        return chain()
+          .setMark('textStyle', { fontSize })
+          .run()
+      },
+      unsetFontSize: () => ({ chain }) => {
+        return chain()
+          .setMark('textStyle', { fontSize: null })
+          .removeEmptyTextStyle()
+          .run()
+      },
+    }
+  },
+});
+
 // MenuBar Component
 const MenuBar = ({ editor }) => {
   const [showIconSelector, setShowIconSelector] = useState(false);
@@ -222,25 +271,42 @@ const MenuBar = ({ editor }) => {
     }).run();
   };
 
+  // फ़ॉन्ट साइज़ के लिए options
+  const fontSizeOptions = [
+    { value: '12', label: '12px' },
+    { value: '14', label: '14px' },
+    { value: '16', label: '16px' },
+    { value: '18', label: '18px' },
+    { value: '20', label: '20px' },
+    { value: '24', label: '24px' },
+    { value: '28', label: '28px' },
+    { value: '30', label: '30px' },
+    { value: '32', label: '32px' },
+    { value: '34', label: '34px' },
+    { value: '36', label: '36px' },
+    { value: '38', label: '38px' },
+    { value: '40', label: '40px' },
+  ];
+
   return (
     <div className="flex flex-wrap gap-2 p-2 border-b bg-slate-50">
-      {/* Text Style Dropdown */}
+      {/* Text Style Dropdown की जगह Font Size Dropdown */}
       <select
         onChange={(e) => {
           e.preventDefault();
-          const tag = e.target.value;
-          if (tag.startsWith('h')) {
-            editor.chain().focus().toggleHeading({ level: parseInt(tag[1]) }).run();
-          } else {
-            editor.chain().focus().setParagraph().run();
+          const size = e.target.value;
+          if (size) {
+            editor.chain().focus().setFontSize(size).run();
           }
         }}
         className="p-1 rounded border"
       >
-        <option value="p">Normal</option>
-        <option value="h1">Heading 1</option>
-        <option value="h2">Heading 2</option>
-        <option value="h3">Heading 3</option>
+        <option value="">Font Size</option>
+        {fontSizeOptions.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
       </select>
 
       {/* Color Picker */}
@@ -346,7 +412,7 @@ const RichTextEditor = ({ value, onChange, placeholder }) => {
         },
         horizontalRule: {
           HTMLAttributes: {
-            class: 'border-t border-gray-300 my-4'
+            class: 'border-t border-gray-300 my-1'
           }
         }
       }),
@@ -354,7 +420,8 @@ const RichTextEditor = ({ value, onChange, placeholder }) => {
       TextStyle,
       Underline,
       CustomIcon,
-      HorizontalRule
+      HorizontalRule,
+      FontSize, 
     ],
     content: value,
     onUpdate: ({ editor }) => {
@@ -366,9 +433,27 @@ const RichTextEditor = ({ value, onChange, placeholder }) => {
       },
     },
   });
+   // Custom CSS rules को define करें
+   const customStyles = `
+   .ProseMirror.prose hr {
+    margin-top: 14px !important;
+    margin-bottom: 14px !important;
+     height: 1px !important;
+   }
+   
+   /* Paragraphs के साथ consistent spacing */
+   .ProseMirror.prose p + hr {
+     margin-top: 0.5em !important;
+   }
+   
+   .ProseMirror.prose hr + p {
+     margin-top: 0.5em !important;
+   }
+ `;
 
   return (
     <div className="border rounded bg-slate-100" onClick={e => e.stopPropagation()}>
+      <style>{customStyles}</style>
       <MenuBar editor={editor} />
       <EditorContent editor={editor} placeholder={placeholder} />
     </div>
