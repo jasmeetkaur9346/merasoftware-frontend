@@ -1,6 +1,6 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ImageIcon, Check } from 'lucide-react';
+import {  Check } from 'lucide-react';
 import packageOptions from '../helpers/packageOptions';
 import perfectForOptions from '../helpers/perfectForOptions';
 import SummaryApi from '../common';
@@ -9,7 +9,7 @@ import CartPopup from '../components/CartPopup';
 import TriangleMazeLoader from '../components/TriangleMazeLoader';
 import VerticalCardProduct from '../components/VerticalCardProduct';
 import addToCart from '../helpers/addToCart';
-import QuantitySelector from '../components/QuantitySelector';
+// import QuantitySelector from '../components/QuantitySelector';
 import { 
   cacheProductDetails, 
   getCachedProduct, 

@@ -415,20 +415,20 @@ const CustomFeatureOption = ({ data, ...props }) => {
 
               <label htmlFor='packageIncludes' className='mt-3'>Package Includes:</label>
           <PackageSelect
-  options={packageOptions}
-  value={data.packageIncludes.map(value => {
-    const option = packageOptions.find(opt => opt.value === value);
-    return option;
-  })}
-   name='packageIncludes'
-  id='packageIncludes'
-  onChange={handlePackageIncludesChange}
-  components={{
-    Option: CustomPackageOption,
-    MultiValue: CustomPackageValue
-  }}
-  placeholder="Select package options"
-/>
+            options={packageOptions}
+            value={data.packageIncludes.map(value => {
+              const option = packageOptions.find(opt => opt.value === value);
+              return option;
+            })}
+            name='packageIncludes'
+            id='packageIncludes'
+            onChange={handlePackageIncludesChange}
+            components={{
+              Option: CustomPackageOption,
+              MultiValue: CustomPackageValue
+            }}
+            placeholder="Select package options"
+          />
 
         <label htmlFor='perfectFor' className='mt-3'>Perfect For:</label>
         <PackageSelect
@@ -475,7 +475,22 @@ const CustomFeatureOption = ({ data, ...props }) => {
         {
           shouldShowFeatureFields(data.category) && (
             <>
-             
+            <label htmlFor='packageIncludes' className='mt-3'>Package Includes:</label>
+          <PackageSelect
+            options={packageOptions}
+            value={data.packageIncludes.map(value => {
+              const option = packageOptions.find(opt => opt.value === value);
+              return option;
+            })}
+            name='packageIncludes'
+            id='packageIncludes'
+            onChange={handlePackageIncludesChange}
+            components={{
+              Option: CustomPackageOption,
+              MultiValue: CustomPackageValue
+            }}
+            placeholder="Select package options"
+          /> 
 
               {/* Compatible With Field */}
               <label htmlFor='compatibleCategories' className='mt-3'>Compatible With:</label>
@@ -519,6 +534,23 @@ const CustomFeatureOption = ({ data, ...props }) => {
 
 {shouldShowWebsiteUpdateFields(data.category) && (
     <>
+     <label htmlFor='packageIncludes' className='mt-3'>Package Includes:</label>
+          <PackageSelect
+            options={packageOptions}
+            value={data.packageIncludes.map(value => {
+              const option = packageOptions.find(opt => opt.value === value);
+              return option;
+            })}
+            name='packageIncludes'
+            id='packageIncludes'
+            onChange={handlePackageIncludesChange}
+            components={{
+              Option: CustomPackageOption,
+              MultiValue: CustomPackageValue
+            }}
+            placeholder="Select package options"
+          />
+
         {/* Validity Period Field */}
         <label htmlFor='validityPeriod' className='mt-3'>Validity Period (Days):</label>
         <input 
