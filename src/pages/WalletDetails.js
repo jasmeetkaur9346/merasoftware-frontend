@@ -5,6 +5,7 @@ import SummaryApi from '../common';
 import displayINRCurrency from '../helpers/displayCurrency';
 import TriangleMazeLoader from '../components/TriangleMazeLoader';
 import DashboardLayout from '../components/DashboardLayout';
+import WalletRecharge from '../components/WalletRecharge';
 
 const WalletDetails = () => {
   const [walletHistory, setWalletHistory] = useState([]);
@@ -93,6 +94,9 @@ const WalletDetails = () => {
           </span>
         </div>
       </div>
+
+      {/* Add the Wallet Recharge Component */}
+      <WalletRecharge />
 
       {/* Transaction History */}
       <div className='bg-white rounded-lg p-6 shadow'>

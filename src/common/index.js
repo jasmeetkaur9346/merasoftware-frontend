@@ -309,6 +309,22 @@ const SummaryApi = {
         history : {
             url : `${backendDomain}/api/wallet/history`,
             method : "get"
+        },
+        verifyPayment: {
+            url: `${backendDomain}/api/wallet/verify-payment`,
+            method: "post"
+        },
+        pendingTransactions: {
+            url : `${backendDomain}/api/wallet/pending-transactions`,
+            method: "get"
+        },
+        approveTransaction: {
+            url: `${backendDomain}/api/wallet/approve-transaction`,
+            method: "post"
+        },
+        rejectTransaction: {
+            url: `${backendDomain}/api/wallet/reject-transaction`,
+            method: "post"
         }
     }
 }

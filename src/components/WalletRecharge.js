@@ -1,8 +1,8 @@
 import React, { useState, useContext } from 'react';
 import Context from '../context';
 import SummaryApi from '../common';
-import TriangleMazeLoader from './TriangleMazeLoader';
-import QRCode from 'qrcode.react'; 
+import TriangleMazeLoader from '../components/TriangleMazeLoader';
+import { QRCodeSVG } from 'qrcode.react'; // Updated import for newer versions of qrcode.react
 
 const WalletRecharge = () => {
   const [amount, setAmount] = useState('');
@@ -33,8 +33,8 @@ const WalletRecharge = () => {
 
     // Create UPI payment link
     // Replace with your UPI ID
-    const upiId = 'your-merchant-upi@bank';
-    const payeeName = 'Your Company Name';
+    const upiId = 'vacomputers.com@okhdfcbank';
+    const payeeName = 'VA Computer';
     const upi = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(payeeName)}&am=${amount}&cu=INR&tn=${encodeURIComponent(`Wallet Recharge - ${txnId}`)}&tr=${txnId}`;
     
     setUpiLink(upi);
@@ -115,7 +115,7 @@ const WalletRecharge = () => {
             <p className="text-xs text-gray-500 mb-4 text-center">Transaction ID: {transactionId}</p>
             
             <div className="bg-white p-4 rounded-lg shadow-inner mb-4 inline-block">
-              <QRCode value={upiLink} size={200} />
+              <QRCodeSVG value={upiLink} size={200} />
             </div>
             
             <p className="text-sm text-center mb-4">
