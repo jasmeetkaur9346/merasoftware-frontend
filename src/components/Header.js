@@ -306,12 +306,12 @@ if(value){
           
           <div className="flex items-center space-x-3">
             
-            <div className="relative">
+            {/* <div className="relative">
               <button className="w-8 h-8 flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded-full text-gray-700">
                 <Bell size={18} />
                 <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-4 h-4 flex items-center justify-center rounded-full">3</span>
               </button>
-            </div>
+            </div> */}
             
 
             <Link to={user?._id ? "/profile" : "/login"}>
