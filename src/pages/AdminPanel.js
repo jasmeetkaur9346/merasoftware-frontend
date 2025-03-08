@@ -36,6 +36,7 @@ const AdminPanel = () => {
                   <nav className='grid p-4'>
                     <Link to={"all-users"} className='px-2 py-1 hover:bg-slate-100'>All Users</Link>
                     <Link to={"admin-settings"} className='px-2 py-1 hover:bg-slate-100'>Admin Settings</Link>
+                    <Link to={"payment-verification"} className='px-2 py-1 hover:bg-slate-100'>Admin Payment Verification</Link>
                     <Link to={"welcome-content"} className='px-2 py-1 hover:bg-slate-100'>Welcome Content</Link>
                     <Link to={"update-requests"} className='px-2 py-1 hover:bg-slate-100'>Website Update Requests</Link>
                     <Link to={"projects"} className='px-2 py-1 hover:bg-slate-100'>Website Projects</Link>

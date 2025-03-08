@@ -32,6 +32,7 @@ import DeveloperUpdatePanel from "../pages/DeveloperUpdatePanel";
 import AdminFileSettings from "../pages/AdminFileSettings";
 import { useSelector } from "react-redux";
 import UserDashboard from "../pages/UserDashboard";
+import AdminPaymentVerification from "../pages/AdminPaymentVerification";
 
 
 // Create a conditional home route
@@ -139,6 +140,10 @@ const router = createBrowserRouter([
                     {
                         path: "admin-settings",
                         element: <AdminFileSettings/>
+                    },
+                    {
+                        path: "payment-verification",
+                        element : <AdminPaymentVerification/>
                     },
                     {
                         path: "welcome-content",
