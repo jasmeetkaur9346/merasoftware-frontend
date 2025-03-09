@@ -151,6 +151,11 @@ const AdminPaymentVerification = () => {
                                 <tr key={transaction._id} className="border-b hover:bg-gray-50">
                                     <td className="py-3 px-4">
                                         <span className="font-mono text-sm">{transaction.transactionId}</span>
+                                        {transaction.upiTransactionId && (
+                                        <div className="text-xs text-green-600 mt-1">
+                                            UPI ID: {transaction.upiTransactionId}
+                                        </div>
+                                        )}
                                     </td>
                                     <td className="py-3 px-4">
                                         {transaction.userId.name ? (

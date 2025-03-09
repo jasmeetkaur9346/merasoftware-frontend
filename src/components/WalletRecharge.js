@@ -4,6 +4,7 @@ import SummaryApi from '../common';
 import TriangleMazeLoader from '../components/TriangleMazeLoader';
 import { QRCodeSVG } from 'qrcode.react'; // Updated import for newer versions of qrcode.react
 
+
 const WalletRecharge = () => {
   const [amount, setAmount] = useState('');
   const [loading, setLoading] = useState(false);
@@ -13,6 +14,8 @@ const WalletRecharge = () => {
   const [verificationStatus, setVerificationStatus] = useState('');
   const [transactionVerified, setTransactionVerified] = useState(false);
   const context = useContext(Context);
+  const [upiTransactionId, setUpiTransactionId] = useState('');
+  const [verificationSubmitted, setVerificationSubmitted] = useState(false);
 
   // Generate transaction ID
   const generateTransactionId = () => {
@@ -44,11 +47,18 @@ const WalletRecharge = () => {
   // Verify transaction (to be called when user submits UPI reference)
   const verifyTransaction = async (e) => {
     e.preventDefault();
+    
+    // Validate UPI transaction ID
+    if (!upiTransactionId || upiTransactionId.trim().length < 10) {
+      setVerificationStatus('Please enter a valid UPI transaction ID');
+      return;
+    }
+    
     setLoading(true);
     setVerificationStatus('Verifying your payment...');
-
+  
     try {
-      // Send request to your backend API
+      // Send request with UPI transaction ID
       const response = await fetch(SummaryApi.wallet.verifyPayment.url, {
         method: 'POST',
         credentials: 'include',
@@ -57,21 +67,19 @@ const WalletRecharge = () => {
         },
         body: JSON.stringify({
           transactionId: transactionId,
-          amount: Number(amount)
+          amount: Number(amount),
+          upiTransactionId: upiTransactionId // Add this field
         })
       });
       
       const data = await response.json();
       
       if (data.success) {
-        setVerificationStatus('Payment verified successfully!');
-        setTransactionVerified(true);
-        // Update wallet balance
-        if (context?.fetchWalletBalance) {
-          context.fetchWalletBalance();
-        }
+        setVerificationStatus('Your payment verification request has been submitted. The amount will be added to your wallet after admin verification.');
+        // Don't update wallet balance here - wait for admin approval
+        setVerificationSubmitted(true);
       } else {
-        setVerificationStatus('Verification failed. Please contact support.');
+        setVerificationStatus(data.message || 'Verification failed. Please contact support.');
       }
     } catch (error) {
       console.error('Error verifying payment:', error);
@@ -108,7 +116,7 @@ const WalletRecharge = () => {
             Proceed to Payment
           </button>
         </form>
-      ) : !transactionVerified ? (
+      ) : !verificationSubmitted  ? (
         <div className="flex flex-col items-center">
           <div className="mb-4">
             <p className="text-center mb-2">Scan QR code to pay ₹{amount}</p>
@@ -124,21 +132,38 @@ const WalletRecharge = () => {
           </div>
           
           <form onSubmit={verifyTransaction} className="w-full">
-            <p className="text-sm text-center mb-2">After payment, click on verify:</p>
-            <button
-              type="submit"
-              className="w-full bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 disabled:bg-gray-400"
-              disabled={loading}
-            >
-              {loading ? 'Verifying...' : 'Verify Payment'}
-            </button>
-            
-            {verificationStatus && (
-              <p className="mt-2 text-center text-sm">
-                {verificationStatus}
-              </p>
-            )}
-          </form>
+      <div className="mb-4">
+        <label htmlFor="upiTransactionId" className="block text-sm font-medium mb-1">
+          UPI Transaction ID:
+        </label>
+        <input
+          type="text"
+          id="upiTransactionId"
+          value={upiTransactionId}
+          onChange={(e) => setUpiTransactionId(e.target.value)}
+          className="w-full border border-gray-300 rounded-md p-2"
+          placeholder="Enter the UPI transaction ID after payment"
+          required
+        />
+        <p className="text-xs text-gray-500 mt-1">
+          This is the transaction ID you received from your UPI app after payment
+        </p>
+      </div>
+      
+      <button
+        type="submit"
+        className="w-full bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 disabled:bg-gray-400"
+        disabled={loading || !upiTransactionId}
+      >
+        {loading ? 'Submitting...' : 'Submit for Verification'}
+      </button>
+      
+      {verificationStatus && (
+        <p className="mt-2 text-center text-sm">
+          {verificationStatus}
+        </p>
+      )}
+    </form>
           
           <button
             onClick={() => setShowQR(false)}
@@ -150,10 +175,10 @@ const WalletRecharge = () => {
       ) : (
         <div className="text-center">
           <div className="text-green-500 text-6xl mb-4">✓</div>
-          <h3 className="text-xl font-medium mb-2">Payment Successful!</h3>
+          <h3 className="text-xl font-medium mb-2">Verification request submitted</h3>
           <p className="text-gray-600 mb-4">
-            ₹{amount} has been added to your wallet.
-          </p>
+          Your request for ₹{amount} is pending admin approval.
+        </p>
           <button
             onClick={() => {
               setShowQR(false);
@@ -162,6 +187,7 @@ const WalletRecharge = () => {
               setTransactionId('');
               setUpiLink('');
               setVerificationStatus('');
+              setUpiTransactionId('');
             }}
             className="bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600"
           >

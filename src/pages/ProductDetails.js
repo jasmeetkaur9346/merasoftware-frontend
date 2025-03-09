@@ -242,10 +242,38 @@ const ProductDetails = () => {
         return;
       }
     }
-    
-    await handleAddToCart(e);
-    navigate("/cart");
+
+    // Create a proper structured object for payment data
+  const paymentData = {
+    product: {
+      ...data,
+      // If coupon is applied, include the discounted base price
+      finalPrice: couponData ? couponData.data.finalPrice : data.sellingPrice
+    },
+    selectedFeatures: selectedFeatures.map(featureId => {
+      const feature = additionalFeaturesData.find(f => f._id === featureId);
+      if (!feature) return null;
+      
+      const quantity = quantities[featureId] || data.totalPages;
+      const totalFeaturePrice = feature.sellingPrice * quantity;
+      
+      return {
+        ...feature,
+        quantity: quantity,
+        totalOriginalPrice: totalFeaturePrice,
+        // We'll calculate any discount on features later
+      };
+    }).filter(Boolean),
+    couponData: couponData,
+    totalPrice: calculateTotalPrice(),
+    originalTotalPrice: calculateBasePrice() // Total before coupon
   };
+  
+  // Navigate to direct payment page with data
+  navigate('/direct-payment', { state: { paymentData } });
+};
+   
+  
 
   // Reset coupon when selected features change
   useEffect(() => {
@@ -356,7 +384,9 @@ const ProductDetails = () => {
           sortedFeatures.forEach(feature => {
             if (feature.upgradeType === 'component') {
               initialQuantities[feature._id] = feature.baseQuantity || productData.totalPages;
-              initialSelectedFeatures.push(feature._id);
+            } else {
+              // Make sure non-component features start with quantity 1, not 5
+              initialQuantities[feature._id] = 1; // This line might be missing or set to 5
             }
           });
 
