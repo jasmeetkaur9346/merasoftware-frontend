@@ -58,7 +58,8 @@ const WalletDetails = () => {
         sign: '+',
         color: 'text-green-600',
         title: 'Wallet Deposit',
-        icon: '💰'
+        icon: '💰',
+        status: transaction.status
       };
     } else {
       return {
@@ -67,6 +68,34 @@ const WalletDetails = () => {
         title: transaction.productId?.serviceName || 'Payment',
         icon: '🛒'
       };
+    }
+  };
+
+  // Get status badge for deposit transactions
+  const getStatusBadge = (status) => {
+    if (!status) return null;
+    
+    switch(status) {
+      case 'completed':
+        return (
+          <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-green-100 text-green-800">
+            Approved
+          </span>
+        );
+      case 'pending':
+        return (
+          <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-yellow-100 text-yellow-800">
+            Pending
+          </span>
+        );
+      case 'failed':
+        return (
+          <span className="ml-2 px-2 py-0.5 text-xs rounded-full bg-red-100 text-red-800">
+            Rejected
+          </span>
+        );
+      default:
+        return null;
     }
   };
   
@@ -132,24 +161,35 @@ const WalletDetails = () => {
                     <div className="flex gap-3">
                       <span className="text-xl">{display.icon}</span>
                       <div>
-                        <div className="font-medium">{display.title}</div>
+                        <div className="font-medium">
+                          {display.title}
+                          {/* Add status badge for deposit transactions */}
+                          {transaction.type === 'deposit' && getStatusBadge(transaction.status)}
+                        </div>
                         {transaction.quantity && (
                           <div className="text-sm text-gray-600">Quantity: {transaction.quantity}</div>
                         )}
                         <div className="text-sm text-gray-600">
                           {new Date(transaction.date).toLocaleDateString()} {new Date(transaction.date).toLocaleTimeString()}
                         </div>
-                        {transaction.type && (
-                          <span className={`text-xs uppercase px-2 py-0.5 rounded-full ${
-                            transaction.type === 'refund' 
-                              ? 'bg-green-100 text-green-800' 
-                              : transaction.type === 'deposit'
-                                ? 'bg-blue-100 text-blue-800'
-                                : 'bg-gray-100 text-gray-800'
-                          }`}>
-                            {transaction.type}
-                          </span>
+                        {transaction.upiTransactionId && (
+                          <div className="text-xs text-gray-600 mt-1">
+                            UPI ID: {transaction.upiTransactionId}
+                          </div>
                         )}
+                        <div className="mt-1">
+                          {transaction.type && (
+                            <span className={`text-xs uppercase px-2 py-0.5 rounded-full ${
+                              transaction.type === 'refund' 
+                                ? 'bg-green-100 text-green-800' 
+                                : transaction.type === 'deposit'
+                                  ? 'bg-blue-100 text-blue-800'
+                                  : 'bg-gray-100 text-gray-800'
+                            }`}>
+                              {transaction.type}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
                     <div className={`${display.color} font-semibold`}>

@@ -349,6 +349,10 @@ const SummaryApi = {
         rejectTransaction: {
             url: `${backendDomain}/api/wallet/reject-transaction`,
             method: "post"
+        },
+        adminTransactionHistory: {
+            url: `${backendDomain}/api/wallet/admin-transaction-history`,
+            method: "get"
         }
     }
 }
