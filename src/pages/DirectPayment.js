@@ -454,7 +454,7 @@ const calculateFeatureDiscount = (feature, totalDiscount, originalTotal) => {
                 <QRCodeSVG value={upiLink} size={200} />
               </div>
               
-              <p className="text-center mb-2">Scan with any UPI app to pay {displayINRCurrency(remainingAmount)}</p>
+              {/* <p className="text-center mb-2">Scan with any UPI app to pay {displayINRCurrency(remainingAmount)}</p> */}
               <p className="text-xs text-gray-500 mb-4 text-center">Transaction ID: {transactionId}</p>
               
               <div className="w-full mb-4">
