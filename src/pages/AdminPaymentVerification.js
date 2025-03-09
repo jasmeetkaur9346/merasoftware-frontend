@@ -13,7 +13,7 @@ const AdminPaymentVerification = () => {
         try {
             setLoading(true);
             const response = await fetch(SummaryApi.wallet.pendingTransactions.url, {
-                method: 'GET',
+                method: SummaryApi.wallet.pendingTransactions.method,
                 credentials: 'include',
                 headers: {
                     "Content-Type": 'application/json'
@@ -55,7 +55,7 @@ const AdminPaymentVerification = () => {
         setProcessingId(transaction._id);
         try {
             const response = await fetch(SummaryApi.wallet.approveTransaction.url, {
-                method: 'POST',
+                method: SummaryApi.wallet.approveTransaction.method,
                 credentials: 'include',
                 headers: {
                     "Content-Type": 'application/json'
@@ -91,7 +91,7 @@ const AdminPaymentVerification = () => {
         setProcessingId(transaction._id);
         try {
             const response = await fetch(SummaryApi.wallet.rejectTransaction.url, {
-                method: 'POST',
+                method: SummaryApi.wallet.rejectTransaction.method,
                 credentials: 'include',
                 headers: {
                     "Content-Type": 'application/json'
