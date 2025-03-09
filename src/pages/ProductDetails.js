@@ -9,7 +9,7 @@ import CartPopup from '../components/CartPopup';
 import TriangleMazeLoader from '../components/TriangleMazeLoader';
 import VerticalCardProduct from '../components/VerticalCardProduct';
 import addToCart from '../helpers/addToCart';
-// import QuantitySelector from '../components/QuantitySelector';
+import { toast } from 'react-toastify';
 import { 
   cacheProductDetails, 
   getCachedProduct, 
@@ -64,12 +64,18 @@ const ProductDetails = () => {
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
 
+   // New states for coupon functionality
+   const [couponCode, setCouponCode] = useState('');
+   const [couponLoading, setCouponLoading] = useState(false);
+   const [couponData, setCouponData] = useState(null);
+   const [couponError, setCouponError] = useState('');
+
   const { fetchUserAddToCart } = useContext(Context);
   const navigate = useNavigate();
   const params = useParams();
 
-  // Calculate total price including quantities
-  const calculateTotalPrice = () => {
+  // Calculate base price (without coupon discount)
+  const calculateBasePrice  = () => {
     const basePrice = data.sellingPrice;
     const featuresPrice = selectedFeatures.reduce((sum, featureId) => {
       const feature = additionalFeaturesData.find(f => f._id === featureId);
@@ -85,6 +91,64 @@ const ProductDetails = () => {
     }, 0);
 
     return basePrice + featuresPrice;
+  };
+
+   // Calculate total price (with coupon discount applied if available)
+  const calculateTotalPrice = () => {
+    const basePrice = calculateBasePrice();
+    
+    if (couponData && couponData.success) {
+      return couponData.data.finalPrice;
+    }
+    
+    return basePrice;
+  };
+
+  // Handle coupon validation
+  const validateCoupon = async () => {
+    if (!couponCode.trim()) {
+      setCouponError('Please enter a coupon code');
+      return;
+    }
+
+    setCouponLoading(true);
+    setCouponError('');
+    
+    try {
+      const response = await fetch(SummaryApi.validateCoupon.url, {
+        method: SummaryApi.validateCoupon.method,
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          code: couponCode,
+          productId: data._id,
+          amount: calculateBasePrice()
+        })
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        setCouponData(result);
+        toast.success(`Coupon applied! You saved ₹${result.data.discountAmount.toLocaleString()}`);
+      } else {
+        setCouponError(result.message || 'Invalid coupon code');
+        setCouponData(null);
+      }
+    } catch (error) {
+      console.error('Error validating coupon:', error);
+      setCouponError('Something went wrong. Please try again.');
+      setCouponData(null);
+    } finally {
+      setCouponLoading(false);
+    }
+  };
+
+  //Clear coupon
+  const clearCoupon = () => {
+    setCouponCode('');
+    setCouponData(null);
+    setCouponError('');
   };
 
   // Get icon from packageOptions
@@ -124,7 +188,17 @@ const ProductDetails = () => {
   const handleAddToCart = async (e) => {
     try {
       setAddToCartLoading(true);
-      const result = await addToCart(e, data?._id);
+      // Add base product to cart with coupon info if available
+      const result = await addToCart(
+        e, 
+        data?._id, 
+        1, 
+        couponData ? {
+          couponCode: couponData.data.couponCode,
+          discountAmount: couponData.data.discountAmount,
+          finalPrice: couponData.data.finalPrice
+        } : null
+      );
       
       if (selectedFeatures.length > 0) {
         await Promise.all(selectedFeatures.map(featureId => {
@@ -172,6 +246,13 @@ const ProductDetails = () => {
     await handleAddToCart(e);
     navigate("/cart");
   };
+
+  // Reset coupon when selected features change
+  useEffect(() => {
+    if (couponData) {
+      clearCoupon();
+    }
+  }, [selectedFeatures, quantities]);
 
   useEffect(() => {
     const fetchProductDetails = async () => {
@@ -374,6 +455,7 @@ const ProductDetails = () => {
 
       <div className="container mx-auto px-4 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 py-12">
+           {/* Left column with product details - same as original */}
           <div className="lg:col-span-2 flex flex-col gap-1">
             {/* Who is it for Section */}
             {shouldShowSection(data.category, 'perfectFor') && data.perfectFor?.length > 0 && (
@@ -592,13 +674,79 @@ const ProductDetails = () => {
                     );
                   })}
 
-                  {/* Total Price */}
-                  <div className="flex justify-between pt-6 mt-5 border-t-2 border-gray-200">
-                    <span className="text-lg font-semibold text-gray-900">Total Price:</span>
-                    <span className="text-2xl font-bold text-blue-600">₹{calculateTotalPrice()?.toLocaleString()}</span>
+                 {/* Coupon Code Section - NEW */}
+                 <div className="mt-6 pt-6 border-t-2 border-gray-200">
+                    <h3 className="text-base font-semibold mb-2">Apply Coupon</h3>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none"
+                        placeholder="Enter coupon code"
+                        value={couponCode}
+                        onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                        disabled={couponLoading}
+                      />
+                      
+                      {couponData ? (
+                        <button
+                          onClick={clearCoupon}
+                          className="px-3 py-2 bg-gray-200 text-gray-700 rounded-md text-sm hover:bg-gray-300 transition-colors"
+                        >
+                          Clear
+                        </button>
+                      ) : (
+                        <button
+                          onClick={validateCoupon}
+                          className={`px-3 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700 transition-colors ${
+                            couponLoading ? 'opacity-70 cursor-not-allowed' : ''
+                          }`}
+                          disabled={couponLoading}
+                        >
+                          {couponLoading ? 'Checking...' : 'Apply'}
+                        </button>
+                      )}
+                    </div>
+                    
+                    {couponError && (
+                      <p className="mt-1 text-xs text-red-600">{couponError}</p>
+                    )}
+                    
+                    {couponData && couponData.success && (
+                      <div className="mt-2 text-sm bg-green-50 border border-green-200 rounded-md p-2">
+                        <div className="flex items-center text-green-700">
+                          <Check className="w-4 h-4 mr-1" />
+                          <span>Coupon applied!</span>
+                        </div>
+                        <p className="text-gray-600">
+                          You saved ₹{couponData.data.discountAmount.toLocaleString()}
+                          {couponData.data.discountType === 'percentage' && 
+                            ` (${couponData.data.discountValue}% off)`}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Price Summary - with coupon discount displayed */}
+                  <div className="flex flex-col gap-2 pt-6 mt-5 border-t-2 border-gray-200">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-500">Base Price:</span>
+                      <span className="text-base font-medium text-gray-900">₹{calculateBasePrice().toLocaleString()}</span>
+                    </div>
+                    
+                    {couponData && couponData.success && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-500">Discount:</span>
+                        <span className="text-base font-medium text-green-600">-₹{couponData.data.discountAmount.toLocaleString()}</span>
+                      </div>
+                    )}
+                    
+                    <div className="flex justify-between items-center pt-2 border-t border-gray-100">
+                      <span className="text-lg font-semibold text-gray-900">Total Price:</span>
+                      <span className="text-2xl font-bold text-blue-600">₹{calculateTotalPrice().toLocaleString()}</span>
+                    </div>
                   </div>
                   
-                  {/* Get Started Button */}
+                  {/* Get Started Button - same as original */}
                   <button 
                     onClick={handleGetStarted}
                     className="w-full bg-blue-600 text-white py-4 rounded-lg text-base font-semibold mt-8 transition-all duration-300 hover:bg-blue-700 hover:-translate-y-1 hover:shadow-lg"
@@ -609,7 +757,6 @@ const ProductDetails = () => {
               </div>
             </div>
           </div>
-
         </div>
       </div>
 

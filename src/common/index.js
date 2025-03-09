@@ -293,6 +293,30 @@ const SummaryApi = {
         url: `${backendDomain}/api/download-all-files/:requestId`,
         method: "get"
       },
+      validateCoupon: {
+        url : `${backendDomain}/api/validate-coupon`,
+        method: "post"
+      },
+      getAllCoupons: {
+        url: `${backendDomain}/api/get-coupons`,
+        method: "get"
+      },
+      createCoupon: {
+        url: `${backendDomain}/api/create-coupon`,
+        method: "post"
+      },
+      updateCoupon: {
+        url: `${backendDomain}/api/update-coupon`,
+        method: "post"
+      },
+      deleteCoupon : {
+        url: `${backendDomain}/api/delete-coupon`,
+        method: "delete"
+      },
+      getProductsForCoupon : {
+        url: `${backendDomain}/api/products-coupon`,
+        method: "get"
+      },
     wallet : {
         balance :{
             url : `${backendDomain}/api/wallet/balance`,
