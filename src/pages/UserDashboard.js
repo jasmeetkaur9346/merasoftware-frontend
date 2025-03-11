@@ -437,7 +437,7 @@ const Dashboard = () => {
         <div className="mt-3">
           <div className="flex justify-between text-xs mb-1">
             <span className="text-gray-600">Progress</span>
-            <span className="font-medium">{activeProject.projectProgress || 0}%</span>
+            <span className="font-medium">{Math.round(activeProject.projectProgress) || 0}%</span>
           </div>
           <div className="w-full h-2 bg-white rounded-full shadow-inner overflow-hidden">
             <div

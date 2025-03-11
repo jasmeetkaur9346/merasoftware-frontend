@@ -214,12 +214,12 @@ const AdminProjects = () => {
       <div className="mt-4">
         <div className="flex justify-between mb-2">
           <span className="text-sm font-medium">Progress</span>
-          <span className="text-sm text-gray-600">{project.projectProgress}%</span>
+          <span className="text-sm text-gray-600">{Math.round(project.projectProgress)}%</span>
         </div>
         <div className="w-full bg-gray-200 rounded-full h-2">
           <div
             className="bg-blue-600 h-2 rounded-full transition-all duration-500"
-            style={{ width: `${project.projectProgress}%` }}
+            style={{ width: `${Math.round(project.projectProgress)}%` }}
           ></div>
         </div>
       </div>

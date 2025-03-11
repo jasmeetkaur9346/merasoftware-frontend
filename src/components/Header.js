@@ -199,13 +199,14 @@ if(value){
        <div className="flex items-center space-x-6">
 
        {/* Add Wallet Balance Display */}
+       <Link to={"/wallet"}>
        {user?._id && (
-              <div className='flex items-center gap-2 px-3 py-1 rounded-full'>
-                <IoWalletOutline className="text-xl text-green-600" />
-                <span className='font-medium text-green-600'>{displayCurrency (context.walletBalance)}</span>
-              </div>
-            )}
-
+          <div className='flex items-center gap-2 px-3 py-1 rounded-full'>
+            <IoWalletOutline className="text-xl text-green-600" />
+            <span className='font-medium text-green-600'>{displayCurrency (context.walletBalance)}</span>
+          </div>
+        )}
+        </Link>
           <div className='relative flex justify-center'>
                {
                     user?._id && (

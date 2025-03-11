@@ -60,6 +60,7 @@ const ProductDetails = () => {
   const [addToCartLoading, setAddToCartLoading] = useState(false);
   const [additionalFeaturesData, setAdditionalFeaturesData] = useState([]);
   const [quantities, setQuantities] = useState({});
+  const [paymentOption, setPaymentOption] = useState('full');
 
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
@@ -243,6 +244,32 @@ const ProductDetails = () => {
       }
     }
 
+    // Calculate total price
+  const totalPrice = calculateTotalPrice();
+  
+  // Calculate payment amounts based on selected option
+  let currentPaymentAmount = totalPrice;
+  let remainingPayments = [];
+  
+  if (paymentOption === 'partial') {
+    // For partial payment: Calculate 30% of total
+    currentPaymentAmount = Math.round(totalPrice * 0.3);
+    
+    // Calculate remaining installments
+    remainingPayments = [
+      {
+        installmentNumber: 2,
+        percentage: 30,
+        amount: Math.round(totalPrice * 0.3)
+      },
+      {
+        installmentNumber: 3,
+        percentage: 40,
+        amount: Math.round(totalPrice * 0.4)
+      }
+    ];
+  }
+
     // Create a proper structured object for payment data
   const paymentData = {
     product: {
@@ -265,8 +292,11 @@ const ProductDetails = () => {
       };
     }).filter(Boolean),
     couponData: couponData,
-    totalPrice: calculateTotalPrice(),
-    originalTotalPrice: calculateBasePrice() // Total before coupon
+    totalPrice: totalPrice,
+    currentPaymentAmount: currentPaymentAmount,
+    originalTotalPrice: calculateBasePrice(), // Total before coupon
+    paymentOption: paymentOption,
+    remainingPayments: remainingPayments
   };
   
   // Navigate to direct payment page with data
@@ -775,13 +805,61 @@ const ProductDetails = () => {
                       <span className="text-2xl font-bold text-blue-600">₹{calculateTotalPrice().toLocaleString()}</span>
                     </div>
                   </div>
+
+                  <div className="mt-6 pt-6 border-t-2 border-gray-200">
+  <h3 className="text-base font-semibold mb-2">Select Payment Option</h3>
+  <div className="flex gap-4 mb-4">
+    <div 
+      className={`border rounded-lg p-3 cursor-pointer flex-1 ${paymentOption === 'full' ? 'border-blue-600 bg-blue-50' : 'border-gray-200'}`}
+      onClick={() => setPaymentOption('full')}
+    >
+      <div className="flex items-center mb-2">
+        <div className={`w-4 h-4 rounded-full mr-2 ${paymentOption === 'full' ? 'bg-blue-600' : 'border border-gray-400'}`}></div>
+        <span className="font-medium">Full Payment</span>
+      </div>
+      <p className="text-xs text-gray-500">Pay the entire amount at once</p>
+    </div>
+    
+    <div 
+      className={`border rounded-lg p-3 cursor-pointer flex-1 ${paymentOption === 'partial' ? 'border-blue-600 bg-blue-50' : 'border-gray-200'}`}
+      onClick={() => setPaymentOption('partial')}
+    >
+      <div className="flex items-center mb-2">
+        <div className={`w-4 h-4 rounded-full mr-2 ${paymentOption === 'partial' ? 'bg-blue-600' : 'border border-gray-400'}`}></div>
+        <span className="font-medium">Partial Payment</span>
+      </div>
+      <p className="text-xs text-gray-500">Pay in 3 installments (30% - 30% - 40%)</p>
+    </div>
+  </div>
+
+  {/* Show payment breakdown for partial payment */}
+  {paymentOption === 'partial' && (
+    <div className="bg-gray-50 p-3 rounded-lg mb-4">
+      <h4 className="text-sm font-medium mb-2">Payment Schedule:</h4>
+      <div className="space-y-2">
+        <div className="flex justify-between text-sm">
+          <span>First Payment (30%):</span>
+          <span className="font-medium">₹{Math.round(calculateTotalPrice() * 0.3).toLocaleString()}</span>
+        </div>
+        <div className="flex justify-between text-sm">
+          <span>Second Payment (30%):</span>
+          <span className="font-medium">₹{Math.round(calculateTotalPrice() * 0.3).toLocaleString()}</span>
+        </div>
+        <div className="flex justify-between text-sm">
+          <span>Final Payment (40%):</span>
+          <span className="font-medium">₹{Math.round(calculateTotalPrice() * 0.4).toLocaleString()}</span>
+        </div>
+      </div>
+    </div>
+  )}
+</div>
                   
                   {/* Get Started Button - same as original */}
                   <button 
                     onClick={handleGetStarted}
                     className="w-full bg-blue-600 text-white py-4 rounded-lg text-base font-semibold mt-8 transition-all duration-300 hover:bg-blue-700 hover:-translate-y-1 hover:shadow-lg"
                   >
-                    Get Started
+                     {paymentOption === 'full' ? 'Proceed to Payment' : 'Pay First Installment'}
                   </button>
                 </div>
               </div>

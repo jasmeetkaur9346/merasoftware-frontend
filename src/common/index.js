@@ -317,6 +317,18 @@ const SummaryApi = {
         url: `${backendDomain}/api/products-coupon`,
         method: "get"
       },
+      payInstallment: {
+        url: `${backendDomain}/api/pay-installment`,
+        method: "post"
+      },
+      markInstallmentVerificationPending: {
+        url: `${backendDomain}/api/mark-installment-pending`,
+        method: "post"
+      },
+      checkPendingOrderTransactions:{
+        url: `${backendDomain}/api/check-pending-order-transactions`,
+        method :"get"
+      },
     wallet : {
         balance :{
             url : `${backendDomain}/api/wallet/balance`,

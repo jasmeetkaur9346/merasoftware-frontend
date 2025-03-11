@@ -35,6 +35,8 @@ import UserDashboard from "../pages/UserDashboard";
 import AdminPaymentVerification from "../pages/AdminPaymentVerification";
 import AdminCouponPage from "../pages/AdminCouponPage";
 import DirectPayment from "../pages/DirectPayment";
+import InstallmentManagement from "../pages/InstallmentManagement";
+import InstallmentPayment from "../pages/InstallmentPayment";
 
 
 // Create a conditional home route
@@ -134,6 +136,14 @@ const router = createBrowserRouter([
             {
                 path: "direct-payment",
                 element: <DirectPayment/>
+            },
+            {
+                path: "installments",
+                element : <InstallmentManagement/>
+            },
+            {
+                path: "installment-payment/:orderId/:installmentNumber",
+                element: <InstallmentPayment/>
             },
             {
                 path: "admin-panel",

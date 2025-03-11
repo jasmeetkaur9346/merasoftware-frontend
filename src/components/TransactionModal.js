@@ -12,6 +12,19 @@ const TransactionModal = ({
 }) => {
   if (!isOpen || !transaction) return null;
   
+  // Determine if this is an installment payment
+  const isInstallmentPayment = transaction.isInstallmentPayment || 
+    (transaction.type === 'payment' && transaction.orderId);
+  
+  // Get user-friendly transaction type
+  const getTransactionTypeText = () => {
+    if (isInstallmentPayment) {
+      return `Installment #${transaction.installmentNumber || '1'} Payment`;
+    } else {
+      return 'Wallet Recharge';
+    }
+  };
+  
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6 relative">
@@ -34,6 +47,9 @@ const TransactionModal = ({
           <h3 className="text-xl font-medium">
             {type === 'approve' ? 'Approve Transaction' : 'Reject Transaction'}
           </h3>
+          <div className="mt-1 text-sm text-gray-600">
+            {getTransactionTypeText()}
+          </div>
         </div>
         
         <div className="border-t border-b border-gray-200 py-4 my-4">
@@ -63,6 +79,17 @@ const TransactionModal = ({
             </div>
           </div>
           
+          {isInstallmentPayment && transaction.orderId && (
+            <div className="grid grid-cols-2 gap-3 mb-2">
+              <div className="text-sm text-gray-600">Order ID:</div>
+              <div className="text-sm font-mono truncate">
+                {typeof transaction.orderId === 'object' 
+                  ? (transaction.orderId._id || JSON.stringify(transaction.orderId)) 
+                  : transaction.orderId}
+              </div>
+            </div>
+          )}
+          
           <div className="grid grid-cols-2 gap-3">
             <div className="text-sm text-gray-600">Date:</div>
             <div className="text-sm">
@@ -73,7 +100,9 @@ const TransactionModal = ({
         
         <p className="mb-4 text-sm text-gray-600">
           {type === 'approve' 
-            ? `Are you sure you want to approve this transaction? This will add ${displayINRCurrency(transaction.amount)} to the user's wallet.` 
+            ? (isInstallmentPayment 
+                ? `Are you sure you want to approve this installment payment? This will update the project payment status.` 
+                : `Are you sure you want to approve this transaction? This will add ${displayINRCurrency(transaction.amount)} to the user's wallet.`)
             : 'Are you sure you want to reject this transaction? This action cannot be undone.'}
         </p>
         

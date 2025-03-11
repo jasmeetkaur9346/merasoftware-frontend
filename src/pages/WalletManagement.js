@@ -146,7 +146,7 @@ const WalletManagement = () => {
                                             <div className="text-sm text-gray-500">{user.email}</div>
                                         </td>
                                         <td className="p-2 text-right">
-                                            ₹{user.walletBalance || 0}
+                                            ₹{Math.round(user.walletBalance) || 0}
                                         </td>
                                     </tr>
                                 ))}
