@@ -83,9 +83,11 @@ const TransactionModal = ({
             <div className="grid grid-cols-2 gap-3 mb-2">
               <div className="text-sm text-gray-600">Order ID:</div>
               <div className="text-sm font-mono truncate">
-                {typeof transaction.orderId === 'object' 
+              {transaction.orderId
+              ? (typeof transaction.orderId === 'object' 
                   ? (transaction.orderId._id || JSON.stringify(transaction.orderId)) 
-                  : transaction.orderId}
+                  : transaction.orderId)
+              : "N/A"}
               </div>
             </div>
           )}

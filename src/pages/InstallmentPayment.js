@@ -24,6 +24,7 @@ const InstallmentPayment = () => {
   const [paymentProcessed, setPaymentProcessed] = useState(false);
   const [remainingAmount, setRemainingAmount] = useState(0);
   const [user, setUser] = useState(null);
+  // const [isPartialPayment, setIsPartialPayment] = useState(false);
 
   useEffect(() => {
     fetchOrderDetails();
@@ -36,7 +37,11 @@ const InstallmentPayment = () => {
 
   // Generate transaction ID
   const generateTransactionId = () => {
-    return 'INST' + Date.now() + Math.floor(Math.random() * 1000);
+    // Use different prefixes to avoid collisions
+    const prefix = 'INST';
+    const timestamp = Date.now();
+    const random = Math.floor(Math.random() * 10000);
+    return `${prefix}${timestamp}${random}`;
   };
 
   const fetchOrderDetails = async () => {
@@ -206,14 +211,14 @@ const InstallmentPayment = () => {
       setVerificationStatus('Submitting verification request...');
       
       console.log('Sending verification with data:', {
-        transactionId, 
+        transactionId,
         amount: remainingAmount,
         upiTransactionId,
         isInstallmentPayment: true,
         orderId,
         installmentNumber: parseInt(installmentNumber)
       });
-
+      
       // First create a transaction record for the QR payment
       const verifyResponse = await fetch(SummaryApi.wallet.verifyPayment.url, {
         method: SummaryApi.wallet.verifyPayment.method,
@@ -233,10 +238,18 @@ const InstallmentPayment = () => {
       
       const verifyData = await verifyResponse.json();
       
+      // Modified logic to handle existing transactions
       if (!verifyData.success) {
-        setVerificationStatus(verifyData.message || 'Verification submission failed');
-        setLoading(false);
-        return;
+        // Check if it failed because transaction already exists
+        if (verifyData.message && verifyData.message.includes("already submitted")) {
+          console.log("Transaction already exists, continuing with order update");
+          // Continue to update the installment status
+        } else {
+          // For other errors, stop here
+          setVerificationStatus(verifyData.message || 'Verification submission failed');
+          setLoading(false);
+          return;
+        }
       }
       
       // Then update the installment status to pending approval
@@ -249,41 +262,42 @@ const InstallmentPayment = () => {
         body: JSON.stringify({
           orderId: orderId,
           installmentNumber: parseInt(installmentNumber),
-          amount: installment.amount,
+          amount: remainingAmount,
           isInstallmentPayment: true,
           transactionId: transactionId,
           upiTransactionId: upiTransactionId,
-          paymentStatus: 'pending-approval'
+          paymentStatus: 'pending-approval',
+          isPartialPaymentAfterWallet: remainingAmount < installment.amount
         })
       });
       
       const updateData = await updateResponse.json();
-    
-    if (!updateData.success) {
-      console.error('Error updating installment status:', updateData);
-      setVerificationStatus('Payment verification submitted, but there was an issue updating the project status. Support has been notified.');
+      
+      if (!updateData.success) {
+        console.error('Error updating installment status:', updateData);
+        setVerificationStatus('Payment verification submitted, but there was an issue updating the project status. Support has been notified.');
+        setLoading(false);
+        return;
+      }
+      
+      console.log('Payment verification and order update successful');
+      
+      // Clear verification status and show success message
+      setVerificationStatus('');
+      toast.success('Payment verification submitted successfully! Your project will continue after admin approval (typically 1-4 hours).');
+      setPaymentProcessed(true);
+      
+      // Redirect to project details after a brief delay
+      setTimeout(() => {
+        navigate(`/project-details/${orderId}`);
+      }, 3000);
+    } catch (error) {
+      console.error('Error verifying payment:', error);
+      setVerificationStatus('Error submitting verification. Please contact support.');
+    } finally {
       setLoading(false);
-      return;
     }
-
-    console.log('Payment verification and order update successful');
-    
-    // Clear verification status and show success message
-    setVerificationStatus('');
-    toast.success('Payment verification submitted successfully! Your project will continue after admin approval (typically 1-4 hours).');
-    setPaymentProcessed(true);
-    
-    // Redirect to project details after a brief delay
-    setTimeout(() => {
-      navigate(`/project-details/${orderId}`);
-    }, 3000);
-  } catch (error) {
-    console.error('Error verifying payment:', error);
-    setVerificationStatus('Error submitting verification. Please contact support.');
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   const getInstallmentName = (number) => {
     switch(parseInt(number)) {

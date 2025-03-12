@@ -303,7 +303,6 @@ const ProductDetails = () => {
   navigate('/direct-payment', { state: { paymentData } });
 };
    
-  
 
   // Reset coupon when selected features change
   useEffect(() => {

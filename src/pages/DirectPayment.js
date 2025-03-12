@@ -52,7 +52,11 @@ const DirectPayment = () => {
 
   // Generate transaction ID
   const generateTransactionId = () => {
-    return 'TXN' + Date.now() + Math.floor(Math.random() * 1000);
+    // Use different prefixes to avoid collisions
+  const prefix = isPartialPayment ? 'INST' : 'TXN';
+  const timestamp = Date.now();
+  const random = Math.floor(Math.random() * 10000);
+  return `${prefix}${timestamp}${random}`;
   };
 
   // Add this helper function at the top of your component
@@ -398,7 +402,8 @@ const createOrder = async (paymentMethod = 'upi') => {
         installmentNumber: isPartialPayment ? installmentNumber : null,
         description: isPartialPayment 
           ? `Installment #${installmentNumber} payment for ${paymentData.product.serviceName}`
-          : 'Payment via UPI'
+          : 'Payment via UPI',
+          isPartialInstallmentPayment: remainingAmount < paymentData.currentPaymentAmount
         })
       });
       
