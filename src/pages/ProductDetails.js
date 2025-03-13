@@ -806,34 +806,34 @@ const ProductDetails = () => {
                   </div>
 
                   <div className="mt-6 pt-6 border-t-2 border-gray-200">
-  <h3 className="text-base font-semibold mb-2">Select Payment Option</h3>
-  <div className="flex gap-4 mb-4">
-    <div 
-      className={`border rounded-lg p-3 cursor-pointer flex-1 ${paymentOption === 'full' ? 'border-blue-600 bg-blue-50' : 'border-gray-200'}`}
+  <h3 className="text-base font-semibold mb-4">Select Payment Option</h3>
+  <div className="space-y-4">
+    <div
+      className={`border rounded-lg p-4 cursor-pointer ${paymentOption === 'full' ? 'border-blue-600 bg-blue-100' : 'border-gray-200'}`}
       onClick={() => setPaymentOption('full')}
     >
       <div className="flex items-center mb-2">
         <div className={`w-4 h-4 rounded-full mr-2 ${paymentOption === 'full' ? 'bg-blue-600' : 'border border-gray-400'}`}></div>
         <span className="font-medium">Full Payment</span>
       </div>
-      <p className="text-xs text-gray-500">Pay the entire amount at once</p>
+      <p className="text-xs text-gray-500 ml-6">Pay the entire amount at once</p>
     </div>
-    
-    <div 
-      className={`border rounded-lg p-3 cursor-pointer flex-1 ${paymentOption === 'partial' ? 'border-blue-600 bg-blue-50' : 'border-gray-200'}`}
+   
+    <div
+      className={`border rounded-lg p-4 cursor-pointer ${paymentOption === 'partial' ? 'border-blue-600 bg-blue-100' : 'border-gray-200'}`}
       onClick={() => setPaymentOption('partial')}
     >
       <div className="flex items-center mb-2">
         <div className={`w-4 h-4 rounded-full mr-2 ${paymentOption === 'partial' ? 'bg-blue-600' : 'border border-gray-400'}`}></div>
         <span className="font-medium">Partial Payment</span>
       </div>
-      <p className="text-xs text-gray-500">Pay in 3 installments (30% - 30% - 40%)</p>
+      <p className="text-xs text-gray-500 ml-6">Pay in 3 installments (30% - 30% - 40%)</p>
     </div>
   </div>
-
+  
   {/* Show payment breakdown for partial payment */}
   {paymentOption === 'partial' && (
-    <div className="bg-gray-50 p-3 rounded-lg mb-4">
+    <div className="bg-gray-50 p-3 rounded-lg mt-4 mb-4">
       <h4 className="text-sm font-medium mb-2">Payment Schedule:</h4>
       <div className="space-y-2">
         <div className="flex justify-between text-sm">
