@@ -522,7 +522,7 @@ const ProjectDetails = () => {
                         cy="50" 
                       />
                       {/* Pulse animation for in-progress effect */}
-                      {!isProjectPaused && order.projectProgress < 100 && (
+                      {/* {!isProjectPaused && order.projectProgress < 100 && (
                         <circle 
                           className="text-blue-300 animate-ping opacity-75"
                           strokeWidth="2" 
@@ -532,7 +532,7 @@ const ProjectDetails = () => {
                           cx="50" 
                           cy="50" 
                         />
-                      )}
+                      )} */}
                     </svg>
                     <div className="absolute top-0 left-0 w-full h-full flex flex-col items-center justify-center">
                       <span className="text-3xl font-bold">{Math.round(order.projectProgress)}%</span>
