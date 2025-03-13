@@ -54,7 +54,7 @@ const Dashboard = () => {
           // Filter website projects and update plans
           const websiteProjects = allOrders.filter(order => {
             const category = order.productId?.category?.toLowerCase();
-            return ['standard_websites', 'dynamic_websites', 'web_applications', 'mobile_apps'].includes(category) ||
+            return ['standard_websites', 'dynamic_websites', 'cloud_software_development', 'app_development'].includes(category) ||
                    (category === 'website_updates');
           });
           
@@ -69,7 +69,7 @@ const Dashboard = () => {
             if (!category) return false;
             
             // Only website projects, not update plans
-            if (['standard_websites', 'dynamic_websites', 'web_applications', 'mobile_apps'].includes(category)) {
+            if (['standard_websites', 'dynamic_websites', 'cloud_software_development', 'app_development'].includes(category)) {
               return project.projectProgress < 100 || project.currentPhase !== 'completed';
             }
             return false;
@@ -81,7 +81,7 @@ const Dashboard = () => {
             const category = project.productId?.category?.toLowerCase();
             if (!category) return false;
             
-            if (['standard_websites', 'dynamic_websites', 'web_applications', 'mobile_apps'].includes(category)) {
+            if (['standard_websites', 'dynamic_websites', 'cloud_software_development', 'app_development'].includes(category)) {
               return project.projectProgress === 100 && project.currentPhase === 'completed';
             } else if (category === 'website_updates') {
               // Include completed/expired update plans

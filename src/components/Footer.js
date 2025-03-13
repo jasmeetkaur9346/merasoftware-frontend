@@ -1,20 +1,68 @@
-import React, { useState, useContext } from 'react';
-import { Link } from 'react-router-dom';
-// import { FaHome } from "react-icons/fa";
-// import { FiUser } from "react-icons/fi";
-// import { FiPackage } from "react-icons/fi";
+import React, { useState, useContext, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-// import { IoCartOutline } from "react-icons/io5";
-// import { IoWalletOutline } from "react-icons/io5";
-import { PlusCircle, Home, ShoppingBag, 
-  UserCircle, Wallet, ShoppingCart } from 'lucide-react';
+import { PlusCircle, Home, UserCircle, Wallet, FileText } from 'lucide-react';
 import Context from '../context';
+import SummaryApi from '../common';
 
 const Footer = () => {
   const user = useSelector(state => state?.user?.user);
   const [menuDisplay, setMenuDisplay] = useState(false);
   const [activeTab, setActiveTab] = useState('home');
   const context = useContext(Context);
+  const navigate = useNavigate();
+  const [activeProjectId, setActiveProjectId] = useState(null);
+
+  useEffect(() => {
+    // Fetch active project when user is logged in
+    const fetchActiveProject = async () => {
+      if (!user?._id) return;
+      
+      try {
+        const response = await fetch(SummaryApi.ordersList.url, {
+          method: SummaryApi.ordersList.method,
+          credentials: 'include'
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+          // Get all orders
+          const allOrders = data.data || [];
+          
+          // Filter website projects
+          const websiteProjects = allOrders.filter(order => {
+            const category = order.productId?.category?.toLowerCase();
+            return ['standard_websites', 'dynamic_websites', 'web_applications', 'mobile_apps'].includes(category);
+          });
+          
+          // Find active (in-progress) project
+          const activeProj = websiteProjects.find(project => 
+            project.projectProgress < 100 || project.currentPhase !== 'completed'
+          );
+          
+          if (activeProj) {
+            setActiveProjectId(activeProj._id);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching active project:', error);
+      }
+    };
+
+    fetchActiveProject();
+  }, [user?._id]);
+  
+  // Handle click on My Project button
+  const handleMyProjectClick = (e) => {
+    e.preventDefault();
+    setActiveTab('project');
+    
+    if (activeProjectId) {
+      navigate(`/project-details/${activeProjectId}`);
+    } else {
+      navigate('/dashboard');
+    }
+  };
 
   return (
     <>
@@ -95,61 +143,71 @@ const Footer = () => {
       <div className="md:hidden mt-24">
         {/* Bottom Navigation */}
         <footer className="bg-white border-t fixed bottom-0 left-0 right-0 z-10">
-        <div className="flex justify-between items-center px-2">
-        <Link to={"/"}
-            className={`flex flex-col items-center py-2 px-4 ${activeTab === 'home' ? 'text-blue-600' : 'text-gray-600'}`}
-            onClick={() => setActiveTab('home')}
-          >
-            <Home size={20} />
-            <span className="text-xs mt-1">Home</span>
-          </Link>
-          
-          <Link to={user?._id ? "/wallet" : "/login"}
-            className={`flex flex-col items-center py-2 px-4 ${activeTab === 'wallet' ? 'text-blue-600' : 'text-gray-600'}`}
-            onClick={() => setActiveTab('wallet')}
-          >
-            <Wallet size={20} />
-            {user?._id ? (
+          <div className="flex justify-between items-center px-2">
+            <Link to={"/"}
+              className={`flex flex-col items-center py-2 px-4 ${activeTab === 'home' ? 'text-blue-600' : 'text-gray-600'}`}
+              onClick={() => setActiveTab('home')}
+            >
+              <Home size={20} />
+              <span className="text-xs mt-1">Home</span>
+            </Link>
+            
+            <Link to={user?._id ? "/wallet" : "/login"}
+              className={`flex flex-col items-center py-2 px-4 ${activeTab === 'wallet' ? 'text-blue-600' : 'text-gray-600'}`}
+              onClick={() => setActiveTab('wallet')}
+            >
+              <Wallet size={20} />
+              {user?._id ? (
                 <span className="text-xs mt-1">
                   ₹{context?.walletBalance || 0}
                 </span>
               ) : (
                 <span className="text-xs mt-1">Wallet</span>
               )}
+            </Link>
             
-          </Link>
-          
-          <Link to={"/start-new-project"} 
-            className="flex flex-col items-center py-2 px-4"
-          >
-            <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center -mt-5 shadow-lg">
-              <PlusCircle size={24} className="text-white" />
-            </div>
-            <span className="text-xs mt-1 text-blue-600">Explore</span>
-          </Link>
-          
-          <Link to={"/cart"}
-            className={`flex flex-col items-center py-2 px-4 ${activeTab === 'orders' ? 'text-blue-600' : 'text-gray-600'}`}
-            onClick={() => setActiveTab('orders')}
-          >
-            <ShoppingCart size={20} />
-            {user?._id && context?.cartProductCount > 0 && (
-                <div className="absolute -top-1 -right-1 bg-red-500 text-white w-4 h-4 rounded-full flex items-center justify-center">
-                  <p className="text-xs">{context?.cartProductCount}</p>
-                </div>
+            <Link to={"/start-new-project"} 
+              className="flex flex-col items-center py-2 px-4"
+            >
+              <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center -mt-5 shadow-lg">
+                <PlusCircle size={24} className="text-white" />
+              </div>
+              <span className="text-xs mt-1 text-blue-600">Explore</span>
+            </Link>
+            
+            {/* My Project - Using onClick handler to navigate to active project */}
+            <a 
+              href="#"
+              className={`flex flex-col items-center py-2 px-4 ${activeTab === 'project' ? 'text-blue-600' : 'text-gray-600'}`}
+              onClick={handleMyProjectClick}
+            >
+              <FileText size={20} />
+              <span className="text-xs mt-1">My Project</span>
+            </a>
+            
+            {/* User Profile - Show profile image if logged in and image exists */}
+            <Link to={user?._id ? "/profile" : "/login"}
+              className={`flex flex-col items-center py-2 px-4 ${activeTab === 'profile' ? 'text-blue-600' : 'text-gray-600'}`}
+              onClick={() => setActiveTab('profile')}
+            >
+              {user?._id ? (
+                <>
+                  {user?.profilePic ? (
+                    <img src={user.profilePic} className="w-6 h-6 rounded-full" alt={user?.name} />
+                  ) : (
+                    <UserCircle size={20} />
+                  )}
+                  <span className="text-xs mt-1">You</span>
+                </>
+              ) : (
+                <>
+                  <UserCircle size={20} />
+                  <span className="text-xs mt-1">Login</span>
+                </>
               )}
-            <span className="text-xs mt-1">Cart</span>
-          </Link>
-          
-          <Link to={"/order"}
-            className={`flex flex-col items-center py-2 px-4 ${activeTab === 'orders' ? 'text-blue-600' : 'text-gray-600'}`}
-            onClick={() => setActiveTab('orders')}
-          >
-            <ShoppingBag size={20} />
-            <span className="text-xs mt-1">Orders</span>
-          </Link>
-        </div>
-      </footer>
+            </Link>
+          </div>
+        </footer>
       </div>
     </>
   );

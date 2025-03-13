@@ -50,39 +50,66 @@ const UploadProduct = ({
 
 
       // Calculate checkpoints whenever totalPages changes
-  useEffect(() => {
-    if (data.isWebsiteService && data.totalPages >= 4) {
-      // Structure checkpoints
-      const structureCheckpoints = [
-        { name: "Website Structure ready", percentage: 2 },
-        { name: "Header created", percentage: 5 },
-        { name: "Footer created", percentage: 5 },
-      ];
-
-      // Calculate percentage per page
-      const remainingPercentage = 78; // 100 - (2 + 5 + 5 + 10)
-      const percentagePerPage = Number((remainingPercentage / data.totalPages).toFixed(2));
-
-      // Generate page checkpoints (fixed + additional if any)
-      const pageCheckpoints = Array.from({ length: data.totalPages }, (_, index) => ({
-        name: index < 4 ? BASE_PAGES[index] : `Additional Page ${index - 3}`,
-        percentage: percentagePerPage
-      }));
-
-      // Final testing checkpoint
-      const finalCheckpoint = [{ name: "Final Testing", percentage: 10 }];
-
-      // Combine all checkpoints
-      setData(prev => ({
-        ...prev,
-        checkpoints: [
-          ...structureCheckpoints,
-          ...pageCheckpoints,
-          ...finalCheckpoint
-        ]
-      }));
-    }
-  }, [data.totalPages, data.isWebsiteService]);
+      useEffect(() => {
+        if (data.category) {
+          const websiteCategories = ['standard_websites', 'dynamic_websites'];
+          
+          if (websiteCategories.includes(data.category) && data.totalPages >= 4) {
+            // Existing website checkpoint calculation
+            const structureCheckpoints = [
+              { name: "Website Structure ready", percentage: 2 },
+              { name: "Header created", percentage: 5 },
+              { name: "Footer created", percentage: 5 },
+            ];
+      
+            const remainingPercentage = 78;
+            const percentagePerPage = Number((remainingPercentage / data.totalPages).toFixed(2));
+      
+            const pageCheckpoints = Array.from({ length: data.totalPages }, (_, index) => ({
+              name: index < 4 ? BASE_PAGES[index] : `Additional Page ${index - 3}`,
+              percentage: percentagePerPage
+            }));
+      
+            const finalCheckpoint = [{ name: "Final Testing", percentage: 10 }];
+      
+            setData(prev => ({
+              ...prev,
+              checkpoints: [
+                ...structureCheckpoints,
+                ...pageCheckpoints,
+                ...finalCheckpoint
+              ]
+            }));
+          } else if (data.category === 'cloud_software_development') {
+            // Cloud software checkpoints
+            setData(prev => ({
+              ...prev,
+              checkpoints: [
+                { name: "Project Initiation", percentage: 4 },
+                { name: "Core Backend & Database Setup", percentage: 2 },
+                { name: "Server & database architecture setup", percentage: 2 },
+                { name: "User roles & authentication system", percentage: 8 },
+                { name: "Dashboard structure & data flow design", percentage: 4 },
+                { name: "Basic backend functionality setup", percentage: 5 },
+                { name: "Core Modules Development", percentage: 5 },
+                { name: "Frontend Development & UI Implementation", percentage: 20 },
+                { name: "Dashboard & reports visualization", percentage: 5 },
+                { name: "Integration of UI with backend functions", percentage: 20 },
+                { name: "Responsive design for mobile & desktop", percentage: 5 },
+                { name: "User-friendly navigation & search features", percentage: 2 },
+                { name: "Email & SMS Notifications", percentage: 3 },
+                { name: "Role-Based Access Control", percentage: 3 },
+                { name: "Basic Third-Party Integrations", percentage: 4 },
+                { name: "Performance testing across devices", percentage: 2 },
+                { name: "Fixing bugs & security updates", percentage: 2 },
+                { name: "User Acceptance Testing (UAT)", percentage: 2 },
+                { name: "Final review & approval by client", percentage: 2 },
+                { name: "Deployment & Launch", percentage: 0 }
+              ]
+            }));
+          }
+        }
+      }, [data.category, data.totalPages]);
 
 
      // Fetch categories when component mounts
@@ -361,57 +388,64 @@ const CustomFeatureOption = ({ data, ...props }) => {
             ))}
         </select> 
 
-          {
-            shouldShowWebsiteFields(data.category) && (
-              <>
-              {/* Number of Pages Dropdown */}
-            <div className='mt-3'>
-              <label htmlFor='totalPages' className='block mb-2'>
-                Number of Pages: <span className='text-sm text-gray-500'>(Includes {BASE_PAGES.join(", ")})</span>
-              </label>
-              <select
-                id='totalPages'
-                name='totalPages'
-                value={data.totalPages}
-                onChange={(e) => setData(prev => ({
-                  ...prev,
-                  totalPages: parseInt(e.target.value)
-                }))}
-                className='w-full p-2 bg-slate-100 border rounded'
-              >
-                {Array.from({ length: 47 }, (_, i) => i + 4).map((num) => (
-                  <option key={num} value={num}>
-                    {num} Pages {num === 4 ? '(Minimum)' : ''}
-                  </option>
-                ))}
-              </select>
-            </div>
+        {shouldShowWebsiteFields(data.category) && (
+  <>
+    {/* Only show pages selector for website categories, not cloud software */}
+    {['standard_websites', 'dynamic_websites'].includes(data.category) && (
+      <div className='mt-3'>
+        <label htmlFor='totalPages' className='block mb-2'>
+          Number of Pages: <span className='text-sm text-gray-500'>(Includes {BASE_PAGES.join(", ")})</span>
+        </label>
+        <select
+          id='totalPages'
+          name='totalPages'
+          value={data.totalPages}
+          onChange={(e) => setData(prev => ({
+            ...prev,
+            totalPages: parseInt(e.target.value)
+          }))}
+          className='w-full p-2 bg-slate-100 border rounded'
+        >
+          {Array.from({ length: 47 }, (_, i) => i + 4).map((num) => (
+            <option key={num} value={num}>
+              {num} Pages {num === 4 ? '(Minimum)' : ''}
+            </option>
+          ))}
+        </select>
+      </div>
+    )}
 
-            {/* Display checkpoints */}
-            {data.checkpoints.length > 0 && (
-              <div className='mt-3'>
-                <label className='block mb-2'>Progress Checkpoints:</label>
-                <div className='bg-slate-50 p-3 rounded mt-1 max-h-60 overflow-y-auto'>
-                  {data.checkpoints.map((checkpoint, index) => (
-                    <div 
-                      key={index} 
-                      className={`flex justify-between items-center py-1 border-b last:border-0 ${
-                        BASE_PAGES.includes(checkpoint.name) ? 'font-medium' : ''
-                      }`}
-                    >
-                      <span className='text-sm'>{checkpoint.name}</span>
-                      <span className='text-sm text-gray-600'>{checkpoint.percentage}%</span>
-                    </div>
-                  ))}
-                  <div className='mt-2 pt-2 border-t'>
-                    <div className='flex justify-between font-medium'>
-                      <span>Total Pages:</span>
-                      <span>{data.totalPages}</span>
-                    </div>
-                  </div>
-                </div>
+    {/* Display checkpoints */}
+    {data.checkpoints.length > 0 && (
+      <div className='mt-3'>
+        <label className='block mb-2'>Progress Checkpoints:</label>
+        <div className='bg-slate-50 p-3 rounded mt-1 max-h-60 overflow-y-auto'>
+          {data.checkpoints.map((checkpoint, index) => (
+            <div 
+              key={index} 
+              className={`flex justify-between items-center py-1 border-b last:border-0`}
+            >
+              <span className='text-sm'>{checkpoint.name}</span>
+              <span className='text-sm text-gray-600'>{checkpoint.percentage}%</span>
+            </div>
+          ))}
+          <div className='mt-2 pt-2 border-t'>
+            <div className='flex justify-between font-medium'>
+              <span>Total Percentage:</span>
+              <span>
+                {data.checkpoints.reduce((sum, cp) => sum + cp.percentage, 0).toFixed(2)}%
+              </span>
+            </div>
+            {['standard_websites', 'dynamic_websites'].includes(data.category) && (
+              <div className='flex justify-between font-medium'>
+                <span>Total Pages:</span>
+                <span>{data.totalPages}</span>
               </div>
             )}
+          </div>
+        </div>
+      </div>
+    )}
 
               <label htmlFor='packageIncludes' className='mt-3'>Package Includes:</label>
           <PackageSelect
@@ -469,8 +503,7 @@ const CustomFeatureOption = ({ data, ...props }) => {
   </div>
 )}
               </>
-            )
-          }
+            )}
 
         {
           shouldShowFeatureFields(data.category) && (

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   Bell, MessageCircle, X, Phone, Mail, ChevronRight, 
-  Send, Paperclip, Clock, Check, Menu, Upload
+  Send, Paperclip, Clock, Check, Menu, Upload, ChevronDown
 } from 'lucide-react';
 import SummaryApi from '../common';
 import TriangleMazeLoader from '../components/TriangleMazeLoader';
@@ -26,6 +26,8 @@ const ProjectDetails = () => {
     { id: 1, sender: 'developer', text: 'Hello! I\'ve started working on your website structure.', time: '12:20 PM' }
   ]);
   const [isProjectPaused, setIsProjectPaused] = useState(false);
+  const [selectedTaskId, setSelectedTaskId] = useState(null);
+  const [showAllUpdates, setShowAllUpdates] = useState(true);
 
   useEffect(() => {
     fetchOrderDetails();
@@ -80,100 +82,100 @@ const ProjectDetails = () => {
   };
 
   // This function properly checks payment status and handles pending approvals
-const checkPaymentStatus = async (order) => {
-  console.log('Checking payment status for order:', order);
-  
-  // If project is already completed, don't show payment alert
-  if (order.projectProgress >= 100 || order.currentPhase === 'completed') {
-    console.log('Project is complete, not showing payment alert');
-    setShouldShowPaymentAlert(false);
-    setIsProjectPaused(false);
-    return;
-  }
-
-  try {
-    // Check if there are any pending transactions for this order first
-    // This is critical for first-time payments that might not be reflected in the order yet
-    const pendingTransResponse = await fetch(`${SummaryApi.checkPendingOrderTransactions.url}/${order._id}`, {
-      credentials: 'include',
-    });
+  const checkPaymentStatus = async (order) => {
+    console.log('Checking payment status for order:', order);
     
-    const pendingTransData = await pendingTransResponse.json();
-    const hasPendingTransaction = pendingTransData.success && pendingTransData.data.hasPending;
-    
-    console.log('Has pending transaction?', hasPendingTransaction);
-    
-    // If there's a pending transaction, show the pending approval alert
-    if (hasPendingTransaction) {
-      // Get the installment number from the transaction
-      const installmentNumber = pendingTransData.data.installmentNumber || 1;
-      
-      // Find the corresponding installment
-      const relevantInstallment = order.installments.find(
-        inst => inst.installmentNumber === installmentNumber
-      );
-      
-      setShouldShowPaymentAlert(true);
-      setIsProjectPaused(false); // Not paused while payment is being verified
-      setCurrentInstallment({
-        ...relevantInstallment,
-        paymentStatus: 'pending-approval'
-      });
-      
-      console.log('Payment is pending approval - showing alert');
+    // If project is already completed, don't show payment alert
+    if (order.projectProgress >= 100 || order.currentPhase === 'completed') {
+      console.log('Project is complete, not showing payment alert');
+      setShouldShowPaymentAlert(false);
+      setIsProjectPaused(false);
       return;
     }
-  } catch (error) {
-    console.error('Error checking pending transactions:', error);
-    // Continue with regular flow if API fails
-  }
 
-  // Regular installment check flow
-  if (order.installments && order.installments.length > 0) {
-    console.log('Order installments:', order.installments);
-    
-    const nextUnpaidInstallment = order.installments.find(inst => !inst.paid);
-    console.log('Next unpaid installment:', nextUnpaidInstallment);
-    
-    if (nextUnpaidInstallment) {
-      // Check if there's a pending approval for this installment in the order record
-      const isPendingApproval = 
-        nextUnpaidInstallment.paymentStatus === 'pending-approval';
+    try {
+      // Check if there are any pending transactions for this order first
+      // This is critical for first-time payments that might not be reflected in the order yet
+      const pendingTransResponse = await fetch(`${SummaryApi.checkPendingOrderTransactions.url}/${order._id}`, {
+        credentials: 'include',
+      });
       
-      console.log('Is pending approval?', isPendingApproval);
-      console.log('Payment status:', nextUnpaidInstallment.paymentStatus);
+      const pendingTransData = await pendingTransResponse.json();
+      const hasPendingTransaction = pendingTransData.success && pendingTransData.data.hasPending;
       
-      // If payment is awaiting verification based on order status, show the pending alert
-      if (isPendingApproval) {
-        console.log('Payment is pending approval - showing alert from order status');
+      console.log('Has pending transaction?', hasPendingTransaction);
+      
+      // If there's a pending transaction, show the pending approval alert
+      if (hasPendingTransaction) {
+        // Get the installment number from the transaction
+        const installmentNumber = pendingTransData.data.installmentNumber || 1;
+        
+        // Find the corresponding installment
+        const relevantInstallment = order.installments.find(
+          inst => inst.installmentNumber === installmentNumber
+        );
+        
         setShouldShowPaymentAlert(true);
         setIsProjectPaused(false); // Not paused while payment is being verified
         setCurrentInstallment({
-          ...nextUnpaidInstallment,
+          ...relevantInstallment,
           paymentStatus: 'pending-approval'
         });
+        
+        console.log('Payment is pending approval - showing alert');
         return;
       }
-      
-      // Determine if we should show the alert based on progress
-      // Clear thresholds for each installment
-      const shouldPause = 
-        (nextUnpaidInstallment.installmentNumber === 2 && Math.round(order.projectProgress) >= 50) ||
-        (nextUnpaidInstallment.installmentNumber === 3 && Math.round(order.projectProgress) >= 90);
-      
-      console.log('Should pause based on progress?', shouldPause);
-      
-      setShouldShowPaymentAlert(shouldPause);
-      setIsProjectPaused(shouldPause);
-      setCurrentInstallment(nextUnpaidInstallment);
-    } else {
-      // All installments paid, no alert needed
-      console.log('All installments paid, no alert needed');
-      setShouldShowPaymentAlert(false);
-      setIsProjectPaused(false);
+    } catch (error) {
+      console.error('Error checking pending transactions:', error);
+      // Continue with regular flow if API fails
     }
-  }
-};
+
+    // Regular installment check flow
+    if (order.installments && order.installments.length > 0) {
+      console.log('Order installments:', order.installments);
+      
+      const nextUnpaidInstallment = order.installments.find(inst => !inst.paid);
+      console.log('Next unpaid installment:', nextUnpaidInstallment);
+      
+      if (nextUnpaidInstallment) {
+        // Check if there's a pending approval for this installment in the order record
+        const isPendingApproval = 
+          nextUnpaidInstallment.paymentStatus === 'pending-approval';
+        
+        console.log('Is pending approval?', isPendingApproval);
+        console.log('Payment status:', nextUnpaidInstallment.paymentStatus);
+        
+        // If payment is awaiting verification based on order status, show the pending alert
+        if (isPendingApproval) {
+          console.log('Payment is pending approval - showing alert from order status');
+          setShouldShowPaymentAlert(true);
+          setIsProjectPaused(false); // Not paused while payment is being verified
+          setCurrentInstallment({
+            ...nextUnpaidInstallment,
+            paymentStatus: 'pending-approval'
+          });
+          return;
+        }
+        
+        // Determine if we should show the alert based on progress
+        // Clear thresholds for each installment
+        const shouldPause = 
+          (nextUnpaidInstallment.installmentNumber === 2 && Math.round(order.projectProgress) >= 50) ||
+          (nextUnpaidInstallment.installmentNumber === 3 && Math.round(order.projectProgress) >= 90);
+        
+        console.log('Should pause based on progress?', shouldPause);
+        
+        setShouldShowPaymentAlert(shouldPause);
+        setIsProjectPaused(shouldPause);
+        setCurrentInstallment(nextUnpaidInstallment);
+      } else {
+        // All installments paid, no alert needed
+        console.log('All installments paid, no alert needed');
+        setShouldShowPaymentAlert(false);
+        setIsProjectPaused(false);
+      }
+    }
+  };
 
   const formatDate = (date) => {
     return new Date(date).toLocaleDateString('en-GB', {
@@ -189,6 +191,10 @@ const checkPaymentStatus = async (order) => {
       minute: '2-digit',
       hour12: true
     });
+  };
+
+  const formatDateTime = (date) => {
+    return `${formatDate(date)} at ${formatTime(date)}`;
   };
 
   const handleMakePayment = () => {
@@ -216,6 +222,23 @@ const checkPaymentStatus = async (order) => {
       };
       setMessages([...messages, newMessage]);
       setMessageInput('');
+    }
+  };
+
+  const handleTaskClick = (taskId) => {
+    if (selectedTaskId === taskId) {
+      setSelectedTaskId(null);
+      setShowAllUpdates(true);
+    } else {
+      setSelectedTaskId(taskId);
+      setShowAllUpdates(false);
+    }
+  };
+
+  const toggleShowAllUpdates = () => {
+    setShowAllUpdates(!showAllUpdates);
+    if (showAllUpdates) {
+      setSelectedTaskId(null);
     }
   };
 
@@ -250,49 +273,31 @@ const checkPaymentStatus = async (order) => {
     );
   }
   
-  // Build timeline data from checkpoints
-  const timeline = order.checkpoints ? order.checkpoints.map(checkpoint => {
-    return {
-      task: checkpoint.name,
-      status: checkpoint.completed ? 'completed' : 'pending',
-      date: checkpoint.completedAt ? formatDate(checkpoint.completedAt) : null
-    };
-  }) : [];
+  // Get the current in-progress task and completed tasks
+  const inProgressTask = order.checkpoints ? 
+    order.checkpoints.find(checkpoint => !checkpoint.completed) : null;
   
-  // If there's an active task, mark it as in-progress
-  if (timeline.length > 0) {
-    const firstPendingIndex = timeline.findIndex(item => item.status === 'pending');
-    if (firstPendingIndex !== -1) {
-      timeline[firstPendingIndex].status = 'in-progress';
-    }
-  }
+  const completedTasks = order.checkpoints ? 
+    [...order.checkpoints.filter(checkpoint => checkpoint.completed)].reverse() : [];
+
+  // Filter messages based on selected task
+  const filteredMessages = selectedTaskId ? 
+    (order.messages || []).filter(msg => {
+      // This assumes there's some relation between messages and tasks
+      // You might need to adjust this logic based on your actual data structure
+      return msg.checkpointId === selectedTaskId || 
+             msg.message.toLowerCase().includes(
+               order.checkpoints.find(cp => cp.checkpointId === selectedTaskId)?.name.toLowerCase() || ''
+             );
+    }) : 
+    (order.messages || []);
 
   return (
     <DashboardLayout user={user}>
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Header */}
-        <header className="bg-white border-b border-gray-200 p-4 shadow-sm">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center">
-              <h1 className="text-xl font-bold">{order.productId?.serviceName}</h1>
-              <span className="ml-4 text-sm text-gray-500">Type: {order.productId?.category?.split('_').join(' ')}</span>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="text-sm text-gray-500">
-                <span>Last Update: {formatDate(order.lastUpdated)} {formatTime(order.lastUpdated)}</span>
-              </div>
-              <button 
-                className="p-2 rounded-full hover:bg-gray-100"
-                onClick={() => setChatOpen(!chatOpen)}
-              >
-                <MessageCircle size={20} />
-              </button>
-            </div>
-          </div>
-        </header>
         
         {/* Main content */}
-        <main className="flex-1 overflow-auto p-6">
+        <main className="flex-1 overflow-auto p-4 md:p-6">
           {/* Payment Alert Banner */}
           {shouldShowPaymentAlert && currentInstallment && (
             <PaymentAlert 
@@ -305,9 +310,145 @@ const checkPaymentStatus = async (order) => {
             />
           )}
 
-          <div className="grid grid-cols-12 gap-6">
-            {/* Developer info */}
-            <div className="col-span-12 lg:col-span-3">
+          {/* Mobile View - Progress at the top */}
+          <div className="md:hidden mb-6">
+            <div className="bg-white rounded-lg shadow p-4">
+              <div className="flex items-center border-b pb-2 mb-4">
+                <h1 className="text-lg font-bold">{order.productId?.serviceName}</h1>
+                <span className="ml-4 text-xs text-gray-500">Type: {order.productId?.category?.split('_').join(' ')}</span>
+              </div>
+              
+              <div className="flex items-center justify-between mb-4">
+                <div className="relative w-24 h-24">
+                  {/* Progress circle with pulse effect */}
+                  <svg className="w-full h-full" viewBox="0 0 100 100">
+                    <circle 
+                      className="text-gray-200" 
+                      strokeWidth="10" 
+                      stroke="currentColor" 
+                      fill="transparent" 
+                      r="40" 
+                      cx="50" 
+                      cy="50" 
+                    />
+                    <circle 
+                      className={isProjectPaused ? "text-red-500" : "text-blue-500"}
+                      strokeWidth="10" 
+                      strokeDasharray={`${order.projectProgress * 2.51} 251`} 
+                      strokeLinecap="round" 
+                      stroke="currentColor" 
+                      fill="transparent" 
+                      r="40" 
+                      cx="50" 
+                      cy="50" 
+                    />
+                    {/* Pulse animation for in-progress effect */}
+                    {!isProjectPaused && order.projectProgress < 100 && (
+                      <circle 
+                        className="text-blue-300 animate-ping opacity-75"
+                        strokeWidth="2" 
+                        stroke="currentColor"
+                        fill="transparent" 
+                        r="45" 
+                        cx="50" 
+                        cy="50" 
+                      />
+                    )}
+                  </svg>
+                  <div className="absolute top-0 left-0 w-full h-full flex flex-col items-center justify-center">
+                    <span className="text-xl font-bold">{Math.round(order.projectProgress)}%</span>
+                    {isProjectPaused && (
+                      <span className="text-xs font-semibold text-red-500 mt-1">PAUSED</span>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="flex-1 ml-4">
+                  <div className="flex items-center mb-2">
+                    <div className="w-3 h-3 rounded-full bg-green-500 mr-2"></div>
+                    <span className="text-sm">Completed: {completedTasks.length} tasks</span>
+                  </div>
+                  <div className="flex items-center mb-2">
+                    <div className="w-3 h-3 rounded-full bg-blue-500 mr-2"></div>
+                    <span className="text-sm">In Progress: {inProgressTask ? '1' : '0'} task</span>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-3 h-3 rounded-full bg-gray-300 mr-2"></div>
+                    <span className="text-sm">Pending: {order.checkpoints?.filter(c => !c.completed).length - (inProgressTask ? 1 : 0) || 0} tasks</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Current In-Progress Task for Mobile */}
+              {inProgressTask && (
+                <div className="mb-4">
+                  <h3 className="text-sm font-medium mb-2">Current Task</h3>
+                  <div className="flex items-start p-3 bg-blue-50 rounded-md border border-blue-100">
+                    <div className="flex-shrink-0 mr-3">
+                      <div className="w-4 h-4 bg-blue-500 rounded-full"></div>
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex justify-between items-start">
+                        <h3 className="font-medium text-sm">{inProgressTask.name}</h3>
+                      </div>
+                      <div className="flex items-center mt-1 text-xs text-blue-600">
+                        <Clock size={12} className="mr-1" />
+                        <span>In progress</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Recent Update for Mobile */}
+              <div className="mb-2">
+                <div className="flex justify-between items-center mb-2">
+                  <h3 className="text-sm font-medium">Recent Update</h3>
+                  {order.messages && order.messages.length > 1 && (
+                    <button 
+                      onClick={toggleShowAllUpdates}
+                      className="text-xs text-blue-600"
+                    >
+                      {showAllUpdates ? 'Show Less' : 'Show All'}
+                    </button>
+                  )}
+                </div>
+                
+                {order.messages && order.messages.length > 0 ? (
+                  <div>
+                    <div className="p-3 rounded-md bg-blue-50 border border-blue-100">
+                      <p className="text-sm">{order.messages[0].message}</p>
+                      <span className="text-xs text-gray-500 mt-1 block">
+                        {formatDateTime(order.messages[0].timestamp)}
+                      </span>
+                    </div>
+                    
+                    {showAllUpdates && order.messages.length > 1 && (
+                      <div className="mt-2 max-h-40 overflow-y-auto">
+                        {order.messages.slice(1).map((message, index) => (
+                          <div 
+                            key={index}
+                            className="p-3 rounded-md bg-gray-50 border border-gray-100 mb-2"
+                          >
+                            <p className="text-sm">{message.message}</p>
+                            <span className="text-xs text-gray-500 mt-1 block">
+                              {formatDateTime(message.timestamp)}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-gray-500 text-center py-4">No updates yet</p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-12 gap-4 md:gap-6">
+            {/* Developer info - last in mobile, left in desktop */}
+            <div className="col-span-12 order-last md:order-first md:col-span-3">
               <div className="bg-white rounded-lg shadow p-4 h-full">
                 <h2 className="font-semibold border-b pb-2 mb-4">Developer</h2>
                 <div className="flex flex-col items-center p-4">
@@ -334,30 +475,7 @@ const checkPaymentStatus = async (order) => {
                         order.assignedDeveloper.designation : "Developer Not Yet Assigned"}
                     </div>
                   </div>
-                  <div className="flex space-x-3 mt-2">
-                    <button 
-                      disabled={!(order.assignedDeveloper && typeof order.assignedDeveloper === 'object')}
-                      className={`flex items-center space-x-2 px-3 py-1 rounded-md ${
-                        order.assignedDeveloper && typeof order.assignedDeveloper === 'object' ? 
-                          'bg-green-100 text-green-600 hover:bg-green-200' : 
-                          'bg-gray-100 text-gray-400'
-                      }`}
-                    >
-                      <Phone size={16} />
-                      <span>Call</span>
-                    </button>
-                    <button 
-                      disabled={!(order.assignedDeveloper && typeof order.assignedDeveloper === 'object')}
-                      className={`flex items-center space-x-2 px-3 py-1 rounded-md ${
-                        order.assignedDeveloper && typeof order.assignedDeveloper === 'object' ? 
-                          'bg-purple-100 text-purple-600 hover:bg-purple-200' : 
-                          'bg-gray-100 text-gray-400'
-                      }`}
-                    >
-                      <Mail size={16} />
-                      <span>Email</span>
-                    </button>
-                  </div>
+                  
                   
                   {/* Request Update Button */}
                   <button 
@@ -371,13 +489,17 @@ const checkPaymentStatus = async (order) => {
               </div>
             </div>
             
-            {/* Progress with timeline */}
-            <div className="col-span-12 lg:col-span-6">
+            {/* Progress with timeline - Hidden on mobile, visible on desktop */}
+            <div className="hidden md:block col-span-12 md:col-span-6">
               <div className="bg-white rounded-lg shadow p-4 h-full">
-                <h2 className="font-semibold border-b pb-2 mb-4">Project Progress & Timeline</h2>
+                <div className="flex items-center border-b pb-2 mb-4">
+                  <h1 className="text-xl font-bold">{order.productId?.serviceName}</h1>
+                  <span className="ml-4 text-sm text-gray-500">Type: {order.productId?.category?.split('_').join(' ')}</span>
+                </div>
                 
                 <div className="flex items-center justify-between mb-6">
                   <div className="relative w-32 h-32">
+                    {/* Progress circle with pulse effect */}
                     <svg className="w-full h-full" viewBox="0 0 100 100">
                       <circle 
                         className="text-gray-200" 
@@ -399,73 +521,113 @@ const checkPaymentStatus = async (order) => {
                         cx="50" 
                         cy="50" 
                       />
+                      {/* Pulse animation for in-progress effect */}
+                      {!isProjectPaused && order.projectProgress < 100 && (
+                        <circle 
+                          className="text-blue-300 animate-ping opacity-75"
+                          strokeWidth="2" 
+                          stroke="currentColor"
+                          fill="transparent" 
+                          r="45" 
+                          cx="50" 
+                          cy="50" 
+                        />
+                      )}
                     </svg>
                     <div className="absolute top-0 left-0 w-full h-full flex flex-col items-center justify-center">
-                <span className="text-3xl font-bold">{Math.round(order.projectProgress)}%</span>
-                {isProjectPaused && (
-                  <span className="text-xs font-semibold text-red-500 mt-1">PAUSED</span>
-                )}
-              </div>
+                      <span className="text-3xl font-bold">{Math.round(order.projectProgress)}%</span>
+                      {isProjectPaused && (
+                        <span className="text-xs font-semibold text-red-500 mt-1">PAUSED</span>
+                      )}
+                    </div>
                   </div>
                   
                   <div className="flex-1 ml-6">
                     <div className="flex items-center mb-2">
                       <div className="w-3 h-3 rounded-full bg-green-500 mr-2"></div>
-                      <span className="text-sm">Completed: {order.checkpoints?.filter(c => c.completed).length || 0} tasks</span>
+                      <span className="text-sm">Completed: {completedTasks.length} tasks</span>
                     </div>
                     <div className="flex items-center mb-2">
                       <div className="w-3 h-3 rounded-full bg-blue-500 mr-2"></div>
-                      <span className="text-sm">In Progress: 1 task</span>
+                      <span className="text-sm">In Progress: {inProgressTask ? '1' : '0'} task</span>
                     </div>
                     <div className="flex items-center">
                       <div className="w-3 h-3 rounded-full bg-gray-300 mr-2"></div>
-                      <span className="text-sm">Pending: {order.checkpoints?.filter(c => !c.completed).length - 1 || 0} tasks</span>
+                      <span className="text-sm">Pending: {order.checkpoints?.filter(c => !c.completed).length - (inProgressTask ? 1 : 0) || 0} tasks</span>
                     </div>
                   </div>
                 </div>
                 
-                <div className="space-y-4 mt-6">
                 {isProjectPaused && (
-  <div className="mb-4 rounded-md bg-red-50 p-3 border border-red-200">
-    <div className="flex">
-      <div className="flex-shrink-0">
-        <svg className="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-        </svg>
-      </div>
-      <div className="ml-3">
-        <p className="text-sm text-red-700 font-medium">
-          Project paused at {Math.round(order.projectProgress)}% completion
-        </p>
-        <p className="text-xs text-red-600 mt-1">
-          Please clear the payment of ₹{currentInstallment?.amount.toLocaleString()} to continue development
-        </p>
-      </div>
-    </div>
-  </div>
-)}
-                  
-                  {timeline.map((item, index) => (
-                    <div key={index} className="flex">
+                  <div className="mb-4 rounded-md bg-red-50 p-3 border border-red-200">
+                    <div className="flex">
+                      <div className="flex-shrink-0">
+                        <svg className="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                      <div className="ml-3">
+                        <p className="text-sm text-red-700 font-medium">
+                          Project paused at {Math.round(order.projectProgress)}% completion
+                        </p>
+                        <p className="text-xs text-red-600 mt-1">
+                          Please clear the payment of ₹{currentInstallment?.amount.toLocaleString()} to continue development
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                <div className="space-y-4 mt-6">
+                  {/* In Progress Task on top */}
+                  {inProgressTask && (
+                    <div className="flex">
                       <div className="flex flex-col items-center mr-4">
-                        <div className={`rounded-full w-4 h-4 ${getStatusColor(item.status)}`}></div>
-                        {index < timeline.length - 1 && (
+                        <div className="rounded-full w-4 h-4 bg-blue-500 animate-pulse"></div>
+                        <div className="h-full w-0.5 bg-gray-200 my-1"></div>
+                      </div>
+                      <div className="flex-1">
+                        <div 
+                          className="flex justify-between items-start cursor-pointer"
+                          onClick={() => handleTaskClick(inProgressTask.checkpointId)}
+                        >
+                          <div>
+                            <h3 className="font-medium">{inProgressTask.name}</h3>
+                            <div className="flex items-center text-sm text-blue-600">
+                              <Clock size={14} className="mr-1" />
+                              <span>In progress</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Completed Tasks below */}
+                  {completedTasks.map((task, index) => (
+                    <div key={task.checkpointId} className="flex">
+                      <div className="flex flex-col items-center mr-4">
+                        <div className="rounded-full w-4 h-4 bg-green-500"></div>
+                        {index < completedTasks.length - 1 && (
                           <div className="h-full w-0.5 bg-gray-200 my-1"></div>
                         )}
                       </div>
                       <div className="flex-1">
-                        <div className="flex justify-between items-start">
+                        <div 
+                          className="flex justify-between items-start cursor-pointer"
+                          onClick={() => handleTaskClick(task.checkpointId)}
+                        >
                           <div>
-                            <h3 className="font-medium">{item.task}</h3>
-                            <p className="text-sm text-gray-500">
-                              {item.status === 'completed' ? 'Completed' : 
-                               item.status === 'in-progress' ? 'In Progress' : 'Pending'}
-                            </p>
+                            <h3 className="font-medium">{task.name}</h3>
+                            <div className="flex items-center text-sm text-green-600">
+                              <Check size={14} className="mr-1" />
+                              <span>Completed</span>
+                            </div>
                           </div>
-                          {item.date && (
+                          {task.completedAt && (
                             <span className="text-xs text-gray-500 flex items-center">
                               <Clock size={12} className="mr-1" />
-                              {item.date}
+                              {formatDateTime(task.completedAt)}
                             </span>
                           )}
                         </div>
@@ -477,12 +639,23 @@ const checkPaymentStatus = async (order) => {
             </div>
             
             {/* Recent Updates */}
-            <div className="col-span-12 lg:col-span-3">
+            <div className="col-span-12 hidden md:block md:col-span-3">
               <div className="bg-white rounded-lg shadow p-4 h-full">
-                <h2 className="font-semibold border-b pb-2 mb-4">Recent Updates</h2>
-                {order.messages && order.messages.length > 0 ? (
-                  <div className="space-y-3">
-                    {order.messages.map((message, index) => (
+                <div className="flex justify-between items-center border-b pb-2 mb-4">
+                  <h2 className="font-semibold">Recent Updates</h2>
+                  {selectedTaskId && filteredMessages.length > 0 && (
+                    <button 
+                      onClick={toggleShowAllUpdates}
+                      className="text-xs text-blue-600"
+                    >
+                      Show All
+                    </button>
+                  )}
+                </div>
+                
+                {filteredMessages && filteredMessages.length > 0 ? (
+                  <div className="space-y-3 max-h-96 overflow-y-auto">
+                    {filteredMessages.map((message, index) => (
                       <div 
                         key={index}
                         className={`p-3 rounded-md ${index === 0 ? 'bg-blue-50 border border-blue-100' : 'bg-gray-50 border border-gray-100'}`}
@@ -490,7 +663,15 @@ const checkPaymentStatus = async (order) => {
                         <div className="flex justify-between">
                           <p className="text-sm">{message.message}</p>
                         </div>
-                        <span className="text-xs text-gray-500 mt-1 block">{formatTime(message.timestamp)}</span>
+                        {/* Show checkpoint tag if it exists */}
+                        {message.checkpointId && (
+                          <span className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded mt-1">
+                            {order.checkpoints.find(cp => cp.checkpointId === message.checkpointId)?.name || 'Task Update'}
+                          </span>
+                        )}
+                        <span className="text-xs text-gray-500 mt-1 block">
+                          {formatDateTime(message.timestamp)}
+                        </span>
                       </div>
                     ))}
                   </div>
@@ -580,42 +761,13 @@ const checkPaymentStatus = async (order) => {
         />
       )}
       
-      {/* Timeline Modal */}
-      {showTimeline && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl p-6 max-h-[80vh] overflow-y-auto w-full max-w-md">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-bold">Project Timeline</h3>
-              <button 
-                onClick={() => setShowTimeline(false)}
-                className="text-gray-500 hover:text-gray-700 text-2xl"
-              >
-                ×
-              </button>
-            </div>
-            <div className="space-y-4">
-              {order.checkpoints?.map((checkpoint, index) => (
-                <div key={checkpoint.checkpointId} className="relative">
-                  <div className="flex items-center">
-                    <div className={`w-4 h-4 rounded-full ${
-                      checkpoint.completed ? 'bg-green-500' : 'bg-gray-300'
-                    }`} />
-                    <div className="ml-3">
-                      <h3 className="font-medium">{checkpoint.name}</h3>
-                      <div className="text-sm text-gray-500">
-                        {checkpoint.completed ? 'Completed' : 'Pending'}
-                      </div>
-                    </div>
-                  </div>
-                  {index < order.checkpoints.length - 1 && (
-                    <div className="absolute left-2 ml-[-1px] w-0.5 h-8 bg-gray-200" />
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Chat button */}
+      <button
+        className="fixed right-6 bottom-6 bg-blue-600 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg hover:bg-blue-700 transition-colors"
+        onClick={() => setChatOpen(!chatOpen)}
+      >
+        <MessageCircle size={20} />
+      </button>
     </DashboardLayout>
   );
 };

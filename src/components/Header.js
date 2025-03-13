@@ -315,9 +315,8 @@ if(value){
             </div> */}
             
 
-            <Link to={user?._id ? "/profile" : "/login"}>
+            {/* <Link to={user?._id ? "/profile" : "/login"}>
   {user?._id ? (
-    // When user is logged in, show profile picture or user icon
     <div className="flex flex-col items-center cursor-pointer">
       {user?.profilePic ? (
         <img src={user?.profilePic} className="w-8 h-8 rounded-full" alt={user?.name} />
@@ -327,13 +326,12 @@ if(value){
      
     </div>
   ) : (
-    // When user is NOT logged in, show login icon and text
     <div className="flex flex-col items-center cursor-pointer">
       <FiUser className="w-6 h-6 " />
       
     </div>
   )}
-</Link>
+        </Link> */}
           </div>
         </div>
         

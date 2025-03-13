@@ -54,6 +54,7 @@ const AdminTransactionHistory = () => {
     .filter(t => {
       if (typeFilter === 'all') return true;
       if (typeFilter === 'payment') return t.type === 'payment' || t.isInstallmentPayment === true;
+      if (typeFilter === 'deposit') return t.type === 'deposit' && !t.isInstallmentPayment;
       return t.type === typeFilter;
     });
 
@@ -92,16 +93,23 @@ const AdminTransactionHistory = () => {
 
   // Function to get transaction type badge
   const getTypeBadge = (transaction) => {
-    if (transaction.isInstallmentPayment || transaction.type === 'payment') {
+    if (transaction.isInstallmentPayment === true || transaction.type === 'payment') {
       return (
         <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
           Installment Payment
         </span>
       );
-    } else {
+    } else if (transaction.type === 'deposit') {
       return (
         <span className="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">
           Wallet Deposit
+        </span>
+      );
+    } else {
+      // Fallback for any other transaction types
+      return (
+        <span className="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-800">
+          {transaction.type || "Unknown"}
         </span>
       );
     }

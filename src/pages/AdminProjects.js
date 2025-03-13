@@ -299,7 +299,7 @@ const AdminProjects = () => {
                   value={index}
                   disabled={index !== nextCheckpointIndex}
                 >
-                  {checkpoint.name} {checkpoint.completed ? '(Completed)' : ''}
+                  {checkpoint.name} ({checkpoint.percentage}%) {checkpoint.completed ? '(Completed)' : ''}
                 </option>
               ))}
             </select>
