@@ -35,7 +35,7 @@ import UserDashboard from "../pages/UserDashboard";
 import AdminPaymentVerification from "../pages/AdminPaymentVerification";
 import AdminCouponPage from "../pages/AdminCouponPage";
 import DirectPayment from "../pages/DirectPayment";
-import InstallmentManagement from "../pages/InstallmentManagement";
+import ContactSupport from "../pages/ContactSupport";
 import InstallmentPayment from "../pages/InstallmentPayment";
 
 
@@ -138,8 +138,8 @@ const router = createBrowserRouter([
                 element: <DirectPayment/>
             },
             {
-                path: "installments",
-                element : <InstallmentManagement/>
+                path: "support",
+                element : <ContactSupport/>
             },
             {
                 path: "installment-payment/:orderId/:installmentNumber",
