@@ -41,6 +41,8 @@ import TermsAndConditionsPage from "../pages/TermsAndConditionsPage";
 import PrivacyPolicyPage from "../pages/PrivacyPolicyPage";
 import CookiesPolicyPage from "../pages/CookiesPolicyPage";
 import DeliveryPolicyPage from "../pages/DeliveryPolicyPage";
+import RefundPolicyPage from "../pages/RefundPolicyPage";
+import DisclaimersPage from "../pages/DisclaimersPage";
 
 
 // Create a conditional home route
@@ -164,6 +166,14 @@ const router = createBrowserRouter([
             {
                 path: "delivery-policy",
                 element : <DeliveryPolicyPage/>
+            },
+            {
+                path: "refund-policy",
+                element : <RefundPolicyPage/>
+            },
+            {
+                path: "disclaimers",
+                element : <DisclaimersPage/>
             },
             {
                 path: "admin-panel",

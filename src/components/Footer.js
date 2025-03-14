@@ -96,9 +96,9 @@ const Footer = () => {
                 <li><a href="/terms-and-conditions" className="hover:text-white transition-colors">Terms and Conditions</a></li>
                 <li><a href="/privacy-policy" className="hover:text-white transition-colors">Privacy Policy</a></li>
                 <li><a href="/cookies-policy" className="hover:text-white transition-colors">Cookies Policy</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Refund & Cancellation Policy</a></li>
+                <li><a href="/refund-policy" className="hover:text-white transition-colors">Refund & Cancellation Policy</a></li>
                 <li><a href="/delivery-policy" className="hover:text-white transition-colors">Delivery Policy</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Disclaimer</a></li>
+                <li><a href="/disclaimers" className="hover:text-white transition-colors">Disclaimer</a></li>
               </ul>
             </div>
             
