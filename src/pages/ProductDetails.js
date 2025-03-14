@@ -779,7 +779,7 @@ const ProductDetails = () => {
                         <p className="text-gray-600">
                           You saved ₹{couponData.data.discountAmount.toLocaleString()}
                           {couponData.data.discountType === 'percentage' && 
-                            ` (${couponData.data.discountValue}% off)`}
+                            ` (${parseFloat(couponData.data.discountValue).toFixed(2)}% off)`}
                         </p>
                       </div>
                     )}
