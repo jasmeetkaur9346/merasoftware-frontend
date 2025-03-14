@@ -298,6 +298,19 @@ const ProductDetails = () => {
     paymentOption: paymentOption,
     remainingPayments: remainingPayments
   };
+
+  // Store user selections in sessionStorage
+  const userSelections = {
+    productId: data._id,
+    selectedFeatures,
+    quantities,
+    couponCode,
+    couponData,
+    paymentOption
+  };
+
+   // Save to sessionStorage
+  sessionStorage.setItem('userProductSelections', JSON.stringify(userSelections));
   
   // Navigate to direct payment page with data
   navigate('/direct-payment', { state: { paymentData } });
@@ -327,18 +340,62 @@ const ProductDetails = () => {
           if (cachedData.additionalFeaturesData) {
             setAdditionalFeaturesData(cachedData.additionalFeaturesData);
             
-            const initialQuantities = {};
-            const initialSelectedFeatures = [];
-
-            cachedData.additionalFeaturesData.forEach(feature => {
-              if (feature.upgradeType === 'component') {
-                initialQuantities[feature._id] = feature.baseQuantity || cachedData.totalPages;
-                initialSelectedFeatures.push(feature._id);
+            // Check if there are saved selections in sessionStorage
+            const savedSelectionsStr = sessionStorage.getItem('userProductSelections');
+            
+            if (savedSelectionsStr) {
+              try {
+                const savedSelections = JSON.parse(savedSelectionsStr);
+                
+                // Only restore if it's for the same product
+                if (savedSelections.productId === params?.id) {
+                  // Restore selected features
+                  if (savedSelections.selectedFeatures) {
+                    setSelectedFeatures(savedSelections.selectedFeatures);
+                  } else {
+                    // Use empty array if no saved selections
+                    setSelectedFeatures([]);
+                  }
+                  
+                  // Restore quantities
+                  if (savedSelections.quantities) {
+                    setQuantities(savedSelections.quantities);
+                  } else {
+                    // Initialize quantities with default values
+                    const initialQuantities = {};
+                    cachedData.additionalFeaturesData.forEach(feature => {
+                      // Only set DEFAULT quantity, don't auto-select
+                      initialQuantities[feature._id] = feature.baseQuantity || cachedData.totalPages;
+                    });
+                    setQuantities(initialQuantities);
+                  }
+                  
+                  // Restore coupon related data
+                  if (savedSelections.couponCode) {
+                    setCouponCode(savedSelections.couponCode);
+                  }
+                  
+                  if (savedSelections.couponData) {
+                    setCouponData(savedSelections.couponData);
+                  }
+                  
+                  // Restore payment option
+                  if (savedSelections.paymentOption) {
+                    setPaymentOption(savedSelections.paymentOption);
+                  }
+                } else {
+                  // Different product, use original initialization (without auto-select)
+                  initializeWithoutAutoSelect(cachedData);
+                }
+              } catch (error) {
+                console.error("Error parsing saved selections:", error);
+                // Fallback to original initialization
+                initializeWithoutAutoSelect(cachedData);
               }
-            });
-
-            setQuantities(initialQuantities);
-            setSelectedFeatures(initialSelectedFeatures);
+            } else {
+              // No saved selections, use original initialization (without auto-select)
+              initializeWithoutAutoSelect(cachedData);
+            }
           }
           
           // Still fetch fresh data in background
@@ -355,7 +412,23 @@ const ProductDetails = () => {
         setLoading(false);
       }
     };
-
+  
+    // Initialize without auto-selecting any features (original behavior)
+    const initializeWithoutAutoSelect = (productData) => {
+      const initialQuantities = {};
+      const initialSelectedFeatures = [];
+  
+      productData.additionalFeaturesData.forEach(feature => {
+        if (feature.upgradeType === 'component') {
+          initialQuantities[feature._id] = feature.baseQuantity || productData.totalPages;
+          // Do NOT add to initialSelectedFeatures to avoid auto-select
+        }
+      });
+  
+      setQuantities(initialQuantities);
+      setSelectedFeatures(initialSelectedFeatures); // Empty array, no auto-select
+    };
+  
     const fetchFreshData = async () => {
       try {
         const response = await fetch(SummaryApi.productDetails.url, {
@@ -381,7 +454,7 @@ const ProductDetails = () => {
               })
             }).then(res => res.json())
           );
-
+  
           const featuresData = await Promise.all(featuresPromises);
           const featuresWithData = featuresData
             .map(fd => fd.data)
@@ -390,39 +463,59 @@ const ProductDetails = () => {
               feature.compatibleWith && 
               feature.compatibleWith.includes(productData.category)
             );
-
+  
           // Sort features
           const sortedFeatures = featuresWithData.sort((a, b) => {
             if (a.upgradeType === 'component' && b.upgradeType !== 'component') return -1;
             if (b.upgradeType === 'component' && a.upgradeType !== 'component') return 1;
             return 0;
           });
-
+  
           setAdditionalFeaturesData(sortedFeatures);
-
+  
           // Cache the complete data
           await cacheProductDetails(params?.id, {
             ...productData,
             additionalFeaturesData: sortedFeatures
           });
-
-          // Initialize quantities and selected features
-          const initialQuantities = {};
-          const initialSelectedFeatures = [];
-
-          sortedFeatures.forEach(feature => {
-            if (feature.upgradeType === 'component') {
-              initialQuantities[feature._id] = feature.baseQuantity || productData.totalPages;
-            } else {
-              // Make sure non-component features start with quantity 1, not 5
-              initialQuantities[feature._id] = 1; // This line might be missing or set to 5
+  
+          // Check if there are saved selections in sessionStorage
+          const savedSelectionsStr = sessionStorage.getItem('userProductSelections');
+          
+          if (savedSelectionsStr) {
+            try {
+              const savedSelections = JSON.parse(savedSelectionsStr);
+              
+              // Only restore if it's for the same product
+              if (savedSelections.productId === params?.id) {
+                setSelectedFeatures(savedSelections.selectedFeatures || []);
+                setQuantities(savedSelections.quantities || {});
+                
+                // Initialize any missing quantities
+                const updatedQuantities = {...(savedSelections.quantities || {})};
+                sortedFeatures.forEach(feature => {
+                  if (!(feature._id in updatedQuantities)) {
+                    updatedQuantities[feature._id] = feature.upgradeType === 'component' ? 
+                      (feature.baseQuantity || productData.totalPages) : 1;
+                  }
+                });
+                
+                setQuantities(updatedQuantities);
+              } else {
+                // Different product, initialize without auto-select
+                initializeFreshWithoutAutoSelect(sortedFeatures, productData);
+              }
+            } catch (error) {
+              console.error("Error parsing saved selections:", error);
+              // Fallback to initialization without auto-select
+              initializeFreshWithoutAutoSelect(sortedFeatures, productData);
             }
-          });
-
-          setQuantities(initialQuantities);
-          setSelectedFeatures(initialSelectedFeatures);
+          } else {
+            // No saved selections, initialize without auto-select
+            initializeFreshWithoutAutoSelect(sortedFeatures, productData);
+          }
         }
-
+  
         setInitialLoading(false);
         setLoading(false);
       } catch (error) {
@@ -430,7 +523,26 @@ const ProductDetails = () => {
         throw error;
       }
     };
-
+  
+    // Initialize fresh data without auto-selecting any features
+    const initializeFreshWithoutAutoSelect = (sortedFeatures, productData) => {
+      const initialQuantities = {};
+      // Empty array for selected features - nothing auto-selected
+      const initialSelectedFeatures = [];
+  
+      sortedFeatures.forEach(feature => {
+        // Set quantities for all features, but don't select any by default
+        if (feature.upgradeType === 'component') {
+          initialQuantities[feature._id] = feature.baseQuantity || productData.totalPages;
+        } else {
+          initialQuantities[feature._id] = 1;
+        }
+      });
+  
+      setQuantities(initialQuantities);
+      setSelectedFeatures(initialSelectedFeatures); // Empty array, nothing selected
+    };
+  
     fetchProductDetails();
   }, [params]);
 

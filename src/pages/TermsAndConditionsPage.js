@@ -269,6 +269,120 @@ const TermsAndConditionsPage = () => {
                   </div>
                 </div>
               </section>
+              
+              {/* Section 9 - New Tax Deduction section */}
+              <section>
+                <h2 className="text-xl font-semibold text-gray-800 flex items-center">
+                  <span className="flex items-center justify-center w-8 h-8 rounded-full bg-indigo-100 text-indigo-800 mr-3">9</span>
+                  Tax Deduction at Source (TDS) & Payment Compliance
+                </h2>
+                <div className="mt-4 pl-11 text-gray-600 leading-relaxed">
+                  <p>At Mera Software, we operate under two categories as per the Income Tax Act: Technical Services (Section 194J) and Contractual Work (Section 194C). The applicable TDS rate for both types of work is 2%, ensuring compliance with Indian tax regulations.</p>
+                  
+                  <div className="mt-4 space-y-4">
+                    {/* 9.1 Technical Services */}
+                    <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-100">
+                      <h3 className="font-medium text-indigo-800">9.1 Technical Services (Section 194J - 2% TDS)</h3>
+                      <ul className="mt-2 text-sm space-y-1">
+                        <li className="flex items-start">
+                          <div className="flex-shrink-0 w-5 h-5 mt-1">
+                            <svg className="w-5 h-5 text-indigo-500" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                          <span className="ml-2">We provide technical and IT services, including software development, IT consulting, and technical support.</span>
+                        </li>
+                        <li className="flex items-start">
+                          <div className="flex-shrink-0 w-5 h-5 mt-1">
+                            <svg className="w-5 h-5 text-indigo-500" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                          <span className="ml-2">As per Section 194J, a 2% TDS will be deducted on payments made for technical services.</span>
+                        </li>
+                        <li className="flex items-start">
+                          <div className="flex-shrink-0 w-5 h-5 mt-1">
+                            <svg className="w-5 h-5 text-indigo-500" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                          <span className="ml-2">TDS applies when the total payment exceeds ₹30,000 in a financial year.</span>
+                        </li>
+                      </ul>
+                    </div>
+                    
+                    {/* 9.2 Contractual Work */}
+                    <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-100">
+                      <h3 className="font-medium text-indigo-800">9.2 Contractual Work (Section 194C - 2% TDS)</h3>
+                      <ul className="mt-2 text-sm space-y-1">
+                        <li className="flex items-start">
+                          <div className="flex-shrink-0 w-5 h-5 mt-1">
+                            <svg className="w-5 h-5 text-indigo-500" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                          <span className="ml-2">We undertake contract-based projects, including website/app development, software project delivery, and outsourced development.</span>
+                        </li>
+                        <li className="flex items-start">
+                          <div className="flex-shrink-0 w-5 h-5 mt-1">
+                            <svg className="w-5 h-5 text-indigo-500" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                          <span className="ml-2">As per Section 194C, a 2% TDS will be deducted on payments for contract work.</span>
+                        </li>
+                        <li className="flex items-start">
+                          <div className="flex-shrink-0 w-5 h-5 mt-1">
+                            <svg className="w-5 h-5 text-indigo-500" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                          <span className="ml-2">TDS applies to payments exceeding ₹30,000 in a single transaction or ₹1,00,000 annually.</span>
+                        </li>
+                      </ul>
+                    </div>
+                    
+                    {/* 9.3 General TDS Compliance */}
+                    <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-100">
+                      <h3 className="font-medium text-indigo-800">9.3 General TDS Compliance</h3>
+                      <ul className="mt-2 text-sm space-y-1">
+                        <li className="flex items-start">
+                          <div className="flex-shrink-0 w-5 h-5 mt-1">
+                            <svg className="w-5 h-5 text-indigo-500" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                          <span className="ml-2">TDS will be deducted at the time of payment or when the amount is credited, whichever is earlier.</span>
+                        </li>
+                        <li className="flex items-start">
+                          <div className="flex-shrink-0 w-5 h-5 mt-1">
+                            <svg className="w-5 h-5 text-indigo-500" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                          <span className="ml-2">Proper invoices and tax documentation will be provided for all transactions.</span>
+                        </li>
+                        <li className="flex items-start">
+                          <div className="flex-shrink-0 w-5 h-5 mt-1">
+                            <svg className="w-5 h-5 text-indigo-500" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                          <span className="ml-2">Clients must ensure timely TDS deduction and deposit with the government.</span>
+                        </li>
+                        <li className="flex items-start">
+                          <div className="flex-shrink-0 w-5 h-5 mt-1">
+                            <svg className="w-5 h-5 text-indigo-500" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                          <span className="ml-2">Any disputes regarding tax deductions shall be addressed as per applicable laws and agreement terms.</span>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </section>
             </div>
 
             {/* Last updated date only */}

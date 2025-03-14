@@ -59,6 +59,12 @@ const DirectPayment = () => {
   return `${prefix}${timestamp}${random}`;
   };
 
+  const handleBackToProductDetails = () => {
+    // No need to remove sessionStorage here
+    // Just navigate back, product details will load selections from sessionStorage
+    navigate(-1);
+  };
+
   // Add this helper function at the top of your component
 const calculateFeatureDiscount = (feature, totalDiscount, originalTotal) => {
     if (!paymentData.couponData || originalTotal === 0) return 0;
@@ -668,7 +674,7 @@ const createOrder = async (paymentMethod = 'upi') => {
                 {/* Payment Buttons */}
                 <div className="flex justify-between mt-6">
                   <button
-                    onClick={() => navigate(-1)}
+                    onClick={handleBackToProductDetails}
                     className="bg-gray-100 text-gray-800 px-6 py-3 rounded-lg font-medium hover:bg-gray-200 transition-colors"
                   >
                     Back
