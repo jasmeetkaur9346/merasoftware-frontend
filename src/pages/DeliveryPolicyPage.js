@@ -169,7 +169,7 @@ const DeliveryPolicyPage = () => {
                 </div>
                 <div className="mt-4 p-4 bg-green-50 rounded-lg border border-green-100">
                   <p className="text-green-800">
-                    <strong>Note:</strong> At this stage, the client gets full ownership of the delivered product.
+                    <strong>Note:</strong> If the project uses shared storage, we do not provide access to shared storage due to security and privacy reasons. If the client uses their own storage, third-party service, or hosting provider, we will handover all data to them accordingly. Otherwise, all other project-related assets will be handed over as per the agreement. At this stage, the client gets full ownership of the delivered product.
                   </p>
                 </div>
               </div>
