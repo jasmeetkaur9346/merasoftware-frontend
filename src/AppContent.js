@@ -10,6 +10,9 @@ import SummaryApi from './common';
 import Context from './context';
 import CookieManager from './utils/cookieManager';
 import StorageService from './utils/storageService';
+import ScrollToTop from './helpers/scrollTop';
+import { AnimatePresence } from 'framer-motion';
+import AnimatedRoutes from './components/AnimatedRoutes';
 
 const STORAGE_KEYS = {
   WALLET_BALANCE: 'walletBalance',
@@ -229,13 +232,16 @@ const AppContent = () => {
         fetchWalletBalance,
         handleLogout
       }}>
+         <ScrollToTop />
         <ToastContainer
          position='top-center' 
          autoClose={1000}
          />
         <Header />
         <main className='min-h-[calc(100vh-120px)] pt-0 md:pt-0'>
-          <Outlet />
+        <AnimatePresence mode="wait">
+        <AnimatedRoutes />
+      </AnimatePresence>
         </main>
         <Footer />
       </Context.Provider>

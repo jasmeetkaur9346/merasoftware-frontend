@@ -37,6 +37,10 @@ import AdminCouponPage from "../pages/AdminCouponPage";
 import DirectPayment from "../pages/DirectPayment";
 import ContactSupport from "../pages/ContactSupport";
 import InstallmentPayment from "../pages/InstallmentPayment";
+import TermsAndConditionsPage from "../pages/TermsAndConditionsPage";
+import PrivacyPolicyPage from "../pages/PrivacyPolicyPage";
+import CookiesPolicyPage from "../pages/CookiesPolicyPage";
+import DeliveryPolicyPage from "../pages/DeliveryPolicyPage";
 
 
 // Create a conditional home route
@@ -144,6 +148,22 @@ const router = createBrowserRouter([
             {
                 path: "installment-payment/:orderId/:installmentNumber",
                 element: <InstallmentPayment/>
+            },
+            {
+                path: "terms-and-conditions",
+                element: <TermsAndConditionsPage/>
+            },
+            {
+                path: "privacy-policy",
+                element : <PrivacyPolicyPage/>
+            },
+            {
+                path: "cookies-policy",
+                element : <CookiesPolicyPage/>
+            },
+            {
+                path: "delivery-policy",
+                element : <DeliveryPolicyPage/>
             },
             {
                 path: "admin-panel",

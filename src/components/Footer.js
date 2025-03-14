@@ -91,13 +91,14 @@ const Footer = () => {
             </div>
             
             <div>
-              <h4 className="font-bold text-white mb-4">Customer Service</h4>
+              <h4 className="font-bold text-white mb-4">Terms & Policies</h4>
               <ul className="space-y-2 text-sm">
-                <li><a href="#" className="hover:text-white transition-colors">My Account</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Track Orders</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Support Center</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Returns & Refunds</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">FAQs</a></li>
+                <li><a href="/terms-and-conditions" className="hover:text-white transition-colors">Terms and Conditions</a></li>
+                <li><a href="/privacy-policy" className="hover:text-white transition-colors">Privacy Policy</a></li>
+                <li><a href="/cookies-policy" className="hover:text-white transition-colors">Cookies Policy</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Refund & Cancellation Policy</a></li>
+                <li><a href="/delivery-policy" className="hover:text-white transition-colors">Delivery Policy</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Disclaimer</a></li>
               </ul>
             </div>
             

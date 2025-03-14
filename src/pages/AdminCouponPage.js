@@ -434,7 +434,7 @@ const AdminCouponPage = () => {
                           <input
                             type="number"
                             name="targetPrice"
-                            value={formData.targetPrice.trim()} // Trim any space we might have added
+                            value={typeof formData.targetPrice === 'string' ? formData.targetPrice.trim() : formData.targetPrice} // Trim any space we might have added
                             onChange={(e) => {
                               const targetValue = e.target.value;
                               setFormData({
