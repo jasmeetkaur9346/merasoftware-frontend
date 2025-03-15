@@ -329,6 +329,14 @@ const SummaryApi = {
         url: `${backendDomain}/api/check-pending-order-transactions`,
         method :"get"
       },
+      getAdminNotifications: {
+        url: `${backendDomain}/api/admin-notifications`,
+        method: "get"
+      },
+      markNotificationRead: {
+        url: `${backendDomain}/api/mark-notification-read`,
+        method: "post"
+      },
     wallet : {
         balance :{
             url : `${backendDomain}/api/wallet/balance`,

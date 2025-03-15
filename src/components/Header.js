@@ -18,6 +18,7 @@ import StorageService from '../utils/storageService';
 import {  Bell, UserCircle } from 'lucide-react';
 import { FiUser } from "react-icons/fi";
 import displayCurrency from "../helpers/displayCurrency" 
+import NotificationBell from './NotificationBell';
 
 const Header = () => {
   const user = useSelector(state => state?.user?.user)
@@ -243,9 +244,8 @@ if(value){
   }
     </div>
 
-
-          {
-            user?._id && (
+            <NotificationBell/>
+          {/* {user?._id && (
               <Link to={"/cart"} className='text-2xl relative'>
              <span><FaShoppingCart/></span>
           
@@ -253,8 +253,7 @@ if(value){
             <p className='text-sm'>{context?.cartProductCount}</p>
         </div>
           </Link>
-            )
-          }
+            )} */}
      
 
      <div className='hidden md:block'>

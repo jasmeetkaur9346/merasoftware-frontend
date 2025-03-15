@@ -26,7 +26,7 @@ const VerticalCardProduct = ({category, heading}) => {
         },
         'standard_websites': {
             bg: "bg-white",
-            border: "border-blue-100",
+            border: "border-blue-200",
             text: "text-blue-950",
             textSecondary: "text-blue-600",
             headingColor: "#2196f3",
@@ -36,7 +36,7 @@ const VerticalCardProduct = ({category, heading}) => {
         },
         'dynamic_websites': {
             bg: "bg-white",
-            border: "border-green-100",
+            border: "border-green-200",
             text: "text-green-950",
             textSecondary: "#009688",
             headingColor: "#009688",
@@ -117,7 +117,7 @@ const VerticalCardProduct = ({category, heading}) => {
                 <div className='flex gap-5 overflow-x-scroll scrollbar-none transition-all' ref={scrollElement}>
                     {loading ? (
                         loadingList.map((_, index) => (
-                                                            <div key={index} className="flex-none w-full max-w-[280px] min-w-[280px] border rounded-lg overflow-hidden shadow-md bg-white">
+                            <div key={index} className="flex-none w-full md:max-w-[280px] md:min-w-[280px] max-w-[220px] min-w-[220px] border rounded-lg overflow-hidden shadow-md bg-white">
                                 {/* Loading state - top header */}
                                 <div className="h-10 bg-white border-b animate-pulse">
                                     <div className="h-5 w-3/4 mx-auto mt-2 bg-slate-200 rounded animate-pulse"></div>
@@ -145,27 +145,27 @@ const VerticalCardProduct = ({category, heading}) => {
                             return (
                                 <div 
                                     key={product?._id} 
-                                    className="flex-none w-full max-w-[320px] min-w-[280px] border rounded-lg overflow-hidden shadow-md bg-white"
+                                    className="flex-none w-full md:max-w-[320px] md:min-w-[280px] max-w-[220px] min-w-[220px] rounded-lg overflow-hidden shadow-md bg-white border border-gray-300" 
                                 >
                                     {/* Service Name Header - No background color, just colored text */}
-                                    <div className="ml-4 font-bold line-clamp-1 overflow-hidden py-2.5 text-[17px] border-b" style={{ color: style.headingColor }}>
+                                    <div className="ml-4 font-bold line-clamp-1 overflow-hidden py-2.5 text-[17px] " style={{ color: style.headingColor }}>
                                         {product?.serviceName.toUpperCase()}
                                     </div>
                                     
                                     {/* Website Preview Image */}
                                     <Link to={`product/${product?._id}`}>
-                                        <div className="overflow-hidden">
+                                        <div className="overflow-hidden px-4">
                                             <img 
                                                 src={product?.serviceImage[0]} 
                                                 alt={product?.serviceName}
-                                                className="w-full h-28 object-cover object-top hover:scale-105 transition-transform"
+                                                className="w-full md:h-28 h-24 object-cover object-top hover:scale-105 transition-transform"
                                             />
                                         </div>
                                     </Link>
                                     
                                     {/* Service Name (without colored text since it's already in the header) */}
                                     <div className="p-4">
-                                        <h3 className="font-bold text-xl  mb-3 line-clamp-1 overflow-hidden">
+                                        <h3 className="font-bold text-xl mb-3 line-clamp-1 overflow-hidden">
                                             {product?.serviceName}
                                         </h3>
                                         
@@ -174,7 +174,7 @@ const VerticalCardProduct = ({category, heading}) => {
                                             {product?.packageIncludes?.slice(0, 2).map((feature, idx) => (
                                                 <li key={idx} className="flex items-start">
                                                     <span className="text-red-500 mr-2">•</span>
-                                                    <span className=" capitalize">{feature}</span>
+                                                    <span className="capitalize">{feature}</span>
                                                 </li>
                                             ))}
                                             {product?.packageIncludes?.length > 2 && (
@@ -207,16 +207,7 @@ const VerticalCardProduct = ({category, heading}) => {
                 </button>
             </div>
             
-            {/* Pagination dots */}
-            <div className="flex justify-center mt-4 gap-1">
-                {Array.from({ length: Math.max(1, Math.ceil(data.length / 3)) }).map((_, idx) => (
-                    <button
-                        key={idx}
-                        className={`w-2 h-2 rounded-full ${idx === 0 ? 'bg-blue-600' : 'bg-gray-300'}`}
-                        onClick={() => scrollElement.current.scrollLeft = idx * 300}
-                    />
-                ))}
-            </div>
+            {/* Pagination dots removed as requested */}
         </div>
     );
 };
