@@ -49,7 +49,7 @@ const WalletRecharge = () => {
     e.preventDefault();
     
     // Validate UPI transaction ID
-    if (!upiTransactionId || upiTransactionId.trim().length < 10) {
+    if (!upiTransactionId || upiTransactionId.length < 10 || upiTransactionId.length > 12) {
       setVerificationStatus('Please enter a valid UPI transaction ID');
       return;
     }
@@ -117,8 +117,8 @@ const WalletRecharge = () => {
           </button>
         </form>
       ) : !verificationSubmitted  ? (
-        <div className="flex flex-col items-center">
-          <div className="mb-4">
+        <div className="flex flex-col items-center justify-center">
+          <div className="mb-4 text-center">
             <p className="text-center mb-2">Scan QR code to pay ₹{amount}</p>
             <p className="text-xs text-gray-500 mb-4 text-center">Transaction ID: {transactionId}</p>
             
@@ -140,9 +140,20 @@ const WalletRecharge = () => {
           type="text"
           id="upiTransactionId"
           value={upiTransactionId}
-          onChange={(e) => setUpiTransactionId(e.target.value)}
+          onChange={(e) => {
+            // Only allow numeric input with length restrictions
+            const value = e.target.value.replace(/[^0-9]/g, '');
+            if (value.length <= 12) {
+              setUpiTransactionId(value);
+            }
+          }}
           className="w-full border border-gray-300 rounded-md p-2"
           placeholder="Enter the UPI transaction ID after payment"
+          minLength={10}
+          maxLength={12}
+          autoComplete="off"  // This disables browser autofill
+          autoCorrect="off"   // Additional protection against suggestions
+          spellCheck="false"
           required
         />
         <p className="text-xs text-gray-500 mt-1">

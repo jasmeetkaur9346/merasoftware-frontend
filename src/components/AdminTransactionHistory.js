@@ -53,8 +53,14 @@ const AdminTransactionHistory = () => {
     .filter(t => filter === 'all' ? true : t.status === filter)
     .filter(t => {
       if (typeFilter === 'all') return true;
-      if (typeFilter === 'payment') return t.type === 'payment' || t.isInstallmentPayment === true;
-      if (typeFilter === 'deposit') return t.type === 'deposit' && !t.isInstallmentPayment;
+      if (typeFilter === 'payment') {
+        // Only show actual installment payments
+        return (t.type === 'payment' && (t.isInstallmentPayment === true || t.orderId));
+      }
+      if (typeFilter === 'deposit') {
+        // Only show actual wallet deposits
+        return t.type === 'deposit' && !t.isInstallmentPayment && !t.orderId;
+      }
       return t.type === typeFilter;
     });
 
@@ -93,13 +99,16 @@ const AdminTransactionHistory = () => {
 
   // Function to get transaction type badge
   const getTypeBadge = (transaction) => {
-    if (transaction.isInstallmentPayment === true || transaction.type === 'payment') {
+    // More explicit check for installment payments
+    if (transaction.isInstallmentPayment === true && 
+        transaction.type === 'payment' && 
+        (transaction.orderId || transaction.installmentNumber)) {
       return (
         <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
           Installment Payment
         </span>
       );
-    } else if (transaction.type === 'deposit') {
+    } else if (transaction.type === 'deposit' && !transaction.isInstallmentPayment) {
       return (
         <span className="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">
           Wallet Deposit

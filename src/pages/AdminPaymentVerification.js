@@ -57,29 +57,38 @@ const AdminPaymentVerification = () => {
     const getTransactionDisplay = (transaction) => {
         const orderId = transaction.orderId 
         ? (typeof transaction.orderId === 'object' 
-            ? transaction.orderId._id  // If it's an object, get the _id property
-            : transaction.orderId)     // If it's already a string, use as is
-        : null;  // Handle null case
-
-        // Check if it's an installment payment
-        if (transaction.isInstallmentPayment || 
-            (transaction.type === 'payment' && orderId && transaction.installmentNumber)) {
+            ? transaction.orderId._id  
+            : transaction.orderId)     
+        : null;  
+    
+        // More strict check for installment payments
+        if ((transaction.isInstallmentPayment === true || transaction.type === 'payment') && 
+            orderId && 
+            transaction.installmentNumber) {
             return {
                 type: 'Installment Payment',
                 cssClass: 'bg-blue-100 text-blue-800',
-                details: orderId ? 
-                    `Installment #${transaction.installmentNumber} for Order #${orderId}` : 
-                    'Installment Payment',
+                details: `Installment #${transaction.installmentNumber} for Order #${orderId}`,
                 isWalletCredit: false
             };
         }
         
-        // Regular wallet recharge
+        // Regular wallet recharge - more explicit check
+        if (transaction.type === 'deposit' || !transaction.isInstallmentPayment) {
+            return {
+                type: 'Wallet Recharge',
+                cssClass: 'bg-green-100 text-green-800',
+                details: 'Funds added to wallet',
+                isWalletCredit: true
+            };
+        }
+        
+        // Fallback for any other transaction types
         return {
-            type: 'Wallet Recharge',
-            cssClass: 'bg-green-100 text-green-800',
-            details: 'Funds added to wallet',
-            isWalletCredit: true
+            type: 'Payment',
+            cssClass: 'bg-gray-100 text-gray-800',
+            details: 'Transaction',
+            isWalletCredit: false
         };
     };
 
