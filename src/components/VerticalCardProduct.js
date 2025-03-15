@@ -29,7 +29,7 @@ const VerticalCardProduct = ({category, heading}) => {
             border: "border-blue-200",
             text: "text-blue-950",
             textSecondary: "#e91e63",
-            headingColor: "#",
+            headingColor: "#e91e63",
             headerBg: "bg-blue-500", // Blue ribbon for standard websites
             button: "bg-blue-600",
             tagBg: "bg-white text-blue-600 border-indigo-100"
@@ -186,12 +186,14 @@ const VerticalCardProduct = ({category, heading}) => {
                                         </ul>
                                         
                                         {/* Customize button with color matching the category */}
+                                         <Link to={"/product/"+product?._id}>
                                         <button 
                                             className="w-full py-2 rounded text-sm md:font-medium text-white text-center transition-colors"
                                             style={{ backgroundColor: style.headingColor }}
                                         >
                                             Customize Plan
                                         </button>
+                                        </Link>
                                     </div>
                                 </div>
                             );
