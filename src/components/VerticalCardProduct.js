@@ -28,7 +28,7 @@ const VerticalCardProduct = ({category, heading}) => {
             bg: "bg-white",
             border: "border-blue-200",
             text: "text-blue-950",
-            textSecondary: "text-blue-600",
+            textSecondary: "#2196f3",
             headingColor: "#2196f3",
             headerBg: "bg-blue-500", // Blue ribbon for standard websites
             button: "bg-blue-600",
@@ -145,16 +145,16 @@ const VerticalCardProduct = ({category, heading}) => {
                             return (
                                 <div 
                                     key={product?._id} 
-                                    className="flex-none w-full md:max-w-[320px] md:min-w-[280px] max-w-[220px] min-w-[220px] rounded-lg overflow-hidden shadow-md bg-white border border-gray-300" 
+                                    className="flex-none w-full md:max-w-[320px] md:min-w-[280px] max-w-[240px] min-w-[220px] rounded-lg overflow-hidden shadow-md bg-white border border-gray-300" 
                                 >
                                     {/* Service Name Header - No background color, just colored text */}
-                                    <div className="ml-4 font-bold line-clamp-1 overflow-hidden py-2.5 text-[17px] " style={{ color: style.headingColor }}>
+                                    <div className="ml-4 font-bold line-clamp-1 overflow-hidden py-2.5 text-sm md:text-[17px] " style={{ color: style.textSecondary }}>
                                         {product?.serviceName.toUpperCase()}
                                     </div>
                                     
                                     {/* Website Preview Image */}
                                     <Link to={`product/${product?._id}`}>
-                                        <div className="overflow-hidden px-4">
+                                        <div className="overflow-hidden md:px-4 px-3">
                                             <img 
                                                 src={product?.serviceImage[0]} 
                                                 alt={product?.serviceName}
@@ -164,22 +164,22 @@ const VerticalCardProduct = ({category, heading}) => {
                                     </Link>
                                     
                                     {/* Service Name (without colored text since it's already in the header) */}
-                                    <div className="p-4">
-                                        <h3 className="font-bold text-xl mb-3 line-clamp-1 overflow-hidden">
+                                    <div className="p-3 md:p-4">
+                                        <h3 className="font-bold text-[16px] md:text-xl line-clamp-1 overflow-hidden">
                                             {product?.serviceName}
                                         </h3>
                                         
                                         {/* Features list */}
-                                        <ul className="space-y-1.5 my-3">
+                                        <ul className="md:space-y-1.5 space-y-0 md:my-3 my-2">
                                             {product?.packageIncludes?.slice(0, 2).map((feature, idx) => (
                                                 <li key={idx} className="flex items-start">
-                                                    <span className="text-red-500 mr-2">•</span>
-                                                    <span className="capitalize">{feature}</span>
+                                                    <span className="text-red-500 text-sm md:text-base mr-2">•</span>
+                                                    <span className="capitalize text-sm md:text-base">{feature}</span>
                                                 </li>
                                             ))}
                                             {product?.packageIncludes?.length > 2 && (
                                                 <li className="flex items-start">
-                                                    <span className="text-red-500 mr-2">•</span>
+                                                    <span className="text-red-500 text-sm md:text-base mr-2">•</span>
                                                     <span className="text-sm">+ {product.packageIncludes.length - 2} more</span>
                                                 </li>
                                             )}
@@ -187,7 +187,7 @@ const VerticalCardProduct = ({category, heading}) => {
                                         
                                         {/* Customize button with color matching the category */}
                                         <button 
-                                            className="w-full py-2 rounded font-medium text-white text-center transition-colors"
+                                            className="w-full py-2 rounded text-sm md:font-medium text-white text-center transition-colors"
                                             style={{ backgroundColor: style.headingColor }}
                                         >
                                             Customize Plan
