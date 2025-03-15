@@ -28,8 +28,8 @@ const VerticalCardProduct = ({category, heading}) => {
             bg: "bg-white",
             border: "border-blue-200",
             text: "text-blue-950",
-            textSecondary: "#2196f3",
-            headingColor: "#2196f3",
+            textSecondary: "#e91e63",
+            headingColor: "#",
             headerBg: "bg-blue-500", // Blue ribbon for standard websites
             button: "bg-blue-600",
             tagBg: "bg-white text-blue-600 border-indigo-100"

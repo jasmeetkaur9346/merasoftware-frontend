@@ -32,13 +32,13 @@ const CategoryList = () => {
   const getServiceBgColor = (serviceType) => {
     switch (serviceType) {
       case 'Websites Development':
-        return 'bg-blue-600';
+        return 'bg-sky-600';
       case 'Mobile Apps':
-        return 'bg-green-600';
+        return 'bg-teal-700';
       case 'Cloud Softwares':
-        return 'bg-purple-600';
+        return 'bg-pink-600';
       case 'Feature Upgrades':
-        return 'bg-amber-600';
+        return 'bg-orange-600';
       default:
         return 'bg-gray-100';
     }
