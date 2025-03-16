@@ -10,13 +10,10 @@ import { toast } from 'react-toastify';
 import { setUserDetails, logout  } from '../store/userSlice';
 import ROLE from '../common/role';
 import Context from '../context';
-import { FaArrowLeftLong } from "react-icons/fa6";
 import { useOnlineStatus } from '../App'; 
 import { IoWalletOutline } from "react-icons/io5";
 import CookieManager from '../utils/cookieManager';
 import StorageService from '../utils/storageService';
-import {  Bell, UserCircle } from 'lucide-react';
-import { FiUser } from "react-icons/fi";
 import displayCurrency from "../helpers/displayCurrency" 
 import NotificationBell from './NotificationBell';
 
@@ -232,6 +229,11 @@ if(value){
                     <Link to={"/admin-panel/all-products"} className='whitespace-nowrap hidden md:block hover:bg-slate-100 p-2' onClick={()=>setMenuDisplay(preve => !preve)}>Admin Panel</Link>
                 )
             } 
+            {
+            user?.role === ROLE.DEVELOPER && (
+                <Link to={"/developer-panel"} className='whitespace-nowrap hidden md:block hover:bg-slate-100 p-2' onClick={()=>setMenuDisplay(preve => !preve)}>Developer Panel</Link>
+            )
+        }
             <Link to={'/order'} className='whitespace-nowrap hidden md:block hover:bg-slate-100 p-2' onClick={()=>setMenuDisplay(preve => !preve)}>Order</Link>  
             {/* Add Wallet Balance in Menu too */}
             <div className='p-2 hover:bg-slate-100 flex items-center gap-2'>

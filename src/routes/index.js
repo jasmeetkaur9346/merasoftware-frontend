@@ -43,6 +43,7 @@ import CookiesPolicyPage from "../pages/CookiesPolicyPage";
 import DeliveryPolicyPage from "../pages/DeliveryPolicyPage";
 import RefundPolicyPage from "../pages/RefundPolicyPage";
 import DisclaimersPage from "../pages/DisclaimersPage";
+import DeveloperPanel from "../pages/DeveloperPanel";
 
 
 // Create a conditional home route
@@ -134,10 +135,6 @@ const router = createBrowserRouter([
             {
                 path: "dashboard",
                 element: <UserDashboard/>
-            },
-            {
-                path: "developer-updates",
-                element: <DeveloperUpdatePanel/>
             },
             {
                 path: "direct-payment",
@@ -237,6 +234,16 @@ const router = createBrowserRouter([
                     }
                 ]
             },
+            {
+                path: "developer-panel",
+                element : <DeveloperPanel/>,
+                children :[
+                    {
+                        path: "developer-update-requests",
+                        element : <DeveloperUpdatePanel/>
+                    },
+                ]
+            }
         ]
     }
 ])

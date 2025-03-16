@@ -38,7 +38,7 @@ const CategoryList = () => {
       case 'Cloud Softwares':
         return 'bg-jasmeet-teal';
       case 'Feature Upgrades':
-        return 'bg-stone-600';
+        return 'bg-slate-600';
       default:
         return 'bg-gray-100';
     }
