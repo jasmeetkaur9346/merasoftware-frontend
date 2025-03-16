@@ -337,6 +337,10 @@ const SummaryApi = {
         url: `${backendDomain}/api/mark-notification-read`,
         method: "post"
       },
+      getUserNotifications: {
+        url: `${backendDomain}/api/user-notifications`,
+        method: "get"
+      },
     wallet : {
         balance :{
             url : `${backendDomain}/api/wallet/balance`,

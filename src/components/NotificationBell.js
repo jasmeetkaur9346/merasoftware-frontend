@@ -3,6 +3,7 @@ import { Bell } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import SummaryApi from '../common';
+import { useSelector } from 'react-redux';
 
 const NotificationBell = () => {
   const [notifications, setNotifications] = useState([]);
@@ -11,6 +12,10 @@ const NotificationBell = () => {
   const [loading, setLoading] = useState(false);
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
+
+  // Get user data from Redux store
+  const user = useSelector(state => state?.user?.user);
+  const isAdmin = user?.role === 'ADMIN';
 
   // Format time
   const formatTime = (dateString) => {
@@ -25,9 +30,16 @@ const NotificationBell = () => {
 
   // Fetch notifications
   const fetchNotifications = async () => {
+    // Don't attempt to fetch if no user is logged in
+    if (!user?._id) return;
+
     try {
       setLoading(true);
-      const response = await fetch(SummaryApi.getAdminNotifications.url, {
+
+      // Select the correct endpoint based on user role
+      const endpoint = isAdmin ? SummaryApi.getAdminNotifications.url : SummaryApi.getUserNotifications.url;
+
+      const response = await fetch(endpoint, {
         credentials: 'include'
       });
       
@@ -83,7 +95,7 @@ const NotificationBell = () => {
     
     // Navigate based on notification type
     if (notification.type === 'update_request' && notification.relatedId) {
-      navigate(`/admin/update-requests`);
+      navigate(`/admin-panel/update-requests`);
     }
     
     // Close dropdown
@@ -106,13 +118,15 @@ const NotificationBell = () => {
 
   // Initial fetch and polling
   useEffect(() => {
+    if (user?._id) {
     fetchNotifications();
     
     // Poll for new notifications every 30 seconds
     const interval = setInterval(fetchNotifications, 30000);
     
     return () => clearInterval(interval);
-  }, []);
+    }
+  }, [user]);
 
   // Handle manual refresh
   const handleRefresh = () => {
