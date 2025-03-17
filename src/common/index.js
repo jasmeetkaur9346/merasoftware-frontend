@@ -341,6 +341,10 @@ const SummaryApi = {
         url: `${backendDomain}/api/user-notifications`,
         method: "get"
       },
+      getDeveloperNotifications: {
+        url: `${backendDomain}/api/developer-notifications`,
+        method: "get"
+      },
     wallet : {
         balance :{
             url : `${backendDomain}/api/wallet/balance`,

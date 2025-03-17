@@ -16,6 +16,7 @@ const NotificationBell = () => {
   // Get user data from Redux store
   const user = useSelector(state => state?.user?.user);
   const isAdmin = user?.role === 'ADMIN';
+  const isDeveloper = user?.role === 'DEVELOPER';
 
   // Format time
   const formatTime = (dateString) => {
@@ -37,7 +38,15 @@ const NotificationBell = () => {
       setLoading(true);
 
       // Select the correct endpoint based on user role
-      const endpoint = isAdmin ? SummaryApi.getAdminNotifications.url : SummaryApi.getUserNotifications.url;
+    let endpoint;
+    if (isAdmin) {
+      endpoint = SummaryApi.getAdminNotifications.url;
+    } else if (isDeveloper) {
+      endpoint = SummaryApi.getDeveloperNotifications.url;
+    } else {
+      endpoint = SummaryApi.getUserNotifications.url;
+    }
+
 
       const response = await fetch(endpoint, {
         credentials: 'include'

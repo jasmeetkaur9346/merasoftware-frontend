@@ -383,6 +383,29 @@ const TermsAndConditionsPage = () => {
                   </div>
                 </div>
               </section>
+
+              <section>
+                <h2 className="text-xl font-semibold text-gray-800 flex items-center">
+                  <span className="flex items-center justify-center w-8 h-8 rounded-full bg-indigo-100 text-indigo-800 mr-3">10</span>
+                  Data Submission & Processing
+                </h2>
+                <div className="mt-4 pl-11 text-gray-600 leading-relaxed">
+                  <p>When you submit data to our platform, we will process and update it based on the clarity and accuracy of the information provided. If the submitted data lacks complete clarity, we will process and update it based on the best possible interpretation within the available clarity. However, we do not guarantee the accuracy of incomplete or unclear submissions. It is the client's responsibility to provide precise and complete information to ensure the best possible outcome.</p>
+                  
+                  <div className="mt-4 space-y-4">
+                    <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-100">
+                      <h3 className="font-medium text-indigo-800">10.1 Processing Unclear Data</h3>
+                      <p className="mt-2 text-sm">If any updates are consumed while processing unclear data, the client will need to correct any remaining issues in their next update. We do not provide additional revisions for incomplete data beyond the consumed update.</p>
+                    </div>
+                    
+                    <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-100">
+                      <h3 className="font-medium text-indigo-800">10.2 Errors on Our End</h3>
+                      <p className="mt-2 text-sm">However, if an issue arises due to an error on our end, the client may raise a support ticket through our support page. In such cases, our support team will resolve the issue with full responsibility at no additional cost, without consuming the client's update.</p>
+                    </div>
+                  </div>
+                  </div>
+                  </section>
+
             </div>
 
             {/* Last updated date only */}

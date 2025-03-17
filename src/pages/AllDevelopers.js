@@ -12,7 +12,9 @@ const AllDevelopers = () => {
 
   const fetchDevelopers = async () => {
     try {
-      const response = await fetch(SummaryApi.allDevelopers.url);
+      const response = await fetch(SummaryApi.allDevelopers.url, {
+        credentials: 'include' // Add this to include cookies for authentication
+    });
       const data = await response.json();
       if (data.success) {
         setDevelopers(data.data || []);
@@ -30,12 +32,15 @@ const AllDevelopers = () => {
     <div>
       <div className="bg-white px-2 py-2 flex justify-between items-center">
         <h2 className="font-bold text-lg">All Developers</h2>
-        <button 
+        <div className="text-sm text-gray-600">
+            To add a new developer, change a user's role to DEVELOPER in the All Users section.
+        </div>
+        {/* <button 
           className="border-2 border-red-600 text-red-500 hover:bg-red-600 hover:text-white transition-all py-1 px-3 rounded-full"
           onClick={() => setOpenUploadDeveloper(true)}
         >
           Add New Developer
-        </button>
+        </button> */}
       </div>
 
       <div className="mt-4 overflow-x-auto">
