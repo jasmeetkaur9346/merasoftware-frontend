@@ -1,15 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { toast } from "react-toastify";
 import SummaryApi from "../common";
 import CookieManager from '../utils/cookieManager';
 import { useNavigate } from 'react-router-dom';
 import loginIcons from "../assest/signin.gif";
+import Context from "../context";
 
 const OtpVerification = ({ userData, onBackToLogin }) => {
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [loading, setLoading] = useState(false);
   const [timeLeft, setTimeLeft] = useState(600); // 10 minutes in seconds
   const navigate = useNavigate();
+  const { fetchUserDetails, fetchUserAddToCart } = useContext(Context)
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -116,11 +118,23 @@ const OtpVerification = ({ userData, onBackToLogin }) => {
           role: data.data.user.role
         });
         
+       // यहां async/await का प्रयोग करें ताकि डेटा फेच होने तक इंतज़ार हो
+      try {
+        await fetchUserDetails();
+        await fetchUserAddToCart();
+        
+        // डेटा फेच होने के बाद ही नेविगेट करें
         toast.success(data.message);
         navigate("/dashboard");
-      } else {
-        toast.error(data.message);
+      } catch (fetchError) {
+        console.error("Data fetching error:", fetchError);
+        toast.error("Failed to load user data. Please refresh the page.");
+        // फिर भी नेविगेट करें, लेकिन यूज़र को बताएं कि डेटा लोड नहीं हुआ
+        navigate("/dashboard");
       }
+    } else {
+      toast.error(data.message);
+    }
     } catch (error) {
       console.error("OTP verification error:", error);
       toast.error("Verification failed. Please try again.");

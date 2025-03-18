@@ -644,7 +644,7 @@ const ProductDetails = () => {
                       return (
                         <button key={index} className="flex items-center gap-2 border border-gray-200 hover:border-blue-400 rounded-lg p-2.5 text-sm hover:bg-blue-50 transition-colors">
                           {Icon && React.createElement(Icon, { 
-                            className: "text-blue-500"
+                            className: "w-5 h-5 text-blue-600"
                           })}
                           <span className="capitalize">{item}</span>
                         </button>
@@ -661,7 +661,7 @@ const ProductDetails = () => {
                 <div className="p-5">
                   <h2 className="text-xl font-bold mb-4 text-gray-800">What's Included</h2>
                   
-                  <div className="space-y-4">
+                  <div className="space-y-6">
                     {data.packageIncludes?.map((feature, index) => {
                       const Icon = getIconForFeature(feature);
                       const packageOption = packageOptions.find(opt => 
