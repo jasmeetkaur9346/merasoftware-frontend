@@ -13,7 +13,7 @@ const VerticalCard = ({ loading: initialLoading, data: initialData = [], current
     const [data, setData] = useState([]);
     const [isDataFromCache, setIsDataFromCache] = useState(false);
     const [activeFilter, setActiveFilter] = useState('All');
-    const [sortOption, setSortOption] = useState('default');
+    const [sortOption, setSortOption] = useState('price-low-high');
     // Store the current search string to detect changes
     const [currentSearch, setCurrentSearch] = useState(location.search);
     const [error, setError] = useState(null);

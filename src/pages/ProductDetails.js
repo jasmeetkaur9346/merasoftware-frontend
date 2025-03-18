@@ -591,94 +591,93 @@ const ProductDetails = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      {addToCartLoading && (
-        <div className="fixed inset-0 bg-black bg-opacity-10 flex items-center justify-center z-50">
-          <div className="rounded-lg p-8">
-            <TriangleMazeLoader />
-          </div>
+    <div className="min-h-screen bg-gray-50">
+    {addToCartLoading && (
+      <div className="fixed inset-0 bg-black bg-opacity-10 flex items-center justify-center z-50">
+        <div className="rounded-lg p-8">
+          <TriangleMazeLoader />
         </div>
-      )}
-
-      {/* Hero Section with Background Image */}
-      <section className="relative">
-        <div 
-          className="h-96 bg-center bg-cover"
-          style={{backgroundImage: data.serviceImage && data.serviceImage[0] ? `url(${data.serviceImage[0]})` : 'none'}}
-        >
-          <div className="absolute inset-0 bg-black bg-opacity-50"></div>
+      </div>
+    )}
+  
+    {/* Hero Section with Background Image */}
+    <section className="relative">
+      <div 
+        className="h-96 bg-center bg-cover"
+        style={{backgroundImage: data.serviceImage && data.serviceImage[0] ? `url(${data.serviceImage[0]})` : 'none'}}
+      >
+        <div className="absolute inset-0 bg-black bg-opacity-50"></div>
+      </div>
+      <div className="container mx-auto px-12 absolute inset-0 flex items-center">
+        <div className="max-w-xl text-white z-10">
+          <h1 className="text-5xl font-bold mb-4 leading-tight">{data.serviceName}</h1>
+          <p className="text-lg opacity-90 mb-8 capitalize">
+            {data.category?.split('_').join(' ')}
+          </p>
+          <button 
+            onClick={handleGetStarted}
+            className="inline-block bg-amber-500 text-white px-6 py-3 rounded-lg font-semibold text-base transition-all duration-300 hover:bg-amber-600 hover:-translate-y-1 hover:shadow-lg"
+          >
+            Get Started
+          </button>
         </div>
-        <div className="container mx-auto px-12 absolute inset-0 flex items-center">
-          <div className="max-w-xl text-white z-10">
-            <h1 className="text-5xl font-bold mb-4 leading-tight">{data.serviceName}</h1>
-            <p className="text-lg opacity-90 mb-8 capitalize">
-              {data.category?.split('_').join(' ')}
-            </p>
-            <button 
-              onClick={handleGetStarted}
-              className="inline-block bg-amber-500 text-white px-6 py-3 rounded-lg font-semibold text-base transition-all duration-300 hover:bg-amber-600 hover:-translate-y-1 hover:shadow-lg"
-            >
-              Get Started
-            </button>
-          </div>
-        </div>
-      </section>
-
-      <div className="container mx-auto px-4 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 py-12">
-           {/* Left column with product details - same as original */}
-          <div className="lg:col-span-2 flex flex-col gap-1">
-            {/* Who is it for Section */}
+      </div>
+    </section>
+  
+    {/* Main Content Container */}
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="flex flex-col lg:flex-row gap-6">
+        {/* Left Column - Main content */}
+        <div className="w-full lg:w-2/3 flex flex-col gap-6">
+          
+          {/* Two sections in a responsive layout */}
+          <div className="flex flex-col md:flex-row gap-6">
+            {/* Who is it for? Section (smaller) */}
             {shouldShowSection(data.category, 'perfectFor') && data.perfectFor?.length > 0 && (
-              <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-                <div className="px-8 py-5 border-b border-gray-200 flex justify-between items-center">
-                  <h2 className="text-xl font-semibold text-gray-900">Who is it for?</h2>
-                </div>
-                <div className="p-8">
-                  <div className="flex flex-wrap gap-4">
+              <div className="w-full md:w-2/5 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
+                <div className="p-5">
+                  <h2 className="text-xl font-bold mb-4 text-gray-800">Who is it for?</h2>
+                  
+                  <div className="grid grid-cols-1 gap-3">
                     {data.perfectFor?.map((item, index) => {
                       const Icon = getPerfectForIcon(item);
                       return (
-                        <div 
-                          key={index} 
-                          className="bg-white p-3 rounded-lg flex items-center transition-all duration-300 border border-gray-200 hover:border-blue-600 hover:-translate-y-1 hover:shadow-md"
-                        >
+                        <button key={index} className="flex items-center gap-2 border border-gray-200 hover:border-blue-400 rounded-lg p-2.5 text-sm hover:bg-blue-50 transition-colors">
                           {Icon && React.createElement(Icon, { 
-                            className: "w-5 h-5 text-blue-600 mr-2"
+                            className: "text-blue-500"
                           })}
-                          <span className="font-medium capitalize">{item}</span>
-                        </div>
+                          <span className="capitalize">{item}</span>
+                        </button>
                       );
                     })}
                   </div>
                 </div>
               </div>
             )}
-
-            {/* What's Included Section - Conditionally render */}
+            
+            {/* What's Included Section (larger) */}
             {shouldShowSection(data.category, 'packageIncludes') && data.packageIncludes?.length > 0 && (
-              <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-                <div className="px-8 py-5 border-b border-gray-200 flex justify-between items-center">
-                  <h2 className="text-xl font-semibold text-gray-900">What's Included</h2>
-                </div>
-                <div className="p-8">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="w-full md:w-3/5 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
+                <div className="p-5">
+                  <h2 className="text-xl font-bold mb-4 text-gray-800">What's Included</h2>
+                  
+                  <div className="space-y-4">
                     {data.packageIncludes?.map((feature, index) => {
+                      const Icon = getIconForFeature(feature);
                       const packageOption = packageOptions.find(opt => 
                         opt.value.toLowerCase() === feature.toLowerCase() ||
                         opt.label.toLowerCase() === feature.toLowerCase()
                       );
-                      const Icon = getIconForFeature(feature);
                       return (
-                        <div key={index} className="flex items-start">
-                          <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4 text-blue-600 flex-shrink-0">
+                        <div key={index} className="flex items-start gap-3">
+                          <div className="bg-blue-100 p-2 rounded-full flex-shrink-0">
                             {React.createElement(Icon, { 
-                              className: "w-6 h-6"
+                              className: "text-blue-500"
                             })}
                           </div>
                           <div>
-                            <h3 className="text-base font-semibold mb-1 text-gray-900 capitalize">{feature}</h3>
-                            <p className="text-sm text-gray-500">
+                            <h3 className="font-semibold text-gray-800 capitalize">{feature}</h3>
+                            <p className="text-gray-600 text-sm">
                               {packageOption?.description || "Exclusive feature included with your purchase"}
                             </p>
                           </div>
@@ -689,337 +688,280 @@ const ProductDetails = () => {
                 </div>
               </div>
             )}
-            
-            
-
-         {/* Description Section - हर formattedDescription को अलग box में दिखाएं */}
-         {data.formattedDescriptions?.map((desc, index) => (
-              <div key={index} className="bg-white shadow-lg overflow-hidden">
-                {/* कोई heading नहीं */}
-                <style>{customStyles}</style>
-                <div className="px-6 py-4">
-                  <div 
-                    className="prose prose-sm max-w-none description-content"
-                    dangerouslySetInnerHTML={{ __html: desc.content }}
-                  />
-                </div>
-              </div>
-            ))}
-          
           </div>
-
-          {/* Price Calculator Section */}
-          <div className="lg:col-span-1">
-            <div className="sticky top-24">
-              <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-                <div className="bg-blue-600 text-white px-8 py-5 rounded-t-lg">
-                  <h2 className="text-xl font-semibold">Customize Your Plan</h2>
+          
+          {/* Description Sections */}
+          {data.formattedDescriptions?.map((desc, index) => (
+            <div key={index} className="bg-white rounded-lg p-5 shadow-md">
+              <style>{customStyles}</style>
+              <div 
+                className="prose prose-sm max-w-none description-content"
+                dangerouslySetInnerHTML={{ __html: desc.content }}
+              />
+            </div>
+          ))}
+        </div>
+        
+        {/* Right Column - Sticky Customize Plan */}
+        <div className="w-full lg:w-1/3 relative">
+          <div className="lg:sticky lg:top-6 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
+            <h2 className="text-xl font-bold py-4 px-5 bg-blue-600 text-white rounded-t-lg">Customize Your Plan</h2>
+            
+            <div className="space-y-4 p-5">
+              {/* Base Product Display */}
+              <div className="flex items-center justify-between p-3 border-b hover:bg-blue-50 transition-colors rounded">
+                <div className="flex items-center gap-3">
+                  <div className="bg-blue-100 w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-600">
+                      <circle cx="9" cy="21" r="1"></circle>
+                      <circle cx="20" cy="21" r="1"></circle>
+                      <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-gray-800">{data.serviceName}</h3>
+                    <p className="text-xs text-gray-500 capitalize">{data.category?.split('_').join(' ')}</p>
+                  </div>
                 </div>
-                <div className="p-8">
-                  {/* Base Product Display */}
-                  <div className="flex items-center justify-between mb-6">
-                    <div className="flex items-center">
-                      <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-4 text-blue-600">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <circle cx="9" cy="21" r="1"></circle>
-                          <circle cx="20" cy="21" r="1"></circle>
-                          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-                        </svg>
+                <div className="text-blue-600 font-semibold">₹{data.sellingPrice?.toLocaleString()}</div>
+              </div>
+  
+              {/* Additional Features Section */}
+              {additionalFeaturesData.map(feature => {
+                const isSelected = selectedFeatures.includes(feature._id);
+                const iconChar = feature.upgradeType === "component" ? 
+                  "W" : feature.upgradeType === "dynamic_page" || feature.serviceName.toLowerCase().includes("dynamic") ? 
+                  "D" : feature.upgradeType === "live_chat" || feature.serviceName.toLowerCase().includes("chat") ? 
+                  "L" : feature.serviceName.charAt(0).toUpperCase();
+                  
+                return (
+                  <div key={feature._id} className="flex items-center justify-between p-3 border-b hover:bg-blue-50 transition-colors rounded">
+                    <div className="flex items-center gap-3">
+                      <div className="bg-blue-100 w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0">
+                        <span className="text-blue-600">{iconChar}</span>
                       </div>
                       <div>
-                        <h3 className="text-sm font-semibold">{data.serviceName}</h3>
-                        <p className="text-xs text-gray-500 capitalize">{data.category?.split('_').join(' ')}</p>
+                        <h3 className="font-medium text-gray-800">{feature.serviceName}</h3>
+                        {feature.upgradeType === 'component' && (
+                          <p className="text-xs text-gray-500">₹{feature.sellingPrice?.toLocaleString()} Per Additional Unit</p>
+                        )}
                       </div>
                     </div>
-                    <div className="font-semibold text-blue-600">₹{data.sellingPrice?.toLocaleString()}</div>
-                  </div>
-
-                  {/* Additional Features Section */}
-                  {additionalFeaturesData.map(feature => {
-                    const isSelected = selectedFeatures.includes(feature._id);
-                    const Icon = feature.upgradeType === "component" ? 
-                      () => <span className="text-xl">W</span> :
-                      feature.upgradeType === "dynamic_page" || feature.serviceName.toLowerCase().includes("dynamic") ? 
-                        () => <span className="text-xl">D</span> :
-                      feature.upgradeType === "live_chat" || feature.serviceName.toLowerCase().includes("chat") ? 
-                        () => <span className="text-xl">L</span> : 
-                      feature.serviceName.toLowerCase().includes("gallery") ?
-                        () => <span className="text-xl">D</span> :
-                      () => <span className="text-xl">{feature.serviceName.charAt(0).toUpperCase()}</span>;
-                    
-                    if (feature.upgradeType === 'component') {
-                      return (
-                        <div key={feature._id} className="py-4 border-b border-gray-200">
-                          <div className="flex items-center justify-between mb-2">
-                            <div className="flex items-center">
-                              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-4 text-blue-600">
-                                <span className="text-xl">W</span>
-                              </div>
-                              <div>
-                                <h3 className="text-sm font-semibold">{feature.serviceName}</h3>
-                                <p className="text-xs text-gray-500">₹{feature.sellingPrice?.toLocaleString()} Per Additional Unit</p>
-                              </div>
-                            </div>
-                            <div className="flex items-center">
-                              <div className="font-semibold text-blue-600 mr-4">₹{feature.sellingPrice?.toLocaleString()}</div>
-                              <div className="relative">
-                                <input 
-                                  type="checkbox" 
-                                  id={`feature-${feature._id}`}
-                                  className="sr-only"
-                                  checked={isSelected}
-                                  onChange={() => handleFeatureToggle(feature._id)}
-                                />
-                                <label 
-                                  htmlFor={`feature-${feature._id}`}
-                                  className={`h-6 w-6 rounded border flex items-center justify-center cursor-pointer ${isSelected ? 'bg-blue-600 border-blue-600 text-white' : 'border-gray-300'}`}
-                                >
-                                  {isSelected && <Check className="h-4 w-4" />}
-                                </label>
-                              </div>
-                            </div>
-                          </div>
-                          {isSelected && (
-                            <div className="flex items-center border border-gray-200 rounded-md overflow-hidden mt-2 w-32 ml-14">
-                              <button 
-                                className="w-8 h-8 bg-gray-50 flex items-center justify-center text-base hover:bg-gray-200 transition-colors"
-                                onClick={() => {
-                                  if (quantities[feature._id] > data.totalPages) {
-                                    setQuantities({
-                                      ...quantities,
-                                      [feature._id]: quantities[feature._id] - 1
-                                    });
-                                  }
-                                }}
-                              >-</button>
-                              <input 
-                                type="text" 
-                                className="w-16 h-8 border-none text-center font-semibold text-sm" 
-                                value={quantities[feature._id] || data.totalPages}
-                                readOnly 
-                              />
-                              <button 
-                                className="w-8 h-8 bg-gray-50 flex items-center justify-center text-base hover:bg-gray-200 transition-colors"
-                                onClick={() => {
-                                  setQuantities({
-                                    ...quantities,
-                                    [feature._id]: (quantities[feature._id] || data.totalPages) + 1
-                                  });
-                                }}
-                              >+</button>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    }
-
-                    return (
-                      <div key={feature._id} className="py-4 border-b border-gray-200 flex items-center justify-between">
-                        <div className="flex items-center">
-                          <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-4 text-blue-600">
-                            {React.createElement(Icon)}
-                          </div>
-                          <div>
-                            <h3 className="text-sm font-semibold">{feature.serviceName}</h3>
-                          </div>
-                        </div>
-                        <div className="flex items-center">
-                          <div className="font-semibold text-blue-600 mr-4">₹{feature.sellingPrice?.toLocaleString()}</div>
-                          <div className="relative">
-                            <input 
-                              type="checkbox" 
-                              id={`feature-${feature._id}`}
-                              className="sr-only"
-                              checked={isSelected}
-                              onChange={() => handleFeatureToggle(feature._id)}
-                            />
-                            <label 
-                              htmlFor={`feature-${feature._id}`}
-                              className={`h-6 w-6 rounded border flex items-center justify-center cursor-pointer ${isSelected ? 'bg-blue-600 border-blue-600 text-white' : 'border-gray-300'}`}
-                            >
-                              {isSelected && <Check className="h-4 w-4" />}
-                            </label>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-
-                 {/* Coupon Code Section - NEW */}
-                 <div className="mt-6 pt-6 border-t-2 border-gray-200">
-                    <h3 className="text-base font-semibold mb-2">Apply Coupon</h3>
                     <div className="flex items-center gap-2">
-                      <input
-                        type="text"
-                        className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none"
-                        placeholder="Enter coupon code"
-                        value={couponCode}
-                        onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                        disabled={couponLoading}
+                      <div className="text-blue-600 font-semibold">₹{feature.sellingPrice?.toLocaleString()}</div>
+                      <div className="relative">
+                        <input 
+                          type="checkbox" 
+                          id={`feature-${feature._id}`}
+                          className="h-5 w-5 border-gray-300 rounded text-blue-600 focus:ring-blue-500"
+                          checked={isSelected}
+                          onChange={() => handleFeatureToggle(feature._id)}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+              
+              {/* Show quantity selector for selected component type features */}
+              {selectedFeatures.map(featureId => {
+                const feature = additionalFeaturesData.find(f => f._id === featureId);
+                if (feature && feature.upgradeType === 'component') {
+                  return (
+                    <div key={`quantity-${featureId}`} className="flex items-center border border-gray-200 rounded-md overflow-hidden ml-14 w-32">
+                      <button 
+                        className="w-8 h-8 bg-gray-50 flex items-center justify-center text-base hover:bg-gray-200 transition-colors"
+                        onClick={() => {
+                          if (quantities[featureId] > data.totalPages) {
+                            setQuantities({
+                              ...quantities,
+                              [featureId]: quantities[featureId] - 1
+                            });
+                          }
+                        }}
+                      >-</button>
+                      <input 
+                        type="text" 
+                        className="w-16 h-8 border-none text-center font-semibold text-sm" 
+                        value={quantities[featureId] || data.totalPages}
+                        readOnly 
                       />
-                      
-                      {couponData ? (
-                        <button
-                          onClick={clearCoupon}
-                          className="px-3 py-2 bg-gray-200 text-gray-700 rounded-md text-sm hover:bg-gray-300 transition-colors"
-                        >
-                          Clear
-                        </button>
-                      ) : (
-                        <button
-                          onClick={validateCoupon}
-                          className={`px-3 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700 transition-colors ${
-                            couponLoading ? 'opacity-70 cursor-not-allowed' : ''
-                          }`}
-                          disabled={couponLoading}
-                        >
-                          {couponLoading ? 'Checking...' : 'Apply'}
-                        </button>
-                      )}
+                      <button 
+                        className="w-8 h-8 bg-gray-50 flex items-center justify-center text-base hover:bg-gray-200 transition-colors"
+                        onClick={() => {
+                          setQuantities({
+                            ...quantities,
+                            [featureId]: (quantities[featureId] || data.totalPages) + 1
+                          });
+                        }}
+                      >+</button>
                     </div>
-                    
-                    {couponError && (
-                      <p className="mt-1 text-xs text-red-600">{couponError}</p>
-                    )}
-                    
-                    {couponData && couponData.success && (
-                      <div className="mt-2 text-sm bg-green-50 border border-green-200 rounded-md p-2">
-                        <div className="flex items-center text-green-700">
-                          <Check className="w-4 h-4 mr-1" />
-                          <span>Coupon applied!</span>
-                        </div>
-                        <p className="text-gray-600">
-                          You saved ₹{couponData.data.discountAmount.toLocaleString()}
-                          {couponData.data.discountType === 'percentage' && 
-                            ` (${parseFloat(couponData.data.discountValue).toFixed(2)}% off)`}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Price Summary - with coupon discount displayed */}
-                  <div className="flex flex-col gap-2 pt-6 mt-5 border-t-2 border-gray-200">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-500">Base Price:</span>
-                      <span className="text-base font-medium text-gray-900">₹{calculateBasePrice().toLocaleString()}</span>
-                    </div>
-                    
-                    {couponData && couponData.success && (
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-500">Discount:</span>
-                        <span className="text-base font-medium text-green-600">-₹{couponData.data.discountAmount.toLocaleString()}</span>
-                      </div>
-                    )}
-                    
-                    <div className="flex justify-between items-center pt-2 border-t border-gray-100">
-                      <span className="text-lg font-semibold text-gray-900">Total Price:</span>
-                      <span className="text-2xl font-bold text-blue-600">₹{calculateTotalPrice().toLocaleString()}</span>
-                    </div>
-                  </div>
-
-                  <div className="mt-6 pt-6 border-t-2 border-gray-200">
-  <h3 className="text-base font-semibold mb-4">Select Payment Option</h3>
-  <div className="space-y-4">
-    <div
-      className={`border rounded-lg p-4 cursor-pointer ${paymentOption === 'full' ? 'border-blue-600 bg-blue-100' : 'border-gray-200'}`}
-      onClick={() => setPaymentOption('full')}
-    >
-      <div className="flex items-center mb-2">
-        <div className={`w-4 h-4 rounded-full mr-2 ${paymentOption === 'full' ? 'bg-blue-600' : 'border border-gray-400'}`}></div>
-        <span className="font-medium">Full Payment</span>
-      </div>
-      <p className="text-xs text-gray-500 ml-6">Pay the entire amount at once</p>
-    </div>
-   
-    <div
-      className={`border rounded-lg p-4 cursor-pointer ${paymentOption === 'partial' ? 'border-blue-600 bg-blue-100' : 'border-gray-200'}`}
-      onClick={() => setPaymentOption('partial')}
-    >
-      <div className="flex items-center mb-2">
-        <div className={`w-4 h-4 rounded-full mr-2 ${paymentOption === 'partial' ? 'bg-blue-600' : 'border border-gray-400'}`}></div>
-        <span className="font-medium">Partial Payment</span>
-      </div>
-      <p className="text-xs text-gray-500 ml-6">Pay in 3 installments (30% - 30% - 40%)</p>
-    </div>
-  </div>
+                  );
+                }
+                return null;
+              })}
   
-  {/* Show payment breakdown for partial payment */}
-  {paymentOption === 'partial' && (
-    <div className="bg-gray-50 p-3 rounded-lg mt-4 mb-4">
-      <h4 className="text-sm font-medium mb-2">Payment Schedule:</h4>
-      <div className="space-y-2">
-        <div className="flex justify-between text-sm">
-          <span>First Payment (30%):</span>
-          <span className="font-medium">₹{Math.round(calculateTotalPrice() * 0.3).toLocaleString()}</span>
-        </div>
-        <div className="flex justify-between text-sm">
-          <span>Second Payment (30%):</span>
-          <span className="font-medium">₹{Math.round(calculateTotalPrice() * 0.3).toLocaleString()}</span>
-        </div>
-        <div className="flex justify-between text-sm">
-          <span>Final Payment (40%):</span>
-          <span className="font-medium">₹{Math.round(calculateTotalPrice() * 0.4).toLocaleString()}</span>
-        </div>
-      </div>
-    </div>
-  )}
-</div>
+              {/* Coupon Code Section */}
+              <div className="pt-5 border-t mt-6 pb-4">
+                <h3 className="font-medium mb-3 text-gray-800">Apply Coupon</h3>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <input 
+                    type="text"
+                    className="border rounded p-2.5 flex-grow focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    placeholder="Enter coupon code"
+                    value={couponCode}
+                    onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                    disabled={couponLoading}
+                  />
                   
-                  {/* Get Started Button - same as original */}
-                  <button 
-                    onClick={handleGetStarted}
-                    className="w-full bg-blue-600 text-white py-4 rounded-lg text-base font-semibold mt-8 transition-all duration-300 hover:bg-blue-700 hover:-translate-y-1 hover:shadow-lg"
-                  >
-                     {paymentOption === 'full' ? 'Proceed to Payment' : 'Pay First Installment'}
-                  </button>
+                  {couponData ? (
+                    <button
+                      onClick={clearCoupon}
+                      className="px-5 py-2.5 bg-gray-200 text-gray-700 rounded font-medium hover:bg-gray-300 transition-colors"
+                    >
+                      Clear
+                    </button>
+                  ) : (
+                    <button
+                      onClick={validateCoupon}
+                      className={`px-5 py-2.5 bg-blue-600 text-white rounded font-medium hover:bg-blue-700 transition-colors ${
+                        couponLoading ? 'opacity-70 cursor-not-allowed' : ''
+                      }`}
+                      disabled={couponLoading}
+                    >
+                      {couponLoading ? 'Checking...' : 'Apply'}
+                    </button>
+                  )}
                 </div>
+                
+                {couponError && (
+                  <p className="mt-1 text-xs text-red-600">{couponError}</p>
+                )}
+                
+                {couponData && couponData.success && (
+                  <div className="mt-2 text-sm bg-green-50 border border-green-200 rounded-md p-2">
+                    <div className="flex items-center text-green-700">
+                      <Check className="w-4 h-4 mr-1" />
+                      <span>Coupon applied!</span>
+                    </div>
+                    <p className="text-gray-600">
+                      You saved ₹{couponData.data.discountAmount.toLocaleString()}
+                      {couponData.data.discountType === 'percentage' && 
+                        ` (${parseFloat(couponData.data.discountValue).toFixed(2)}% off)`}
+                    </p>
+                  </div>
+                )}
+              </div>
+  
+              {/* Payment Option Section */}
+              <div className="pt-5 border-t">
+                <h3 className="text-base font-semibold mb-4">Select Payment Option</h3>
+                <div className="space-y-4">
+                  <div
+                    className={`border rounded-lg p-4 cursor-pointer ${paymentOption === 'full' ? 'border-blue-600 bg-blue-50' : 'border-gray-200'}`}
+                    onClick={() => setPaymentOption('full')}
+                  >
+                    <div className="flex items-center mb-2">
+                      <div className={`w-4 h-4 rounded-full mr-2 ${paymentOption === 'full' ? 'bg-blue-600' : 'border border-gray-400'}`}></div>
+                      <span className="font-medium">Full Payment</span>
+                    </div>
+                    <p className="text-xs text-gray-500 ml-6">Pay the entire amount at once</p>
+                  </div>
+                 
+                  <div
+                    className={`border rounded-lg p-4 cursor-pointer ${paymentOption === 'partial' ? 'border-blue-600 bg-blue-50' : 'border-gray-200'}`}
+                    onClick={() => setPaymentOption('partial')}
+                  >
+                    <div className="flex items-center mb-2">
+                      <div className={`w-4 h-4 rounded-full mr-2 ${paymentOption === 'partial' ? 'bg-blue-600' : 'border border-gray-400'}`}></div>
+                      <span className="font-medium">Partial Payment</span>
+                    </div>
+                    <p className="text-xs text-gray-500 ml-6">Pay in 3 installments (30% - 30% - 40%)</p>
+                  </div>
+                </div>
+                
+                {/* Show payment breakdown for partial payment */}
+                {paymentOption === 'partial' && (
+                  <div className="bg-gray-50 p-3 rounded-lg mt-4 mb-4">
+                    <h4 className="text-sm font-medium mb-2">Payment Schedule:</h4>
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span>First Payment (30%):</span>
+                        <span className="font-medium">₹{Math.round(calculateTotalPrice() * 0.3).toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span>Second Payment (30%):</span>
+                        <span className="font-medium">₹{Math.round(calculateTotalPrice() * 0.3).toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span>Final Payment (40%):</span>
+                        <span className="font-medium">₹{Math.round(calculateTotalPrice() * 0.4).toLocaleString()}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+  
+              {/* Price Summary */}
+              <div className="flex flex-col gap-2 pt-6 mt-5 border-t">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-500">Base Price:</span>
+                  <span className="text-base font-medium text-gray-900">₹{calculateBasePrice().toLocaleString()}</span>
+                </div>
+                
+                {couponData && couponData.success && (
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-500">Discount:</span>
+                    <span className="text-base font-medium text-green-600">-₹{couponData.data.discountAmount.toLocaleString()}</span>
+                  </div>
+                )}
+                
+                <div className="flex justify-between items-center pt-2 border-t border-gray-100">
+                  <span className="text-lg font-semibold text-gray-900">Total Price:</span>
+                  <span className="text-2xl font-bold text-blue-600">₹{calculateTotalPrice().toLocaleString()}</span>
+                </div>
+              </div>
+              
+              {/* Get Started Button */}
+              <div className="mt-6">
+                <button 
+                  onClick={handleGetStarted}
+                  className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+                >
+                  {paymentOption === 'full' ? 'Proceed to Payment' : 'Pay First Installment'}
+                </button>
               </div>
             </div>
           </div>
         </div>
       </div>
-
-      {/* Recommended Products Section */}
-      {data.category && (
-        <div className="container mx-auto px-4 lg:px-8 pb-12">
-          <VerticalCardProduct 
-            category={data.category} 
-            heading="Recommended Products"
-          />
-        </div>
-      )}
-
-      {/* Cart Popup */}
-      <CartPopup 
-        isOpen={showCartPopup}
-        onClose={() => setShowCartPopup(false)}
-        product={data}
-        className="z-[55]"
-      />
-
-      {/* Image Modal */}
-      {isImageOpen && data.serviceImage && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" 
-          onClick={() => setIsImageOpen(false)}
-        >
-          <div className="bg-white rounded-lg max-w-3xl w-full">
-            <img 
-              src={data.serviceImage[0]} 
-              alt={data.serviceName}
-              className="w-full h-auto rounded-lg"
-            />
-          </div>
-        </div>
-      )}
-
-      {/* Alert Modal */}
-      <AlertModal 
-        isOpen={showAlert}
-        message={alertMessage}
-        onClose={() => setShowAlert(false)}
-      />
     </div>
+  
+    {/* Recommended Products Section */}
+    {data.category && (
+      <div className="container mx-auto px-4 lg:px-8 pb-12">
+        <VerticalCardProduct 
+          category={data.category} 
+          heading="Recommended Products"
+        />
+      </div>
+    )}
+  
+    {/* Cart Popup */}
+    <CartPopup 
+      isOpen={showCartPopup}
+      onClose={() => setShowCartPopup(false)}
+      product={data}
+      className="z-[55]"
+    />
+  
+    {/* Alert Modal */}
+    <AlertModal 
+      isOpen={showAlert}
+      message={alertMessage}
+      onClose={() => setShowAlert(false)}
+    />
+  </div>
   );
 };
 
