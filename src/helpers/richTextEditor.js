@@ -9,6 +9,8 @@ import TextStyle from '@tiptap/extension-text-style';
 import Underline from '@tiptap/extension-underline';
 import { Node, Extension  } from '@tiptap/core';
 import HorizontalRule from '@tiptap/extension-horizontal-rule';
+// Import Link extension
+import Link from '@tiptap/extension-link';
 
 // Import icons
 import * as Fa from 'react-icons/fa';
@@ -119,6 +121,50 @@ const CustomIcon = Node.create({
   },
 });
 
+// LineHeight Extension
+const LineHeight = Extension.create({
+  name: 'lineHeight',
+
+  addOptions() {
+    return {
+      types: ['paragraph', 'heading'],
+      defaultLineHeight: 'normal',
+    }
+  },
+
+  addGlobalAttributes() {
+    return [
+      {
+        types: this.options.types,
+        attributes: {
+          lineHeight: {
+            default: this.options.defaultLineHeight,
+            parseHTML: element => element.style.lineHeight,
+            renderHTML: attributes => {
+              if (!attributes.lineHeight) {
+                return {}
+              }
+              return {
+                style: `line-height: ${attributes.lineHeight}`,
+              }
+            },
+          },
+        },
+      },
+    ]
+  },
+
+  addCommands() {
+    return {
+      setLineHeight: lineHeight => ({ commands }) => {
+        return this.options.types.every(type => 
+          commands.updateAttributes(type, { lineHeight })
+        )
+      },
+    }
+  },
+})
+
 // Icon Selector Component
 const IconSelector = ({ onSelectIcon, onClose }) => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -203,6 +249,68 @@ const IconSelector = ({ onSelectIcon, onClose }) => {
   );
 };
 
+// Link Form Component - New Component
+const LinkForm = ({ editor, onClose }) => {
+  const [url, setUrl] = useState('');
+  
+  const setLink = () => {
+    if (url) {
+      // Add https if not present
+      const href = url.startsWith('http') ? url : `https://${url}`;
+      
+      editor
+        .chain()
+        .focus()
+        .setLink({ href, target: '_blank' })
+        .run();
+    } else {
+      editor.chain().focus().unsetLink().run();
+    }
+    onClose();
+  };
+  
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-4 w-96">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold">Insert Link</h3>
+          <button 
+            onClick={onClose} 
+            className="text-gray-500 hover:text-gray-700"
+            type="button"
+          >
+            ✕
+          </button>
+        </div>
+        <input
+          type="text"
+          placeholder="Enter URL..."
+          className="w-full p-2 border rounded mb-4"
+          value={url}
+          onChange={(e) => setUrl(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && setLink()}
+        />
+        <div className="flex justify-end gap-2">
+          <button 
+            onClick={onClose} 
+            className="px-4 py-2 border rounded hover:bg-gray-100"
+            type="button"
+          >
+            Cancel
+          </button>
+          <button 
+            onClick={setLink} 
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            type="button"
+          >
+            Apply
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const FontSize = Extension.create({
   name: 'fontSize',
 
@@ -255,6 +363,7 @@ const FontSize = Extension.create({
 // MenuBar Component
 const MenuBar = ({ editor }) => {
   const [showIconSelector, setShowIconSelector] = useState(false);
+  const [showLinkForm, setShowLinkForm] = useState(false);
 
   if (!editor) return null;
 
@@ -276,8 +385,13 @@ const MenuBar = ({ editor }) => {
     { value: '12', label: '12px' },
     { value: '14', label: '14px' },
     { value: '16', label: '16px' },
+    { value: '17', label: '17px' },
     { value: '18', label: '18px' },
+    { value: '19', label: '19px' },
     { value: '20', label: '20px' },
+    { value: '21', label: '21px' },
+    { value: '22', label: '22px' },
+    { value: '23', label: '23px' },
     { value: '24', label: '24px' },
     { value: '28', label: '28px' },
     { value: '30', label: '30px' },
@@ -287,6 +401,19 @@ const MenuBar = ({ editor }) => {
     { value: '38', label: '38px' },
     { value: '40', label: '40px' },
   ];
+
+   // Line height options
+   const lineHeightOptions = [
+    { value: 'normal', label: 'Normal' },
+    { value: '1', label: 'Single' },
+    { value: '1.15', label: 'Tight' },
+    { value: '1.5', label: 'Relaxed' },
+    { value: '2', label: 'Double' },
+    { value: '2.5', label: 'Triple' },
+  ];
+
+   // Is link active check
+   const isLinkActive = editor.isActive('link');
 
   return (
     <div className="flex flex-wrap gap-2 p-2 border-b bg-slate-50">
@@ -303,6 +430,28 @@ const MenuBar = ({ editor }) => {
       >
         <option value="">Font Size</option>
         {fontSizeOptions.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+
+      {/* Line Height Dropdown - New (Fixed) */}
+      <select
+        onChange={(e) => {
+          e.preventDefault();
+          const lineHeight = e.target.value;
+          if (lineHeight) {
+            // First check if selection exists
+            if (editor.state.selection) {
+              editor.commands.setLineHeight(lineHeight);
+            }
+          }
+        }}
+        className="p-1 rounded border"
+      >
+        <option value="">Line Height</option>
+        {lineHeightOptions.map((option) => (
           <option key={option.value} value={option.value}>
             {option.label}
           </option>
@@ -342,6 +491,16 @@ const MenuBar = ({ editor }) => {
         type="button"
       >
         <u>U</u>
+      </button>
+
+       {/* Link Button - New */}
+       <button
+        onClick={handleButtonClick(() => setShowLinkForm(true))}
+        className={`p-2 rounded ${isLinkActive ? 'bg-slate-200' : 'hover:bg-slate-100'}`}
+        type="button"
+        title="Insert link"
+      >
+        <span style={{ fontWeight: 'bold' }}>🔗</span>
       </button>
 
       {/* List Buttons */}
@@ -386,6 +545,13 @@ const MenuBar = ({ editor }) => {
           onClose={() => setShowIconSelector(false)}
         />
       )}
+    
+    {showLinkForm && (
+        <LinkForm
+          editor={editor}
+          onClose={() => setShowLinkForm(false)}
+        />
+      )}
     </div>
   );
 };
@@ -397,12 +563,12 @@ const RichTextEditor = ({ value, onChange, placeholder }) => {
       StarterKit.configure({
         bulletList: {
           HTMLAttributes: {
-            class: 'list-disc pl-4 mb-4'
+            class: 'list-disc pl-4 mb-2'
           }
         },
         orderedList: {
           HTMLAttributes: {
-            class: 'list-decimal pl-4 mb-4'
+            class: 'list-decimal pl-4 mb-2'
           }
         },
         paragraph: {
@@ -422,6 +588,15 @@ const RichTextEditor = ({ value, onChange, placeholder }) => {
       CustomIcon,
       HorizontalRule,
       FontSize, 
+      LineHeight,
+      Link.configure({
+        openOnClick: false,
+        HTMLAttributes: {
+          class: 'text-blue-600 ',
+          target: '_blank',
+          rel: 'noopener noreferrer',
+        },
+      }),
     ],
     content: value,
     onUpdate: ({ editor }) => {
@@ -448,6 +623,17 @@ const RichTextEditor = ({ value, onChange, placeholder }) => {
    
    .ProseMirror.prose hr + p {
      margin-top: 0.5em !important;
+   }
+      /* Link styling */
+   .ProseMirror.prose a {
+     color: #2563eb;
+    
+   }
+   
+   /* Line height control - make it obvious when different line heights are selected */
+   .ProseMirror.prose p[style*="line-height"] {
+     background-color: rgba(0, 0, 0, 0.01);
+     border-radius: 2px;
    }
  `;
 
