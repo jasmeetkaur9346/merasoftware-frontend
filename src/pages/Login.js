@@ -7,6 +7,7 @@ import { toast } from "react-toastify";
 import SummaryApi from "../common";
 import Context from "../context";
 import CookieManager from '../utils/cookieManager';
+import OtpVerification from './OtpVerification';
 
 const Login = () => {
    const [showPassword, setShowPassword] = useState(false);
@@ -14,6 +15,9 @@ const Login = () => {
        email: "",
        password: ""
      })
+     const [requireOtp, setRequireOtp] = useState(false);
+  const [userData, setUserData] = useState(null);
+  const [loading, setLoading] = useState(false);
      const navigate = useNavigate()
      const { fetchUserDetails, fetchUserAddToCart } = useContext(Context)
 
@@ -43,33 +47,51 @@ const Login = () => {
         const dataApi = await dataResponse.json();
         
         if (dataApi.success) {
-          // Set user details in cookie (Token को API handle कर रही है)
-          CookieManager.setUserDetails({
-            _id: dataApi.data.user._id,
-            name: dataApi.data.user.name,
-            email: dataApi.data.user.email,
-            role: dataApi.data.user.role
-          });
+          if (dataApi.requireOtp) {
+            // OTP verification required
+            setUserData({
+              userId: dataApi.data.userId,
+              email: dataApi.data.email,
+              name: dataApi.data.name,
+              role: dataApi.data.role
+            });
+            setRequireOtp(true);
+            toast.info(dataApi.message);
+          } else {
+            // No OTP required, proceed with normal login
+            CookieManager.setUserDetails({
+              _id: dataApi.data.user._id,
+              name: dataApi.data.user.name,
+              email: dataApi.data.user.email,
+              role: dataApi.data.user.role
+            });
   
-          // Wallet balance को अलग से store करें
-          // CookieManager.setWalletBalance(dataApi.data.walletBalance);
+            await fetchUserDetails();
+            await fetchUserAddToCart();
   
-          // Fetch user details और cart
-          await fetchUserDetails();
-          await fetchUserAddToCart();
-  
-          toast.success(dataApi.message);
-          navigate("/dashboard");
-        }
-  
-        if (dataApi.error) {
+            toast.success(dataApi.message);
+            navigate("/dashboard");
+          }
+        } else if (dataApi.error) {
           toast.error(dataApi.message);
         }
       } catch (error) {
         console.error("Login error:", error);
         toast.error("Login failed. Please try again.");
+      } finally {
+        setLoading(false);
       }
     };
+
+    const handleBackToLogin = () => {
+      setRequireOtp(false);
+      setUserData(null);
+    };
+  
+    // Render OTP verification component if required
+    if (requireOtp && userData) {
+      return <OtpVerification userData={userData} onBackToLogin={handleBackToLogin} />;
+    }
 
   return (
     <section id="login">
@@ -128,9 +150,14 @@ const Login = () => {
               </Link>
           </div>
 
-              <button className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 w-full max-w-[150px] rounded-full hover:scale-110 transition-all mx-auto block mt-6">
-              Login
+          <button 
+              type="submit" 
+              disabled={loading}
+              className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 w-full max-w-[150px] rounded-full hover:scale-110 transition-all mx-auto block mt-6 disabled:opacity-50"
+            >
+              {loading ? "Please wait..." : "Login"}
             </button>
+          
               </form>
 
           {/* <p className='my-5'>Don't have account ? <Link to={"/sign-up"} className=' text-red-600 hover:text-red-700 hover:underline'>Sign up</Link></p> */}

@@ -9,6 +9,14 @@ const SummaryApi = {
        url : `${backendDomain}/api/signin`,
         method: "post"
     },
+    verifyOtp:{
+      url : `${backendDomain}/api/verify-otp`,
+      method: "post"
+    },
+    resendOtp: {
+      url: `${backendDomain}/api/resend-otp`,
+      method: "post"
+    },
     current_user : {
         url : `${backendDomain}/api/user-details`,
         method : "get"
