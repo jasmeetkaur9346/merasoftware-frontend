@@ -8,6 +8,7 @@ import SummaryApi from "../common";
 import Context from "../context";
 import CookieManager from '../utils/cookieManager';
 import OtpVerification from './OtpVerification';
+import { useDispatch } from 'react-redux';
 
 const Login = () => {
    const [showPassword, setShowPassword] = useState(false);
@@ -16,10 +17,11 @@ const Login = () => {
        password: ""
      })
      const [requireOtp, setRequireOtp] = useState(false);
-  const [userData, setUserData] = useState(null);
-  const [loading, setLoading] = useState(false);
-     const navigate = useNavigate()
-     const { fetchUserDetails, fetchUserAddToCart } = useContext(Context)
+     const [userData, setUserData] = useState(null);
+     const [loading, setLoading] = useState(false);
+     const navigate = useNavigate();
+     const { fetchUserDetails, fetchUserAddToCart } = useContext(Context);
+     const dispatch = useDispatch();
 
      const handleOnChange = (e) => {
       const {name, value} = e.target
@@ -90,7 +92,15 @@ const Login = () => {
   
     // Render OTP verification component if required
     if (requireOtp && userData) {
-      return <OtpVerification userData={userData} onBackToLogin={handleBackToLogin} />;
+      return (
+        <OtpVerification 
+          userData={userData} 
+          onBackToLogin={handleBackToLogin}
+          // Context और dispatch पास करें
+          contextData={{ fetchUserDetails, fetchUserAddToCart }} 
+          dispatch={dispatch}
+        />
+      );
     }
 
   return (

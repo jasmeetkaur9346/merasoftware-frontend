@@ -4,14 +4,18 @@ import SummaryApi from "../common";
 import CookieManager from '../utils/cookieManager';
 import { useNavigate } from 'react-router-dom';
 import loginIcons from "../assest/signin.gif";
-import Context from "../context";
+import { useDispatch, useSelector  } from 'react-redux';
+import { setUserDetails, updateWalletBalance } from '../store/userSlice';
+import Context from '../context';
 
-const OtpVerification = ({ userData, onBackToLogin }) => {
+const OtpVerification = ({ userData, onBackToLogin}) => {
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [loading, setLoading] = useState(false);
   const [timeLeft, setTimeLeft] = useState(600); // 10 minutes in seconds
   const navigate = useNavigate();
-  const { fetchUserDetails, fetchUserAddToCart } = useContext(Context)
+  const dispatch = useDispatch(); // Redux dispatch को प्राप्त करें
+  const storeUser = useSelector(state => state.user.user);
+  const context = useContext(Context); 
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -110,7 +114,7 @@ const OtpVerification = ({ userData, onBackToLogin }) => {
       const data = await response.json();
       
       if (data.success) {
-        // Set user details in cookie
+        // 1. कुकी में यूज़र डेटा सेट करें
         CookieManager.setUserDetails({
           _id: data.data.user._id,
           name: data.data.user.name,
@@ -118,23 +122,30 @@ const OtpVerification = ({ userData, onBackToLogin }) => {
           role: data.data.user.role
         });
         
-       // यहां async/await का प्रयोग करें ताकि डेटा फेच होने तक इंतज़ार हो
-      try {
-        await fetchUserDetails();
-        await fetchUserAddToCart();
+        // 2. Redux स्टोर में यूज़र डेटा अपडेट करें (dispatch को props से पास करें)
+        dispatch(setUserDetails(data.data.user));
+      if (data.data.walletBalance) {
+        dispatch(updateWalletBalance(data.data.walletBalance));
+      }
         
-        // डेटा फेच होने के बाद ही नेविगेट करें
+        // 3. कॉन्टेक्स्ट अपडेट करें (fetchUserDetails को context से पास करें)
+        try {
+          if (context.fetchUserDetails) {
+            await context.fetchUserDetails();
+          }
+          
+          if (context.fetchUserAddToCart) {
+            await context.fetchUserAddToCart();
+          }
+        } catch (fetchError) {
+          console.error("Data fetching error:", fetchError);
+        }
+        
         toast.success(data.message);
         navigate("/dashboard");
-      } catch (fetchError) {
-        console.error("Data fetching error:", fetchError);
-        toast.error("Failed to load user data. Please refresh the page.");
-        // फिर भी नेविगेट करें, लेकिन यूज़र को बताएं कि डेटा लोड नहीं हुआ
-        navigate("/dashboard");
+      } else {
+        toast.error(data.message);
       }
-    } else {
-      toast.error(data.message);
-    }
     } catch (error) {
       console.error("OTP verification error:", error);
       toast.error("Verification failed. Please try again.");
