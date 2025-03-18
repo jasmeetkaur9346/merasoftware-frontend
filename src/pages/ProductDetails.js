@@ -76,21 +76,23 @@ const ProductDetails = () => {
   const params = useParams();
 
   // Calculate base price (without coupon discount)
-  const calculateBasePrice  = () => {
+  const calculateBasePrice = () => {
     const basePrice = data.sellingPrice;
     const featuresPrice = selectedFeatures.reduce((sum, featureId) => {
       const feature = additionalFeaturesData.find(f => f._id === featureId);
       if (!feature) return sum;
-
-      if (feature.upgradeType === 'component') {
+  
+      // सिर्फ Add New Page के लिए क्वांटिटी हिसाब से प्राइस कैलकुलेट करें
+      if (feature.serviceName.toLowerCase().includes('add new page')) {
         const quantity = quantities[featureId] || data.totalPages;
         const additionalQuantity = Math.max(0, quantity - data.totalPages);
         return sum + (additionalQuantity * feature.sellingPrice);
       }
-
+  
+      // अन्य फीचर्स के लिए सिंगल प्राइस
       return sum + feature.sellingPrice;
     }, 0);
-
+  
     return basePrice + featuresPrice;
   };
 
@@ -457,21 +459,38 @@ const ProductDetails = () => {
   
           const featuresData = await Promise.all(featuresPromises);
           const featuresWithData = featuresData
-            .map(fd => fd.data)
-            .filter(feature => 
-              // Filter features that are compatible with current product category
-              feature.compatibleWith && 
-              feature.compatibleWith.includes(productData.category)
-            );
-  
-          // Sort features
-          const sortedFeatures = featuresWithData.sort((a, b) => {
-            if (a.upgradeType === 'component' && b.upgradeType !== 'component') return -1;
-            if (b.upgradeType === 'component' && a.upgradeType !== 'component') return 1;
-            return 0;
+          .map(fd => fd.data)
+          .filter(feature => {
+            // Check if feature is compatible with current product category
+            const isCompatible = feature.compatibleWith && 
+              feature.compatibleWith.includes(productData.category);
+            
+            // Add New Page केवल standard_websites कैटेगरी में दिखाएं
+            if (feature.serviceName.toLowerCase().includes('add new page')) {
+              return productData.category === 'standard_websites' && isCompatible;
+            }
+            
+            // बाकी सभी फीचर्स के लिए कंपैटिबिलिटी चेक करें
+            return isCompatible;
           });
-  
-          setAdditionalFeaturesData(sortedFeatures);
+        
+        // नई सॉर्टिंग लॉजिक - Add New Page सबसे पहले, फिर पेज-संबंधित, फिर बाकी
+        const sortedFeatures = featuresWithData.sort((a, b) => {
+          // Add New Page को सबसे पहले रखें
+          if (a.serviceName.toLowerCase().includes('add new page')) return -1;
+          if (b.serviceName.toLowerCase().includes('add new page')) return 1;
+          
+          // फिर अन्य पेज-संबंधित फीचर्स
+          const aIsPage = a.serviceName.toLowerCase().includes('page');
+          const bIsPage = b.serviceName.toLowerCase().includes('page');
+          if (aIsPage && !bIsPage) return -1;
+          if (!aIsPage && bIsPage) return 1;
+          
+          // यदि दोनों पेज या दोनों गैर-पेज हैं, तो अल्फाबेटिकल सॉर्ट करें
+          return a.serviceName.localeCompare(b.serviceName);
+        });
+        
+        setAdditionalFeaturesData(sortedFeatures);
   
           // Cache the complete data
           await cacheProductDetails(params?.id, {
@@ -531,16 +550,16 @@ const ProductDetails = () => {
       const initialSelectedFeatures = [];
   
       sortedFeatures.forEach(feature => {
-        // Set quantities for all features, but don't select any by default
-        if (feature.upgradeType === 'component') {
-          initialQuantities[feature._id] = feature.baseQuantity || productData.totalPages;
+        // सिर्फ पेज संबंधित फीचर्स के लिए क्वांटिटी सेट करें
+        if (feature.serviceName.toLowerCase().includes('page')) {
+          initialQuantities[feature._id] = productData.totalPages;
         } else {
           initialQuantities[feature._id] = 1;
         }
       });
-  
+    
       setQuantities(initialQuantities);
-      setSelectedFeatures(initialSelectedFeatures); // Empty array, nothing selected
+      setSelectedFeatures(initialSelectedFeatures); // कुछ भी auto-select नहीं
     };
   
     fetchProductDetails();
@@ -728,78 +747,77 @@ const ProductDetails = () => {
   
               {/* Additional Features Section */}
               {additionalFeaturesData.map(feature => {
-                const isSelected = selectedFeatures.includes(feature._id);
-                const iconChar = feature.upgradeType === "component" ? 
-                  "W" : feature.upgradeType === "dynamic_page" || feature.serviceName.toLowerCase().includes("dynamic") ? 
-                  "D" : feature.upgradeType === "live_chat" || feature.serviceName.toLowerCase().includes("chat") ? 
-                  "L" : feature.serviceName.charAt(0).toUpperCase();
-                  
-                return (
-                  <div key={feature._id} className="flex items-center justify-between p-3 border-b hover:bg-blue-50 transition-colors rounded">
-                    <div className="flex items-center gap-3">
-                      <div className="bg-blue-100 w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0">
-                        <span className="text-blue-600">{iconChar}</span>
-                      </div>
-                      <div>
-                        <h3 className="font-medium text-gray-800">{feature.serviceName}</h3>
-                        {feature.upgradeType === 'component' && (
-                          <p className="text-xs text-gray-500">₹{feature.sellingPrice?.toLocaleString()} Per Additional Unit</p>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="text-blue-600 font-semibold">₹{feature.sellingPrice?.toLocaleString()}</div>
-                      <div className="relative">
-                        <input 
-                          type="checkbox" 
-                          id={`feature-${feature._id}`}
-                          className="h-5 w-5 border-gray-300 rounded text-blue-600 focus:ring-blue-500"
-                          checked={isSelected}
-                          onChange={() => handleFeatureToggle(feature._id)}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+  const isSelected = selectedFeatures.includes(feature._id);
+  const iconChar = feature.serviceName.charAt(0).toUpperCase();
+  // चेक करें कि क्या यह Add New Page फीचर है
+  const isAddNewPage = feature.serviceName.toLowerCase().includes('add new page');
+   
+  return (
+    <div key={feature._id} className="flex items-center justify-between p-3 border-b hover:bg-blue-50 transition-colors rounded">
+      <div className="flex items-center gap-3">
+        <div className="bg-blue-100 w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0">
+          <span className="text-blue-600">{iconChar}</span>
+        </div>
+        <div>
+          <h3 className="font-medium text-gray-800">{feature.serviceName}</h3>
+          {isAddNewPage && (
+            <p className="text-xs text-gray-500">₹{feature.sellingPrice?.toLocaleString()} Per Additional Unit</p>
+          )}
+        </div>
+      </div>
+      <div className="flex items-center gap-2">
+        <div className="text-blue-600 font-semibold">₹{feature.sellingPrice?.toLocaleString()}</div>
+        <div className="relative">
+          <input
+            type="checkbox"
+            id={`feature-${feature._id}`}
+            className="h-5 w-5 border-gray-300 rounded text-blue-600 focus:ring-blue-500"
+            checked={isSelected}
+            onChange={() => handleFeatureToggle(feature._id)}
+          />
+        </div>
+      </div>
+    </div>
+  );
+})}
               
               {/* Show quantity selector for selected component type features */}
               {selectedFeatures.map(featureId => {
-                const feature = additionalFeaturesData.find(f => f._id === featureId);
-                if (feature && feature.upgradeType === 'component') {
-                  return (
-                    <div key={`quantity-${featureId}`} className="flex items-center border border-gray-200 rounded-md overflow-hidden ml-14 w-32">
-                      <button 
-                        className="w-8 h-8 bg-gray-50 flex items-center justify-center text-base hover:bg-gray-200 transition-colors"
-                        onClick={() => {
-                          if (quantities[featureId] > data.totalPages) {
-                            setQuantities({
-                              ...quantities,
-                              [featureId]: quantities[featureId] - 1
-                            });
-                          }
-                        }}
-                      >-</button>
-                      <input 
-                        type="text" 
-                        className="w-16 h-8 border-none text-center font-semibold text-sm" 
-                        value={quantities[featureId] || data.totalPages}
-                        readOnly 
-                      />
-                      <button 
-                        className="w-8 h-8 bg-gray-50 flex items-center justify-center text-base hover:bg-gray-200 transition-colors"
-                        onClick={() => {
-                          setQuantities({
-                            ...quantities,
-                            [featureId]: (quantities[featureId] || data.totalPages) + 1
-                          });
-                        }}
-                      >+</button>
-                    </div>
-                  );
-                }
-                return null;
-              })}
+  const feature = additionalFeaturesData.find(f => f._id === featureId);
+  if (feature && feature.serviceName.toLowerCase().includes('add new page')) {
+    return (
+      <div key={`quantity-${featureId}`} className="flex items-center border border-gray-200 rounded-md overflow-hidden ml-14 w-32">
+        <button 
+          className="w-8 h-8 bg-gray-50 flex items-center justify-center text-base hover:bg-gray-200 transition-colors"
+          onClick={() => {
+            if (quantities[featureId] > data.totalPages) {
+              setQuantities({
+                ...quantities,
+                [featureId]: quantities[featureId] - 1
+              });
+            }
+          }}
+        >-</button>
+        <input 
+          type="text" 
+          className="w-16 h-8 border-none text-center font-semibold text-sm" 
+          value={quantities[featureId] || data.totalPages}
+          readOnly 
+        />
+        <button 
+          className="w-8 h-8 bg-gray-50 flex items-center justify-center text-base hover:bg-gray-200 transition-colors"
+          onClick={() => {
+            setQuantities({
+              ...quantities,
+              [featureId]: (quantities[featureId] || data.totalPages) + 1
+            });
+          }}
+        >+</button>
+      </div>
+    );
+  }
+  return null;
+})}
   
               {/* Coupon Code Section */}
               <div className="pt-5 border-t mt-6 pb-4">
