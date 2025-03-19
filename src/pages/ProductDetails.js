@@ -283,14 +283,32 @@ const ProductDetails = () => {
       const feature = additionalFeaturesData.find(f => f._id === featureId);
       if (!feature) return null;
       
-      const quantity = quantities[featureId] || data.totalPages;
-      const totalFeaturePrice = feature.sellingPrice * quantity;
+      let quantity, totalFeaturePrice;
+      
+      if (feature.serviceName.toLowerCase().includes('add new page')) {
+        // Get total pages selected by user
+        quantity = quantities[featureId] || data.totalPages;
+        
+        // Calculate ONLY additional pages beyond the default
+        const additionalPages = Math.max(0, quantity - data.totalPages);
+        
+        // For Add New Page feature, only charge for additional pages
+        totalFeaturePrice = feature.sellingPrice * additionalPages;
+      } else {
+        // For other features, use quantity 1 and regular price
+        quantity = 1;
+        totalFeaturePrice = feature.sellingPrice;
+      }
       
       return {
         ...feature,
         quantity: quantity,
+        // Store the additional pages count for display purposes
+        additionalQuantity: feature.serviceName.toLowerCase().includes('add new page') 
+          ? Math.max(0, quantity - data.totalPages) 
+          : 0,
+        // This is what will be charged
         totalOriginalPrice: totalFeaturePrice,
-        // We'll calculate any discount on features later
       };
     }).filter(Boolean),
     couponData: couponData,
