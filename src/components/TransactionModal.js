@@ -19,6 +19,9 @@ const TransactionModal = ({
   // Get user-friendly transaction type
   const getTransactionTypeText = () => {
     if (isInstallmentPayment) {
+      if (transaction.isPartialInstallmentPayment) {
+        return `UPI Portion of Installment #${transaction.installmentNumber || '1'} Payment`;
+      }
       return `Installment #${transaction.installmentNumber || '1'} Payment`;
     } else {
       return 'Wallet Recharge';

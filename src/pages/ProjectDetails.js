@@ -81,101 +81,122 @@ const ProjectDetails = () => {
     }
   };
 
-  // This function properly checks payment status and handles pending approvals
-  const checkPaymentStatus = async (order) => {
-    console.log('Checking payment status for order:', order);
-    
-    // If project is already completed, don't show payment alert
-    if (order.projectProgress >= 100 || order.currentPhase === 'completed') {
-      console.log('Project is complete, not showing payment alert');
-      setShouldShowPaymentAlert(false);
-      setIsProjectPaused(false);
-      return;
-    }
+  // First add a polling mechanism to frequently check payment status:
+useEffect(() => {
+  fetchOrderDetails();
+  
+  // Add a polling mechanism to refresh payment status
+  const intervalId = setInterval(() => {
+    fetchOrderDetails();
+  }, 30000); // Check every 30 seconds
+  
+  return () => clearInterval(intervalId);
+}, [orderId]);
 
-    try {
-      // Check if there are any pending transactions for this order first
-      // This is critical for first-time payments that might not be reflected in the order yet
-      const pendingTransResponse = await fetch(`${SummaryApi.checkPendingOrderTransactions.url}/${order._id}`, {
-        credentials: 'include',
+// Then update the checkPaymentStatus function:
+const checkPaymentStatus = async (order) => {
+  console.log('Checking payment status for order:', order);
+  
+  // If project is already completed, don't show payment alert
+  if (order.projectProgress >= 100 || order.currentPhase === 'completed') {
+    console.log('Project is complete, not showing payment alert');
+    setShouldShowPaymentAlert(false);
+    setIsProjectPaused(false);
+    return;
+  }
+
+  try {
+    // IMPORTANT: Check if there are any pending transactions for this order first
+    // This is critical for first-time payments that might not be reflected in the order yet
+    const pendingTransResponse = await fetch(`${SummaryApi.checkPendingOrderTransactions.url}/${order._id}`, {
+      credentials: 'include',
+    });
+    
+    const pendingTransData = await pendingTransResponse.json();
+    const hasPendingTransaction = pendingTransData.success && pendingTransData.data.hasPending;
+    
+    console.log('Has pending transaction?', hasPendingTransaction);
+    
+    // If there's a pending transaction, show the pending approval alert
+    if (hasPendingTransaction) {
+      // Get the installment number from the transaction
+      const installmentNumber = pendingTransData.data.installmentNumber || 1;
+      
+      // Find the corresponding installment or create one if it doesn't exist
+      let relevantInstallment = order.installments && order.installments.find(
+        inst => inst.installmentNumber === installmentNumber
+      );
+
+      // If we can't find a relevant installment, create a placeholder
+      if (!relevantInstallment) {
+        relevantInstallment = {
+          installmentNumber: installmentNumber || 1,
+          amount: pendingTransData.data.amount || 0,
+        };
+      }
+      
+      // Set the current installment with pending-approval status
+      setShouldShowPaymentAlert(true);
+      setIsProjectPaused(false); // Not paused while payment is being verified
+      setCurrentInstallment({
+        ...relevantInstallment,
+        paymentStatus: 'pending-approval'
       });
       
-      const pendingTransData = await pendingTransResponse.json();
-      const hasPendingTransaction = pendingTransData.success && pendingTransData.data.hasPending;
+      console.log('Payment is pending approval - showing alert');
+      return;
+    }
+  } catch (error) {
+    console.error('Error checking pending transactions:', error);
+    // Continue with regular flow if API fails
+  }
+
+  // Regular installment check flow
+  if (order.installments && order.installments.length > 0) {
+    console.log('Order installments:', order.installments);
+    
+    const nextUnpaidInstallment = order.installments.find(inst => !inst.paid);
+    console.log('Next unpaid installment:', nextUnpaidInstallment);
+    
+    if (nextUnpaidInstallment) {
+      // Check if there's a pending approval for this installment in the order record
+      const isPendingApproval = 
+        nextUnpaidInstallment.paymentStatus === 'pending-approval';
       
-      console.log('Has pending transaction?', hasPendingTransaction);
+      console.log('Is pending approval?', isPendingApproval);
+      console.log('Payment status:', nextUnpaidInstallment.paymentStatus);
       
-      // If there's a pending transaction, show the pending approval alert
-      if (hasPendingTransaction) {
-        // Get the installment number from the transaction
-        const installmentNumber = pendingTransData.data.installmentNumber || 1;
-        
-        // Find the corresponding installment
-        const relevantInstallment = order.installments.find(
-          inst => inst.installmentNumber === installmentNumber
-        );
-        
+      // If payment is awaiting verification based on order status, show the pending alert
+      if (isPendingApproval) {
+        console.log('Payment is pending approval - showing alert from order status');
         setShouldShowPaymentAlert(true);
         setIsProjectPaused(false); // Not paused while payment is being verified
         setCurrentInstallment({
-          ...relevantInstallment,
+          ...nextUnpaidInstallment,
           paymentStatus: 'pending-approval'
         });
-        
-        console.log('Payment is pending approval - showing alert');
         return;
       }
-    } catch (error) {
-      console.error('Error checking pending transactions:', error);
-      // Continue with regular flow if API fails
-    }
-
-    // Regular installment check flow
-    if (order.installments && order.installments.length > 0) {
-      console.log('Order installments:', order.installments);
       
-      const nextUnpaidInstallment = order.installments.find(inst => !inst.paid);
-      console.log('Next unpaid installment:', nextUnpaidInstallment);
+      // Determine if we should show the alert based on progress
+      // Clear thresholds for each installment
+      const shouldPause = 
+        (nextUnpaidInstallment.installmentNumber === 2 && Math.round(order.projectProgress) >= 50) ||
+        (nextUnpaidInstallment.installmentNumber === 3 && Math.round(order.projectProgress) >= 90);
       
-      if (nextUnpaidInstallment) {
-        // Check if there's a pending approval for this installment in the order record
-        const isPendingApproval = 
-          nextUnpaidInstallment.paymentStatus === 'pending-approval';
-        
-        console.log('Is pending approval?', isPendingApproval);
-        console.log('Payment status:', nextUnpaidInstallment.paymentStatus);
-        
-        // If payment is awaiting verification based on order status, show the pending alert
-        if (isPendingApproval) {
-          console.log('Payment is pending approval - showing alert from order status');
-          setShouldShowPaymentAlert(true);
-          setIsProjectPaused(false); // Not paused while payment is being verified
-          setCurrentInstallment({
-            ...nextUnpaidInstallment,
-            paymentStatus: 'pending-approval'
-          });
-          return;
-        }
-        
-        // Determine if we should show the alert based on progress
-        // Clear thresholds for each installment
-        const shouldPause = 
-          (nextUnpaidInstallment.installmentNumber === 2 && Math.round(order.projectProgress) >= 50) ||
-          (nextUnpaidInstallment.installmentNumber === 3 && Math.round(order.projectProgress) >= 90);
-        
-        console.log('Should pause based on progress?', shouldPause);
-        
-        setShouldShowPaymentAlert(shouldPause);
-        setIsProjectPaused(shouldPause);
-        setCurrentInstallment(nextUnpaidInstallment);
-      } else {
-        // All installments paid, no alert needed
-        console.log('All installments paid, no alert needed');
-        setShouldShowPaymentAlert(false);
-        setIsProjectPaused(false);
-      }
+      console.log('Should pause based on progress?', shouldPause);
+      
+      setShouldShowPaymentAlert(shouldPause);
+      setIsProjectPaused(shouldPause);
+      setCurrentInstallment(nextUnpaidInstallment);
+    } else {
+      // All installments paid, no alert needed
+      console.log('All installments paid, no alert needed');
+      setShouldShowPaymentAlert(false);
+      setIsProjectPaused(false);
     }
-  };
+  }
+};
 
   const formatDate = (date) => {
     return new Date(date).toLocaleDateString('en-GB', {

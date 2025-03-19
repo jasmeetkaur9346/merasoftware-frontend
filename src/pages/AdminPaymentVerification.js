@@ -65,6 +65,15 @@ const AdminPaymentVerification = () => {
         if ((transaction.isInstallmentPayment === true || transaction.type === 'payment') && 
             orderId && 
             transaction.installmentNumber) {
+                // Add this check for partial payments
+        if (transaction.isPartialInstallmentPayment) {
+            return {
+                type: 'Partial UPI Payment',
+                cssClass: 'bg-purple-100 text-purple-800',
+                details: `UPI Portion of Installment #${transaction.installmentNumber} for Order #${orderId}`,
+                isWalletCredit: false
+            };
+        }
             return {
                 type: 'Installment Payment',
                 cssClass: 'bg-blue-100 text-blue-800',
