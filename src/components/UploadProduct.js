@@ -24,6 +24,10 @@ const UploadProduct = ({
     "Gallery Page"
   ];
 
+  const generateId = () => {
+    return Math.random().toString(36).substr(2, 9);
+  };
+
   const [categories, setCategories] = useState([]);
   const [compatibleFeatures, setCompatibleFeatures] = useState([]);
     const [data, setData] = useState({
@@ -34,7 +38,7 @@ const UploadProduct = ({
         serviceImage : [],
          price : "",
         sellingPrice : "",
-        formattedDescriptions: [''],   
+        formattedDescriptions: [{ id: generateId(), content: '' }],  
         // Website service specific fields
         isWebsiteService: false,
         totalPages: 4, 
@@ -192,27 +196,27 @@ const fetchCompatibleFeatures = async (category) => {
      const handleAddDescription = () => {
       setData(prev => ({
           ...prev,
-          formattedDescriptions: [...prev.formattedDescriptions, '']
+          formattedDescriptions: [...prev.formattedDescriptions, { id: generateId(), content: '' }]
       }));
   };
 
   // Remove description field
-  const handleRemoveDescription = (index) => {
-      setData(prev => ({
-          ...prev,
-          formattedDescriptions: prev.formattedDescriptions.filter((_, i) => i !== index)
-      }));
-  };
+  const handleRemoveDescription = (idToRemove) => {
+    setData(prev => ({
+        ...prev,
+        formattedDescriptions: prev.formattedDescriptions.filter(item => item.id !== idToRemove)
+    }));
+};
 
   // Handle description changes
-  const handleDescriptionChange = (content, index) => {
-      setData(prev => ({
-          ...prev,
-          formattedDescriptions: prev.formattedDescriptions.map((desc, i) => 
-              i === index ? content : desc
-          )
-      }));
-  };
+  const handleDescriptionChange = (content, id) => {
+    setData(prev => ({
+        ...prev,
+        formattedDescriptions: prev.formattedDescriptions.map(item => 
+            item.id === id ? { ...item, content } : item
+        )
+    }));
+};
     const handleCompatibleCategoriesChange  = (selectedOptions) => {
       setData((prev) => ({
         ...prev,
@@ -283,13 +287,13 @@ const fetchCompatibleFeatures = async (category) => {
 
       // Filter out empty descriptions
       const validDescriptions = data.formattedDescriptions.filter(
-        content => content && content.trim() !== ''
-    );
+        item => item.content && item.content.trim() !== ''
+      );
 
       // Create submission data with additional features if applicable
   const submissionData = {
     ...data,
-    formattedDescriptions: validDescriptions.map(content => ({ content }))
+    formattedDescriptions: validDescriptions.map(item => ({ content: item.content }))
   };
       
       const response = await fetch(SummaryApi.uploadProduct.url,{
@@ -710,22 +714,22 @@ const CustomFeatureOption = ({ data, ...props }) => {
                     </div>
 
                     {/* Dynamic Rich Text Editors */}
-                    {data.formattedDescriptions.map((content, index) => (
-                        <div key={index} className="mt-3 relative">
-                            <RichTextEditor
-                                value={content}
-                                onChange={(newContent) => handleDescriptionChange(newContent, index)}
-                                placeholder="Enter description..."
-                            />
-                            <button
-                                type="button"
-                                onClick={() => handleRemoveDescription(index)}
-                                className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
-                            >
-                                <MdDelete size={16} />
-                            </button>
-                        </div>
-                    ))}
+                    {data.formattedDescriptions.map((item) => (
+    <div key={item.id} className="mt-3 relative">
+        <RichTextEditor
+            value={item.content}
+            onChange={(newContent) => handleDescriptionChange(newContent, item.id)}
+            placeholder="Enter description..."
+        />
+        <button
+            type="button"
+            onClick={() => handleRemoveDescription(item.id)}
+            className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
+        >
+            <MdDelete size={16} />
+        </button>
+    </div>
+))}
        
        {/* Submit Button */}
         <button className='px-3 py-2 bg-red-600 text-white mb-10 hover:bg-red-700'>Upload Service</button>

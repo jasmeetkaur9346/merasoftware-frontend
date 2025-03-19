@@ -14,7 +14,7 @@ import defaultFields from '../helpers/defaultFields';
 import RichTextEditor from '../helpers/richTextEditor';
 import PackageSelect from './PackageSelect';
 import keyBenefitsOptions, { CustomKeyBenefitOption, CustomKeyBenefitValue } from '../helpers/keyBenefitOptions';
-import compatibleWithOptions, { CustomCompatibleOption, CustomCompatibleValue} from '../helpers/compatibleWithOptions';
+
 
 const AdminEditProduct = ({
     onClose,
@@ -28,6 +28,10 @@ const AdminEditProduct = ({
       "Gallery Page"
     ];
 
+    const generateId = () => {
+      return Math.random().toString(36).substr(2, 9);
+    };
+
     const [categories, setCategories] = useState([]);
     const [compatibleFeatures, setCompatibleFeatures] = useState([]);
     const [data, setData] = useState({
@@ -40,8 +44,11 @@ const AdminEditProduct = ({
         price: productData?.price,
         sellingPrice: productData?.sellingPrice,
         formattedDescriptions: productData?.formattedDescriptions?.length > 0 
-    ? productData.formattedDescriptions.map(desc => desc.content || '') 
-    : [''],
+      ? productData.formattedDescriptions.map(desc => ({ 
+          id: generateId(), // प्रत्येक आइटम को यूनिक आईडी दें
+          content: desc.content || '' 
+        })) 
+      : [{ id: generateId(), content: '' }],
         // Website service specific fields
         isWebsiteService: productData?.isWebsiteService || false,
         totalPages: productData?.totalPages || 4, // Default to minimum 4 pages
@@ -208,22 +215,28 @@ const AdminEditProduct = ({
     const handleAddDescription = () => {
       setData(prev => ({
           ...prev,
-          formattedDescriptions: [...prev.formattedDescriptions, '']
+          formattedDescriptions: [
+            ...prev.formattedDescriptions, 
+            { id: generateId(), content: '' }
+          ]
       }));
     };
 
-    const handleRemoveDescription = (index) => {
+    const handleRemoveDescription = (idToRemove) => {
+      console.log("Attempting to remove id:", idToRemove);
+      
       setData(prev => ({
           ...prev,
-          formattedDescriptions: prev.formattedDescriptions.filter((_, i) => i !== index)
+          formattedDescriptions: prev.formattedDescriptions.filter(item => item.id !== idToRemove)
       }));
     };
+  
 
-    const handleDescriptionChange = (content, index) => {
+    const handleDescriptionChange = (content, id) => {
       setData(prev => ({
           ...prev,
-          formattedDescriptions: prev.formattedDescriptions.map((desc, i) => 
-              i === index ? content : desc
+          formattedDescriptions: prev.formattedDescriptions.map(item => 
+              item.id === id ? { ...item, content } : item
           )
       }));
     };
@@ -258,7 +271,7 @@ const AdminEditProduct = ({
       // Create submission data with formatted descriptions
       const submissionData = {
         ...data,
-        formattedDescriptions: data.formattedDescriptions.map(content => ({ content }))
+        formattedDescriptions: data.formattedDescriptions.map(item => ({ content: item.content }))
       };
       
       const response = await fetch(SummaryApi.updateProduct.url,{
@@ -664,22 +677,25 @@ const AdminEditProduct = ({
         </div>
 
         {/* Dynamic Rich Text Editors */}
-        {data.formattedDescriptions.map((content, index) => (
-            <div key={index} className="mt-3 relative">
-                <RichTextEditor
-                    value={content}
-                    onChange={(newContent) => handleDescriptionChange(newContent, index)}
-                    placeholder="Enter description..."
-                />
-                <button
-                    type="button"
-                    onClick={() => handleRemoveDescription(index)}
-                    className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
-                >
-                    <MdDelete size={16} />
-                </button>
-            </div>
-        ))}
+        {data.formattedDescriptions.map((item) => (
+    <div key={item.id} className="mt-3 relative">
+        <RichTextEditor
+            value={item.content}
+            onChange={(newContent) => handleDescriptionChange(newContent, item.id)}
+            placeholder="Enter description..."
+        />
+        <button
+            type="button"
+            onClick={() => {
+                console.log("Delete button clicked for id:", item.id);
+                handleRemoveDescription(item.id);
+            }}
+            className="absolute -top-2 -right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
+        >
+            <MdDelete size={16} />
+        </button>
+    </div>
+))}
 
        
 
