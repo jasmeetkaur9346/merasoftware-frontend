@@ -391,138 +391,151 @@ const createOrder = async (paymentMethod = 'upi') => {
 };
   
   // Update the verifyPayment function
-const verifyPayment = async () => {
-  if (!transactionId || !upiTransactionId.trim()) {
-    setVerificationStatus('Please enter your UPI transaction ID');
-    return;
-  }
-  
-  try {
-    setLoading(true);
-    setVerificationStatus('Submitting verification request...');
-
-    // Create order first to get the order ID
-    let orderId = null;
-    try {
-      // Create the order first
-      const createdOrder = await createOrder('upi');
-      if (createdOrder && createdOrder.orderId) {
-        orderId = createdOrder.orderId;
-        console.log('Created order with ID:', orderId);
-      }
-    } catch (error) {
-      console.error('Error creating order:', error);
-      setVerificationStatus('Error creating order. Please try again or contact support.');
-      setLoading(false);
+  const verifyPayment = async () => {
+    if (!transactionId || !upiTransactionId.trim()) {
+      setVerificationStatus('Please enter your UPI transaction ID');
       return;
     }
-
-    // Determine if this is a partial wallet payment
-    const isPartialWalletPayment = context.walletBalance > 0 && context.walletBalance < 
-      (paymentData.currentPaymentAmount || paymentData.totalPrice);
-
-    // Log verification request details
-    console.log('Sending verification request with:', {
-      transactionId,
-      amount: remainingAmount,
-      upiTransactionId,
-      isInstallmentPayment: isPartialPayment,
-      orderId: orderId,
-      installmentNumber,
-      isPartialWalletPayment
-    });
     
-    // Send request to verify payment
-    const response = await fetch(SummaryApi.wallet.verifyPayment.url, {
-      method: SummaryApi.wallet.verifyPayment.method,
-      credentials: 'include',
-      headers: {
-        "Content-Type": 'application/json'
-      },
-      body: JSON.stringify({
+    try {
+      setLoading(true);
+      setVerificationStatus('Submitting verification request...');
+  
+      // Debug log for payment data
+      console.log("Payment data:", paymentData);
+      console.log("User wallet balance:", context.walletBalance);
+  
+      // Calculate the correct payment amount
+      const paymentAmount = remainingAmount || 
+                           (paymentData?.currentPaymentAmount || paymentData?.totalPrice);
+      
+      console.log("Payment verification details:", {
+        transactionId,
+        calculatedAmount: paymentAmount,
+        originalRemainingAmount: remainingAmount,
+        upiTransactionId,
+        isPartialPayment,
+        installmentNumber
+      });
+      
+      // Create order first to get the order ID
+      let orderId = null;
+      try {
+        // Create the order first
+        console.log("Creating order...");
+        const createdOrder = await createOrder('upi');
+        console.log("Order creation response:", createdOrder);
+        
+        if (createdOrder && createdOrder.orderId) {
+          orderId = createdOrder.orderId;
+          console.log('Created order with ID:', orderId);
+        }
+      } catch (error) {
+        console.error('Error creating order:', error);
+        setVerificationStatus('Error creating order. Please try again or contact support.');
+        setLoading(false);
+        return;
+      }
+      
+      // Prepare request body with full debug
+      const requestBody = {
         transactionId: transactionId,
-        amount: remainingAmount,
+        amount: Number(paymentAmount) || 1, // Fallback to 1 to avoid 0 amount
         upiTransactionId: upiTransactionId,
-        // Mark as installment payment if applicable
-        isInstallmentPayment: isPartialPayment,
+        isInstallmentPayment: isPartialPayment || false,
         type: isPartialPayment ? 'payment' : 'deposit',
-        // Add order info
         orderId: orderId,
         installmentNumber: isPartialPayment ? installmentNumber : null,
         description: isPartialPayment 
-          ? `Installment #${installmentNumber} payment for ${paymentData.product.serviceName}`
-          : 'Payment via UPI',
-        isPartialWalletPayment: isPartialWalletPayment
-      })
-    });
-    
-    const data = await response.json();
-    
-    if (data.success) {
-      // If this is a partial payment, update the installment status
-      if (isPartialPayment && orderId) {
-        try {
-          // Update the installment status to pending approval
-          const updateResponse = await fetch(SummaryApi.payInstallment.url, {
-            method: SummaryApi.payInstallment.method,
-            credentials: 'include',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              orderId: orderId,
-              installmentNumber: installmentNumber,
-              amount: paymentData.currentPaymentAmount,
-              isInstallmentPayment: true,
-              transactionId: transactionId,
-              upiTransactionId: upiTransactionId,
-              paymentStatus: 'pending-approval'
-            })
-          });
-          
-          const updateData = await updateResponse.json();
-          
-          if (!updateData.success) {
-            console.error('Error updating installment status:', updateData);
-          } else {
-            console.log('Successfully updated installment status to pending-approval');
+          ? `Installment #${installmentNumber} payment for ${paymentData?.product?.serviceName || 'Product'}`
+          : 'Payment via UPI'
+      };
+      
+      console.log("Sending verification request:", requestBody);
+      console.log("API URL:", SummaryApi.wallet.verifyPayment.url);
+      console.log("API Method:", SummaryApi.wallet.verifyPayment.method);
+      
+      // Send request to verify payment
+      const response = await fetch(SummaryApi.wallet.verifyPayment.url, {
+        method: SummaryApi.wallet.verifyPayment.method,
+        credentials: 'include',
+        headers: {
+          "Content-Type": 'application/json'
+        },
+        body: JSON.stringify(requestBody)
+      });
+      
+      console.log("Raw response status:", response.status);
+      const data = await response.json();
+      console.log("Verification response:", data);
+      
+      if (data.success) {
+        // If this is a partial payment, update the installment status
+        if (isPartialPayment && orderId) {
+          try {
+            console.log("Updating installment status...");
+            // Update the installment status to pending approval
+            const updateResponse = await fetch(SummaryApi.payInstallment.url, {
+              method: SummaryApi.payInstallment.method,
+              credentials: 'include',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                orderId: orderId,
+                installmentNumber: installmentNumber,
+                amount: paymentData.currentPaymentAmount,
+                isInstallmentPayment: true,
+                transactionId: transactionId,
+                upiTransactionId: upiTransactionId,
+                paymentStatus: 'pending-approval'
+              })
+            });
+            
+            const updateData = await updateResponse.json();
+            console.log("Installment update response:", updateData);
+            
+            if (!updateData.success) {
+              console.error('Error updating installment status:', updateData);
+            } else {
+              console.log('Successfully updated installment status to pending-approval');
+            }
+          } catch (error) {
+            console.error('Error updating installment status:', error);
           }
-        } catch (error) {
-          console.error('Error updating installment status:', error);
         }
-      }
-      
-      // Show appropriate success message
-      if (isPartialPayment) {
-        setVerificationStatus('Your payment verification has been submitted. Your project will proceed after admin approval (1-4 hours).');
-        toast.success('Payment submitted successfully! We\'ll notify you once it\'s approved.');
         
-        // Redirect to project details
-        setTimeout(() => {
-          navigate(`/project-details/${orderId}`);
-        }, 3000);
+        // Show appropriate success message
+        if (isPartialPayment) {
+          setVerificationStatus('Your payment verification has been submitted. Your project will proceed after admin approval (1-4 hours).');
+          toast.success('Payment submitted successfully! We\'ll notify you once it\'s approved.');
+          
+          // Redirect to project details
+          setTimeout(() => {
+            navigate(`/project-details/${orderId}`);
+          }, 3000);
+        } else {
+          setVerificationStatus('Your payment verification has been submitted. Your order will be processed after admin approval (1-4 hours).');
+          toast.success('Payment submitted successfully! We\'ll notify you once it\'s approved.');
+          
+          // Redirect to success page
+          setTimeout(() => {
+            navigate('/success');
+          }, 3000);
+        }
+        
+        // Set payment processed flag
+        setPaymentProcessed(true);
       } else {
-        setVerificationStatus('Your payment verification has been submitted. Your order will be processed after admin approval (1-4 hours).');
-        toast.success('Payment submitted successfully! We\'ll notify you once it\'s approved.');
-        
-        // Redirect to success page
-        setTimeout(() => {
-          navigate('/success');
-        }, 3000);
+        setVerificationStatus(data.message || 'Verification submission failed. Please contact support.');
       }
-      
-      // Set payment processed flag
-      setPaymentProcessed(true);
-    } else {
-      setVerificationStatus(data.message || 'Verification submission failed. Please contact support.');
+    } catch (error) {
+      console.error('Error verifying payment:', error);
+      setVerificationStatus('Error submitting verification. Please contact support with error: ' + (error.message || 'Unknown error'));
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    console.error('Error verifying payment:', error);
-    setVerificationStatus('Error submitting verification. Please contact support.');
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   const renderInstallmentInfo = () => {
     if (!isPartialPayment) return null;
