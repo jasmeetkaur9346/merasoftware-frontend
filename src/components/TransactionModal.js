@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import displayINRCurrency from '../helpers/displayCurrency';
 
 const TransactionModal = ({ 
@@ -10,15 +10,22 @@ const TransactionModal = ({
   type, 
   isProcessing 
 }) => {
+  // Add state for rejection reason
+  const [rejectionReason, setRejectionReason] = useState('');
   if (!isOpen || !transaction) return null;
   
   // Determine if this is an installment payment
   const isInstallmentPayment = transaction.isInstallmentPayment || 
     (transaction.type === 'payment' && transaction.orderId);
   
+  // Check if this is a wallet payment for an order
+  const isWalletPayment = transaction.paymentMethod === 'wallet' && transaction.type === 'payment';
+  
   // Get user-friendly transaction type
   const getTransactionTypeText = () => {
-    if (isInstallmentPayment) {
+    if (isWalletPayment) {
+      return "Wallet Payment for Order";
+    } else if (isInstallmentPayment) {
       if (transaction.isPartialInstallmentPayment) {
         return `UPI Portion of Installment #${transaction.installmentNumber || '1'} Payment`;
       }
@@ -71,7 +78,9 @@ const TransactionModal = ({
           <div className="grid grid-cols-2 gap-3 mb-2">
             <div className="text-sm text-gray-600">User:</div>
             <div className="text-sm">
-              {transaction.userId.name || transaction.userId}
+              {transaction.userId && typeof transaction.userId === 'object'
+                ? transaction.userId.name
+                : transaction.userId}
             </div>
           </div>
           
@@ -82,15 +91,25 @@ const TransactionModal = ({
             </div>
           </div>
           
+          <div className="grid grid-cols-2 gap-3 mb-2">
+            <div className="text-sm text-gray-600">Payment Method:</div>
+            <div className="text-sm">
+              {transaction.paymentMethod === 'wallet' ? 'Wallet' : 
+               transaction.paymentMethod === 'upi' ? 'UPI' : 
+               transaction.paymentMethod === 'combined' ? 'Wallet + UPI' : 
+               'Other'}
+            </div>
+          </div>
+          
           {isInstallmentPayment && transaction.orderId && (
             <div className="grid grid-cols-2 gap-3 mb-2">
               <div className="text-sm text-gray-600">Order ID:</div>
               <div className="text-sm font-mono truncate">
-              {transaction.orderId
-              ? (typeof transaction.orderId === 'object' 
-                  ? (transaction.orderId._id || JSON.stringify(transaction.orderId)) 
-                  : transaction.orderId)
-              : "N/A"}
+                {transaction.orderId
+                  ? (typeof transaction.orderId === 'object' 
+                    ? (transaction.orderId._id || JSON.stringify(transaction.orderId)) 
+                    : transaction.orderId)
+                  : "N/A"}
               </div>
             </div>
           )}
@@ -103,11 +122,34 @@ const TransactionModal = ({
           </div>
         </div>
         
+        {/* Add rejection reason field for reject modal */}
+        {type === 'reject' && (
+          <div className="mb-4">
+            <label htmlFor="rejectionReason" className="block text-sm font-medium text-gray-700 mb-1">
+              Rejection Reason <span className="text-red-500">*</span>
+            </label>
+            <textarea
+              id="rejectionReason"
+              value={rejectionReason}
+              onChange={(e) => setRejectionReason(e.target.value)}
+              className="w-full border border-gray-300 rounded-md p-2 text-sm"
+              placeholder="Please provide a reason for rejection"
+              rows="3"
+              required
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              This reason will be shown to the customer.
+            </p>
+          </div>
+        )}
+        
         <p className="mb-4 text-sm text-gray-600">
           {type === 'approve' 
-            ? (isInstallmentPayment 
-                ? `Are you sure you want to approve this installment payment? This will update the project payment status.` 
-                : `Are you sure you want to approve this transaction? This will add ${displayINRCurrency(transaction.amount)} to the user's wallet.`)
+            ? (isWalletPayment
+                ? `Are you sure you want to approve this wallet payment? This will deduct ${displayINRCurrency(transaction.amount)} from the user's wallet and approve their order.`
+                : isInstallmentPayment 
+                  ? `Are you sure you want to approve this payment? This will update the project payment status.` 
+                  : `Are you sure you want to approve this transaction? This will add ${displayINRCurrency(transaction.amount)} to the user's wallet.`)
             : 'Are you sure you want to reject this transaction? This action cannot be undone.'}
         </p>
         
@@ -130,9 +172,9 @@ const TransactionModal = ({
             </button>
           ) : (
             <button
-              onClick={() => onReject(transaction)}
+              onClick={() => onReject(transaction, rejectionReason)}
               className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 disabled:bg-red-300"
-              disabled={isProcessing}
+              disabled={isProcessing || !rejectionReason.trim()}
             >
               {isProcessing ? 'Processing...' : 'Reject'}
             </button>

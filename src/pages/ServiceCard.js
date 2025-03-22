@@ -1,313 +1,217 @@
 import React from 'react';
 
-const RestaurantWebsiteLayout = () => {
+const ProjectDashboard = () => {
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 bg-gray-50 min-h-screen">
-      <div className="flex flex-col lg:flex-row gap-6">
-        {/* Left Column - Main content */}
-        <div className="w-full lg:w-3/5 flex flex-col gap-6">
+    <div className="p-6 bg-gray-50 min-h-screen">
+      {/* Top navigation */}
+      <div className="mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center">
+            <div className="bg-blue-600 text-white w-10 h-10 rounded flex items-center justify-center text-xl font-bold mr-2">
+              M
+            </div>
+            <span className="font-bold text-lg">MeraSoftware</span>
+          </div>
           
-          
-          {/* Two sections in a responsive layout */}
-          <div className="flex flex-col md:flex-row gap-6">
-            {/* Who is it for? Section (smaller) */}
-            <div className="w-full md:w-2/5 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
-              <div className="p-5">
-                <h2 className="text-xl font-bold mb-2 text-gray-800">Who is it for?</h2>
-                <p className="text-gray-600 text-sm mb-4">Our website solutions are specially designed for various food businesses of all sizes.</p>
-                <div className="grid grid-cols-1 gap-3">
-                  <button className="flex items-center gap-2 border border-gray-200 hover:border-blue-400 rounded-lg p-2.5 text-sm hover:bg-blue-50 transition-colors">
-                    <span className="text-blue-500">🍴</span> Restaurants
-                  </button>
-                  <button className="flex items-center gap-2 border border-gray-200 hover:border-blue-400 rounded-lg p-2.5 text-sm hover:bg-blue-50 transition-colors">
-                    <span className="text-blue-500">☕</span> Cafes
-                  </button>
-                  <button className="flex items-center gap-2 border border-gray-200 hover:border-blue-400 rounded-lg p-2.5 text-sm hover:bg-blue-50 transition-colors">
-                    <span className="text-blue-500">🍴</span> Dhabas
-                  </button>
-                  <button className="flex items-center gap-2 border border-gray-200 hover:border-blue-400 rounded-lg p-2.5 text-sm hover:bg-blue-50 transition-colors">
-                    <span className="text-blue-500">🛒</span> Fast Food
-                  </button>
-                  <button className="flex items-center gap-2 border border-gray-200 hover:border-blue-400 rounded-lg p-2.5 text-sm hover:bg-blue-50 transition-colors">
-                    <span className="text-blue-500">🚗</span> Food Chains
-                  </button>
-                  <button className="flex items-center gap-2 border border-gray-200 hover:border-blue-400 rounded-lg p-2.5 text-sm hover:bg-blue-50 transition-colors">
-                    <span className="text-blue-500">🛵</span> Street Food
-                  </button>
-                </div>
-              </div>
+          <div className="flex items-center">
+            <div className="relative mx-4 w-64">
+              <input 
+                type="text" 
+                placeholder="Search for services..." 
+                className="w-full py-2 px-4 rounded-lg border border-gray-300"
+              />
+              <svg className="w-5 h-5 absolute left-3 top-2.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
             </div>
             
-            {/* What's Included Section (larger) */}
-            <div className="w-full md:w-3/5 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
-              <div className="p-5">
-                <h2 className="text-xl font-bold mb-2 text-gray-800">What's Included</h2>
-                <p className="text-gray-600 text-sm mb-4">Every restaurant website package comes with these premium features to enhance your online presence.</p>
-                <div className="space-y-4">
-                  <div className="flex items-start gap-3">
-                    <div className="bg-blue-100 p-2 rounded-full flex-shrink-0">
-                      <span className="text-blue-500">🎨</span>
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-800">Premium Theme</h3>
-                      <p className="text-gray-600 text-sm">Exclusive premium theme included with your purchase</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start gap-3">
-                    <div className="bg-blue-100 p-2 rounded-full flex-shrink-0">
-                      <span className="text-blue-500">🕒</span>
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-800">Free Content Updates</h3>
-                      <p className="text-gray-600 text-sm">1-month free content updates and modifications</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start gap-3">
-                    <div className="bg-blue-100 p-2 rounded-full flex-shrink-0">
-                      <span className="text-blue-500">🔧</span>
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-800">Free Maintenance</h3>
-                      <p className="text-gray-600 text-sm">1-year free maintenance and technical support</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start gap-3">
-                    <div className="bg-blue-100 p-2 rounded-full flex-shrink-0">
-                      <span className="text-blue-500">🍽️</span>
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-800">Complete Food Menu</h3>
-                      <p className="text-gray-600 text-sm">Comprehensive food menu management system</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start gap-3">
-                    <div className="bg-blue-100 p-2 rounded-full flex-shrink-0">
-                      <span className="text-blue-500">🖱️</span>
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-800">User Friendly</h3>
-                      <p className="text-gray-600 text-sm">Intuitive interface for easy navigation</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
+            <div className="mx-4">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+              </svg>
             </div>
-          </div>
-          
-          {/* Introduction Section */}
-          <div className="bg-white rounded-lg p-5 shadow-md">
-            <h1 className="text-2xl font-bold text-gray-800 mb-3">Restaurant Website Solutions</h1>
-            <p className="text-gray-600">
-              Elevate your food business online with our specialized website solutions designed for restaurants and food establishments. 
-              Our packages are tailored to meet the specific needs of various food businesses, with features that enhance customer engagement and operational efficiency.
-            </p>
-          </div>
-          
-          {/* Benefits Section */}
-          <div className="bg-white rounded-lg p-5 shadow-md">
-            <h2 className="text-xl font-bold mb-4 text-gray-800">Benefits of Our Restaurant Websites</h2>
-            <div className="grid md:grid-cols-2 gap-4">
-              <div className="border border-gray-200 rounded-lg p-4 hover:border-blue-300 hover:bg-blue-50 transition-colors">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="bg-blue-100 p-2 rounded-full">
-                    <span className="text-blue-500">💻</span>
-                  </div>
-                  <h3 className="font-semibold text-gray-800">Mobile Responsive</h3>
-                </div>
-                <p className="text-gray-600 text-sm">Your website will look great on all devices, from phones to desktops</p>
-              </div>
-              
-              <div className="border border-gray-200 rounded-lg p-4 hover:border-blue-300 hover:bg-blue-50 transition-colors">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="bg-blue-100 p-2 rounded-full">
-                    <span className="text-blue-500">🔍</span>
-                  </div>
-                  <h3 className="font-semibold text-gray-800">SEO Optimized</h3>
-                </div>
-                <p className="text-gray-600 text-sm">Get discovered by customers searching for restaurants in your area</p>
-              </div>
-              
-              <div className="border border-gray-200 rounded-lg p-4 hover:border-blue-300 hover:bg-blue-50 transition-colors">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="bg-blue-100 p-2 rounded-full">
-                    <span className="text-blue-500">⚡</span>
-                  </div>
-                  <h3 className="font-semibold text-gray-800">Fast Loading</h3>
-                </div>
-                <p className="text-gray-600 text-sm">Optimized for speed to reduce bounce rates and improve user experience</p>
-              </div>
-              
-              <div className="border border-gray-200 rounded-lg p-4 hover:border-blue-300 hover:bg-blue-50 transition-colors">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="bg-blue-100 p-2 rounded-full">
-                    <span className="text-blue-500">🔒</span>
-                  </div>
-                  <h3 className="font-semibold text-gray-800">Secure Payment</h3>
-                </div>
-                <p className="text-gray-600 text-sm">SSL encryption and secure payment gateways for online orders</p>
-              </div>
-            </div>
-          </div>
-          
-          {/* How We Work Section */}
-          <div className="bg-white rounded-lg p-5 shadow-md">
-            <h2 className="text-xl font-bold mb-4 text-gray-800">How We Work</h2>
-            <div className="space-y-4">
-              <div className="flex items-start gap-4">
-                <div className="bg-blue-600 text-white font-bold rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0">
-                  1
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-800 mb-1">Consultation</h3>
-                  <p className="text-gray-600">We begin with a detailed discussion about your restaurant's needs, target audience, and specific features you want on your website.</p>
-                </div>
-              </div>
-              
-              <div className="flex items-start gap-4">
-                <div className="bg-blue-600 text-white font-bold rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0">
-                  2
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-800 mb-1">Design & Development</h3>
-                  <p className="text-gray-600">Our team designs a customized website that reflects your brand identity and develops all the required features.</p>
-                </div>
-              </div>
-              
-              <div className="flex items-start gap-4">
-                <div className="bg-blue-600 text-white font-bold rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0">
-                  3
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-800 mb-1">Content Integration</h3>
-                  <p className="text-gray-600">We help you upload your menu, images, and other content to make your website ready for launch.</p>
-                </div>
-              </div>
-              
-              <div className="flex items-start gap-4">
-                <div className="bg-blue-600 text-white font-bold rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0">
-                  4
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-800 mb-1">Testing & Launch</h3>
-                  <p className="text-gray-600">We thoroughly test your website on all devices and browsers before launching it to ensure a flawless experience.</p>
-                </div>
-              </div>
-              
-              <div className="flex items-start gap-4">
-                <div className="bg-blue-600 text-white font-bold rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0">
-                  5
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-800 mb-1">Ongoing Support</h3>
-                  <p className="text-gray-600">We provide continuous support and maintenance to keep your website running smoothly and updated.</p>
-                </div>
-              </div>
-            </div>
+            
+            <button className="bg-blue-600 text-white px-4 py-1.5 rounded-lg">
+              Login
+            </button>
           </div>
         </div>
         
-        {/* Right Column - Sticky Customize Plan */}
-        <div className="w-full lg:w-2/5 relative">
-          <div className="lg:sticky lg:top-6 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
-            <h2 className="text-xl font-bold py-4 px-5 bg-blue-600 text-white rounded-t-lg">Customize Your Plan</h2>
-            
-            <div className="space-y-4 p-5">
-              <div className="flex items-center justify-between p-3 border-b hover:bg-blue-50 transition-colors rounded">
-                <div className="flex items-center gap-3">
-                  <div className="bg-blue-100 w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0">
-                    <span>🛒</span>
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-gray-800">Restaurant Website</h3>
-                    <p className="text-xs text-gray-500">Standard Website</p>
-                  </div>
-                </div>
-                <div className="text-blue-600 font-semibold">₹8,999</div>
+        {/* Navigation links */}
+        <div className="flex mb-8">
+          <button className="font-medium mr-6">All Services</button>
+          <button className="font-medium mr-6">Websites Development</button>
+          <button className="font-medium mr-6">Mobile Apps</button>
+          <button className="font-medium mr-6">Cloud Softwares</button>
+          <button className="font-medium">Feature Upgrades</button>
+        </div>
+      </div>
+      
+      {/* Welcome back and Explore More section - redesigned */}
+      
+      <div className="mb-8">
+        <div className="flex flex-col md:flex-row items-stretch gap-6">
+          {/* Welcome back card */}
+          <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl p-6 flex-1 shadow-sm border border-blue-200">
+            <div className="flex items-center mb-3">
+              <div className="w-10 h-10 bg-blue-500 text-white rounded-full flex items-center justify-center mr-3">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" />
+                </svg>
               </div>
-              
-              <div className="flex items-center justify-between p-3 border-b hover:bg-blue-50 transition-colors rounded">
-                <div className="flex items-center gap-3">
-                  <div className="bg-blue-100 w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0">
-                    <span>W</span>
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-gray-800">Add New Page</h3>
-                    <p className="text-xs text-gray-500">₹1,999 Per Additional Unit</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="text-blue-600 font-semibold">₹1,999</div>
-                  <input type="checkbox" className="h-5 w-5 border-gray-300 rounded text-blue-600 focus:ring-blue-500" />
-                </div>
+              <div>
+                <p className="text-blue-700 font-medium">Welcome back</p>
+                <h1 className="text-2xl font-bold text-gray-800">Let's see your projects</h1>
               </div>
-              
-              <div className="flex items-center justify-between p-3 border-b hover:bg-blue-50 transition-colors rounded">
-                <div className="flex items-center gap-3">
-                  <div className="bg-blue-100 w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0">
-                    <span>D</span>
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-gray-800">Dynamic Page with Panel</h3>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="text-blue-600 font-semibold">₹3,999</div>
-                  <input type="checkbox" className="h-5 w-5 border-gray-300 rounded text-blue-600 focus:ring-blue-500" />
-                </div>
+            </div>
+            <div className="mt-3 flex items-center">
+              <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center mr-2">
+                <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
               </div>
-              
-              <div className="flex items-center justify-between p-3 border-b hover:bg-blue-50 transition-colors rounded">
-                <div className="flex items-center gap-3">
-                  <div className="bg-blue-100 w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0">
-                    <span>D</span>
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-gray-800">Dynamic Gallery</h3>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="text-blue-600 font-semibold">₹7,999</div>
-                  <input type="checkbox" className="h-5 w-5 border-gray-300 rounded text-blue-600 focus:ring-blue-500" />
-                </div>
+              <p className="text-gray-600">Review your ongoing projects and track their progress</p>
+            </div>
+          </div>
+          
+          {/* Explore More card */}
+          <div className="bg-gradient-to-r from-purple-50 to-purple-100 rounded-xl p-6 flex-1 shadow-sm border border-purple-200 cursor-pointer group hover:shadow-md transition-all">
+            <div className="flex items-center mb-3">
+              <div className="w-10 h-10 bg-purple-500 text-white rounded-full flex items-center justify-center mr-3 group-hover:bg-purple-600 transition-all">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
               </div>
-              
-              <div className="flex items-center justify-between p-3 border-b hover:bg-blue-50 transition-colors rounded">
-                <div className="flex items-center gap-3">
-                  <div className="bg-blue-100 w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0">
-                    <span>L</span>
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-gray-800">Live Chat</h3>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="text-blue-600 font-semibold">₹4,999</div>
-                  <input type="checkbox" className="h-5 w-5 border-gray-300 rounded text-blue-600 focus:ring-blue-500" />
-                </div>
+              <div>
+                <p className="text-purple-700 font-medium group-hover:text-purple-800 transition-all">Discover more</p>
+                <h2 className="text-2xl font-bold text-gray-800">Explore Our Services</h2>
               </div>
-              
-              <div className="pt-5 border-t mt-6 pb-4">
-                <h3 className="font-medium mb-3 text-gray-800">Apply Coupon</h3>
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <input 
-                    type="text" 
-                    placeholder="Enter coupon code" 
-                    className="border rounded p-2.5 flex-grow focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" 
-                  />
-                  <button className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded font-medium transition-colors">
-                    Apply
-                  </button>
-                </div>
+            </div>
+            <div className="mt-3 flex items-center">
+              <div className="h-8 w-8 bg-purple-100 rounded-full flex items-center justify-center mr-2 group-hover:bg-purple-200 transition-all">
+                <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
               </div>
-              
-              <div className="mt-6">
-                <button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold transition-colors">
-                  Proceed to Checkout
-                </button>
+              <p className="text-gray-600">Find exciting features and premium plans tailored for you</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Your Projects heading */}
+      <h2 className="text-xl font-semibold text-gray-800 mb-4">Your Projects</h2>
+      
+      {/* Project cards grid - keeping the existing boxes */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* In Progress - Restaurant Website */}
+        <div className="bg-white rounded-lg shadow-md p-4 border-t-4 border-yellow-500">
+          <div className="flex items-center mb-2">
+            <span className="w-2 h-2 bg-yellow-500 rounded-full mr-2"></span>
+            <span className="text-sm text-yellow-600">In Progress</span>
+          </div>
+          
+          <h3 className="text-lg font-semibold mb-1">Restaurant Website</h3>
+          <p className="text-sm text-gray-500 mb-3">Started: 22 Mar 2025</p>
+          
+          <div className="flex items-center mb-2">
+            <svg className="w-4 h-4 text-yellow-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+            </svg>
+            <span className="text-sm">Development in progress</span>
+          </div>
+          
+          <div className="mb-3">
+            <p className="text-sm mb-1">Progress</p>
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div className="bg-yellow-500 h-2 rounded-full" style={{width: '0%'}}></div>
+            </div>
+            <span className="text-xs text-right block mt-1">0%</span>
+          </div>
+          
+          <button className="w-full py-2 text-center text-yellow-600 border border-yellow-500 rounded-md hover:bg-yellow-50 transition">
+            View Project
+          </button>
+        </div>
+        
+        {/* Completed - Website Update */}
+        <div className="bg-white rounded-lg shadow-md p-4 border-t-4 border-green-500">
+          <div className="flex items-center mb-2">
+            <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+            <span className="text-sm text-green-600">Completed</span>
+          </div>
+          
+          <h3 className="text-lg font-semibold mb-1">Website Update - Basic Plan</h3>
+          <p className="text-sm text-gray-500 mb-3">Ended: 17 Mar 2025</p>
+          
+          <div className="flex items-center mb-2">
+            <svg className="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+            </svg>
+            <span className="text-sm">Updates Used: 4 of 4</span>
+          </div>
+          
+          <div className="flex items-center mb-3">
+            <svg className="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+            </svg>
+            <span className="text-sm">Plan Completed</span>
+          </div>
+          
+          <button className="w-full py-2 text-center text-white bg-green-500 rounded-md hover:bg-green-600 transition">
+            View Details
+          </button>
+        </div>
+        
+        {/* Completed - Appointment Booking Website */}
+        <div className="bg-white rounded-lg shadow-md p-4 border-t-4 border-green-500">
+          <div className="flex items-center mb-2">
+            <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+            <span className="text-sm text-green-600">Completed</span>
+          </div>
+          
+          <h3 className="text-lg font-semibold mb-1">Appointment Booking Website</h3>
+          <p className="text-sm text-gray-500 mb-3">Completed: 16 Mar 2025</p>
+          
+          <div className="flex items-center mb-2">
+            <svg className="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+            </svg>
+            <span className="text-sm">Successfully Deployed</span>
+          </div>
+          
+          <div className="flex items-center mb-3">
+            <svg className="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+            </svg>
+            <span className="text-sm">All Features Working</span>
+          </div>
+          
+          <button className="w-full py-2 text-center text-white bg-green-500 rounded-md hover:bg-green-600 transition">
+            View Project
+          </button>
+        </div>
+        
+        {/* History - View All Projects */}
+        <div className="bg-white rounded-lg shadow-md p-4 border-t-4 border-purple-500">
+          <div className="flex items-center mb-2">
+            <span className="w-2 h-2 bg-purple-500 rounded-full mr-2"></span>
+            <span className="text-sm text-purple-600">History</span>
+          </div>
+          
+          <h3 className="text-lg font-semibold mb-1">View All Projects</h3>
+          <p className="text-sm text-gray-500 mb-10">Browse your complete project history and portfolio.</p>
+          
+          <div className="bg-purple-100 rounded-lg p-3 mb-3">
+            <div className="flex items-center">
+              <div className="w-6 h-6 bg-purple-200 rounded flex items-center justify-center mr-2">
+                <svg className="w-4 h-4 text-purple-500" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div>
+                <p className="font-medium text-sm">All Projects</p>
+                <p className="text-xs text-gray-500">View your entire portfolio</p>
               </div>
             </div>
           </div>
@@ -317,4 +221,4 @@ const RestaurantWebsiteLayout = () => {
   );
 };
 
-export default RestaurantWebsiteLayout;
+export default ProjectDashboard;

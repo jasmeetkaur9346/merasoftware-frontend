@@ -245,96 +245,122 @@ const ProductDetails = () => {
         return;
       }
     }
-
+  
     // Calculate total price
-  const totalPrice = calculateTotalPrice();
-  
-  // Calculate payment amounts based on selected option
-  let currentPaymentAmount = totalPrice;
-  let remainingPayments = [];
-  
-  if (paymentOption === 'partial') {
-    // For partial payment: Calculate 30% of total
-    currentPaymentAmount = Math.round(totalPrice * 0.3);
+    const totalPrice = calculateTotalPrice();
     
-    // Calculate remaining installments
-    remainingPayments = [
-      {
-        installmentNumber: 2,
-        percentage: 30,
-        amount: Math.round(totalPrice * 0.3)
-      },
-      {
-        installmentNumber: 3,
-        percentage: 40,
-        amount: Math.round(totalPrice * 0.4)
-      }
-    ];
-  }
-
-    // Create a proper structured object for payment data
-  const paymentData = {
-    product: {
-      ...data,
-      // If coupon is applied, include the discounted base price
-      finalPrice: couponData ? couponData.data.finalPrice : data.sellingPrice
-    },
-    selectedFeatures: selectedFeatures.map(featureId => {
-      const feature = additionalFeaturesData.find(f => f._id === featureId);
-      if (!feature) return null;
+    // Calculate payment amounts based on selected option
+    let currentPaymentAmount = totalPrice;
+    let remainingPayments = [];
+    
+    if (paymentOption === 'partial') {
+      // For partial payment: Calculate 30% of total
+      currentPaymentAmount = Math.round(totalPrice * 0.3);
       
-      let quantity, totalFeaturePrice;
-      
-      if (feature.serviceName.toLowerCase().includes('add new page')) {
-        // Get total pages selected by user
-        quantity = quantities[featureId] || data.totalPages;
-        
-        // Calculate ONLY additional pages beyond the default
-        const additionalPages = Math.max(0, quantity - data.totalPages);
-        
-        // For Add New Page feature, only charge for additional pages
-        totalFeaturePrice = feature.sellingPrice * additionalPages;
-      } else {
-        // For other features, use quantity 1 and regular price
-        quantity = 1;
-        totalFeaturePrice = feature.sellingPrice;
-      }
-      
-      return {
-        ...feature,
-        quantity: quantity,
-        // Store the additional pages count for display purposes
-        additionalQuantity: feature.serviceName.toLowerCase().includes('add new page') 
-          ? Math.max(0, quantity - data.totalPages) 
-          : 0,
-        // This is what will be charged
-        totalOriginalPrice: totalFeaturePrice,
-      };
-    }).filter(Boolean),
-    couponData: couponData,
-    totalPrice: totalPrice,
-    currentPaymentAmount: currentPaymentAmount,
-    originalTotalPrice: calculateBasePrice(), // Total before coupon
-    paymentOption: paymentOption,
-    remainingPayments: remainingPayments
-  };
-
-  // Store user selections in sessionStorage
-  const userSelections = {
-    productId: data._id,
-    selectedFeatures,
-    quantities,
-    couponCode,
-    couponData,
-    paymentOption
-  };
-
-   // Save to sessionStorage
-  sessionStorage.setItem('userProductSelections', JSON.stringify(userSelections));
+      // Calculate remaining installments
+      remainingPayments = [
+        {
+          installmentNumber: 2,
+          percentage: 30,
+          amount: Math.round(totalPrice * 0.3)
+        },
+        {
+          installmentNumber: 3,
+          percentage: 40,
+          amount: Math.round(totalPrice * 0.4)
+        }
+      ];
+    }
   
-  // Navigate to direct payment page with data
-  navigate('/direct-payment', { state: { paymentData } });
-};
+    // Structure the selected features data with proper error handling
+    const selectedFeaturesData = [];
+    
+    for (const featureId of selectedFeatures) {
+      // Find the feature in additionalFeaturesData
+      const feature = additionalFeaturesData.find(f => f._id === featureId);
+      
+      // Skip if feature not found
+      if (!feature) {
+        console.warn(`Feature with ID ${featureId} not found in additionalFeaturesData`);
+        continue;
+      }
+      
+      // Skip if feature doesn't have a serviceName
+      if (!feature.serviceName) {
+        console.warn(`Feature with ID ${featureId} doesn't have a serviceName property`, feature);
+        continue;
+      }
+      
+      // Get the quantity for this feature (default to 1 if not set)
+      const quantity = quantities[featureId] || 1;
+      
+      // Check if this is an "Add New Page" feature (with null check)
+      const featureNameLower = feature.serviceName.toLowerCase();
+      const isAddNewPage = featureNameLower.includes('add new page');
+      
+      // For "Add New Page" features, calculate additional pages beyond what's included
+      let additionalQuantity = 0;
+      if (isAddNewPage) {
+        additionalQuantity = Math.max(0, quantity - data.totalPages);
+      }
+      
+      // Calculate feature total price based on type
+      let featureTotalPrice = 0;
+      if (isAddNewPage) {
+        featureTotalPrice = feature.sellingPrice * additionalQuantity;
+      } else {
+        featureTotalPrice = feature.sellingPrice * quantity;
+      }
+      
+      // Add to selectedFeaturesData
+      selectedFeaturesData.push({
+        id: feature._id,
+        name: feature.serviceName,
+        quantity: quantity,
+        additionalQuantity: additionalQuantity,
+        sellingPrice: feature.sellingPrice,
+        totalPrice: featureTotalPrice
+      });
+    }
+    
+    // Calculate original total price (before any discounts)
+    const originalTotalPrice = data.sellingPrice + 
+      selectedFeaturesData.reduce((sum, feature) => sum + feature.totalPrice, 0);
+  
+    // Create a proper structured object for payment data
+    const paymentData = {
+      product: {
+        ...data,
+        // If coupon is applied, include the discounted base price
+        finalPrice: couponData ? couponData.data.finalPrice : data.sellingPrice
+      },
+      selectedFeatures: selectedFeaturesData,
+      couponData: couponData,
+      totalPrice: totalPrice,
+      currentPaymentAmount: currentPaymentAmount,
+      originalTotalPrice: calculateBasePrice(), // Total before coupon
+      paymentOption: paymentOption,
+      remainingPayments: remainingPayments
+    };
+  
+    console.log("Payment data prepared:", paymentData); // Log for debugging
+  
+    // Store user selections in sessionStorage
+    const userSelections = {
+      productId: data._id,
+      selectedFeatures,
+      quantities,
+      couponCode,
+      couponData,
+      paymentOption
+    };
+  
+    // Save to sessionStorage
+    sessionStorage.setItem('userProductSelections', JSON.stringify(userSelections));
+    
+    // Navigate to direct payment page with data
+    navigate('/direct-payment', { state: { paymentData } });
+  };
    
 
   // Reset coupon when selected features change

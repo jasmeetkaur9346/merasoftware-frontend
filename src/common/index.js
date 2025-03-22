@@ -353,6 +353,18 @@ const SummaryApi = {
         url: `${backendDomain}/api/developer-notifications`,
         method: "get"
       },
+      pendingOrders: {
+        url : `${backendDomain}/api/pending-orders`,
+        method: "get"
+      },
+      approveOrder: {
+        url : `${backendDomain}/api/approve-order`,
+        method: "post"
+      },
+      rejectOrder: {
+        url : `${backendDomain}/api/reject-order`,
+        method: "post"
+      },
     wallet : {
         balance :{
             url : `${backendDomain}/api/wallet/balance`,

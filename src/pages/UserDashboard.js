@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { 
   ChevronRight, Check, PlusCircle, 
@@ -31,6 +31,8 @@ const Dashboard = () => {
   const [cartCount, setCartCount] = useState(0);
   const [showUpdateRequestModal, setShowUpdateRequestModal] = useState(false);
   const [showAllProjectsModal, setShowAllProjectsModal] = useState(false);
+  const [rejectedPayments, setRejectedPayments] = useState([]);
+  const [pendingApprovalProjects, setPendingApprovalProjects] = useState([]);
 
   useEffect(() => {
     // Fetch user orders
@@ -62,6 +64,18 @@ const Dashboard = () => {
           websiteProjects.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
           
           setWebsiteProjects(websiteProjects);
+
+          // Find projects pending approval - NEW CODE
+        const pendingApprovalProjects = websiteProjects.filter(project => 
+          project.orderVisibility === 'pending-approval'
+        );
+        setPendingApprovalProjects(pendingApprovalProjects);
+
+         // New: Find rejected payment orders
+         const rejectedOrders = allOrders.filter(order => 
+          order.orderVisibility === 'payment-rejected'
+        );
+        setRejectedPayments(rejectedOrders);
           
           // Find active (in-progress) project
           const activeProj = websiteProjects.find(project => {
@@ -70,17 +84,28 @@ const Dashboard = () => {
             
             // Only website projects, not update plans
             if (['standard_websites', 'dynamic_websites', 'cloud_software_development', 'app_development'].includes(category)) {
+              if (project.orderVisibility === 'pending-approval' || project.orderVisibility === 'payment-rejected') {
+                return false; // Don't show as active if pending approval
+              }
+
               return project.projectProgress < 100 || project.currentPhase !== 'completed';
             }
             return false;
           });
           setActiveProject(activeProj || null);
+
           
           // Find completed projects including expired update plans
-          const completed = websiteProjects.filter(project => {
+          const completedAndRejected = websiteProjects.filter(project => {
             const category = project.productId?.category?.toLowerCase();
             if (!category) return false;
             
+            // Check for rejected projects
+            if (project.orderVisibility === 'payment-rejected') {
+              return true; // Include all rejected projects
+            }
+            
+            // Check for completed projects
             if (['standard_websites', 'dynamic_websites', 'cloud_software_development', 'app_development'].includes(category)) {
               return project.projectProgress === 100 && project.currentPhase === 'completed';
             } else if (category === 'website_updates') {
@@ -91,7 +116,15 @@ const Dashboard = () => {
             }
             return false;
           });
-          setCompletedProjects(completed);
+          
+          // Sort by most recent first (either completion date or rejection date)
+          completedAndRejected.sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt));
+          setCompletedProjects(completedAndRejected);
+          
+          // We don't need separate rejectedPayments state anymore, as they're included in completedProjects
+          // But we'll keep it for reference in other places
+          const rejectedProjects = websiteProjects.filter(project => project.orderVisibility === 'payment-rejected');
+          setRejectedPayments(rejectedProjects);
           
           // Find active update plan
           const updatePlan = allOrders.find(order => 
@@ -261,10 +294,57 @@ const Dashboard = () => {
         {/* Main Dashboard Content */}
         <main className="flex-1 p-6 overflow-auto">
           <div className="flex justify-between items-center mb-6">
-            <div>
-              <div className="text-sm text-gray-500 mb-1">Welcome back,</div>
-              <h2 className="text-xl font-bold text-gray-800">Let's see your projects</h2>
+          <div className="">
+        <div className="flex flex-col md:flex-row items-stretch gap-6">
+          {/* Welcome back card */}
+          <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl p-6 flex-1 shadow-sm border border-blue-200">
+            <div className="flex items-center mb-3">
+              <div className="w-10 h-10 bg-blue-500 text-white rounded-full flex items-center justify-center mr-3">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-blue-700 font-medium">Welcome back</p>
+                <h1 className="text-2xl font-bold text-gray-800">Let's see your projects</h1>
+              </div>
             </div>
+            <div className="mt-3 flex items-center">
+              <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center mr-2">
+                <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
+              <p className="text-gray-600">Review your ongoing projects and track their progress</p>
+            </div>
+          </div>
+          
+          {/* Explore More card */}
+          <Link to={"/start-new-project"}>
+          <div className="bg-gradient-to-r from-pink-50 to-pink-100 rounded-xl p-6 flex-1 shadow-sm border border-pink-200 cursor-pointer group hover:shadow-md transition-all">
+            <div className="flex items-center mb-3">
+              <div className="w-10 h-10 bg-pink-500 text-white rounded-full flex items-center justify-center mr-3 group-hover:bg-pink-600 transition-all">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-pink-700 font-medium group-hover:text-pink-800 transition-all">Discover more</p>
+                <h2 className="text-2xl font-bold text-gray-800">Explore Our Services</h2>
+              </div>
+            </div>
+            <div className="mt-3 flex items-center">
+              <div className="h-8 w-8 bg-pink-100 rounded-full flex items-center justify-center mr-2 group-hover:bg-pink-200 transition-all">
+                <svg className="w-4 h-4 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
+              <p className="text-gray-600">Find exciting features and premium plans tailored for you</p>
+            </div>
+          </div>
+          </Link>
+        </div>
+      </div>
             
             {/* <div className="flex space-x-2">
               <div className="px-4 py-2 bg-white shadow-sm rounded-lg flex items-center">
@@ -289,8 +369,9 @@ const Dashboard = () => {
             
             {/* Project Cards - 4 cards in a single row */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-               {/* Start New Project Card - Only shown when no active project/update plan */}
-               {showNewProjectButton && (
+
+              {/* Start New Project Card - Only shown when no active project/update plan */}
+              {showNewProjectButton && (
                 <div className="bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-xl shadow-lg overflow-hidden text-white hover:shadow-xl transition-all px-6 py-4 flex flex-col items-center justify-center text-center transform hover:-translate-y-1">
                   <div>
                     <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mb-2 mx-auto backdrop-blur-sm">
@@ -305,6 +386,40 @@ const Dashboard = () => {
                     >
                       Start New Project
                     </button>
+                  </div>
+                </div>
+              )}
+
+              {pendingApprovalProjects && pendingApprovalProjects.length > 0 && (
+                <div className="flex-shrink-0 border bg-yellow-50 border-yellow-200 rounded-xl overflow-hidden shadow-md relative">
+                  <div className="h-2 bg-yellow-500"></div>
+                  <div className="relative z-10 p-4">
+                    <div className="flex justify-start mb-1">
+                      <div className="px-2 py-0.5 bg-white rounded-full shadow-sm flex items-center">
+                        <div className="w-1.5 h-1.5 bg-yellow-500 rounded-full mr-1 animate-pulse"></div>
+                        <span className="text-xs font-medium text-yellow-600">Awaiting Approval</span>
+                      </div>
+                    </div>
+                    
+                    <h2 className="text-lg font-bold text-gray-800 mb-1">
+                      {pendingApprovalProjects[0].productId?.serviceName || "Website Project"}
+                    </h2>
+                    <span className="text-xs text-gray-500 block mb-3">
+                      Ordered: {formatDate(pendingApprovalProjects[0].createdAt)}
+                    </span>
+                    
+                    <div className="mb-4">
+                      <div className="flex items-center mb-2">
+                        <div className="w-5 h-5 bg-white rounded-full shadow-sm flex items-center justify-center mr-2">
+                          <Clock size={12} className="text-yellow-500" />
+                        </div>
+                        <span className="text-sm text-gray-700">Waiting for payment approval</span>
+                      </div>
+                      
+                      <p className="text-xs text-gray-600 ml-7">
+                        This usually takes 1-4 hours. You'll be notified once approved.
+                      </p>
+                    </div>
                   </div>
                 </div>
               )}
@@ -460,34 +575,55 @@ const Dashboard = () => {
   </div>
             )}
               
+
               {/* Completed Projects Cards - Show up to 2 */}
               {completedProjects.slice(0, 2).map((project, index) => {
   const isUpdatePlan = project.productId?.category?.toLowerCase() === 'website_updates';
+  const isRejected = project.orderVisibility === 'payment-rejected';
   
   return (
-    <div key={project._id} className="flex-shrink-0 border border-emerald-200  bg-gray-50 rounded-xl overflow-hidden shadow-md relative">
+    <div key={project._id} className={`flex-shrink-0 border ${
+      isRejected 
+        ? 'bg-red-50 border-red-200' 
+        : 'bg-gray-50 border-emerald-200'
+    } rounded-xl overflow-hidden shadow-md relative`}>
       {/* Card background with highlight effect */}
-      <div className="h-2 bg-emerald-600"></div>
+      <div className={`h-2 ${isRejected ? 'bg-red-600' : 'bg-emerald-600'}`}></div>
       
       {/* Main content container */}
       <div className="relative z-10 p-4">
         {/* Status label */}
         <div className="flex justify-start mb-1">
-        <div className="px-2 py-0.5 bg-white rounded-full shadow-sm flex items-center">
-          <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full mr-1 animate-pulse"></div>
-          <span className="text-xs font-medium text-emerald-600">Completed</span>
+          <div className="px-2 py-0.5 bg-white rounded-full shadow-sm flex items-center">
+            <div className={`w-1.5 h-1.5 ${isRejected ? 'bg-red-500' : 'bg-emerald-500'} rounded-full mr-1 animate-pulse`}></div>
+            <span className={`text-xs font-medium ${isRejected ? 'text-red-600' : 'text-emerald-600'}`}>
+              {isRejected ? 'Payment Rejected' : 'Completed'}
+            </span>
+          </div>
         </div>
-      </div>
         
         {/* Project name */}
         <h2 className="text-lg font-bold text-gray-800 mb-1">{project.productId?.serviceName || "Website Project"}</h2>
         <span className="text-xs text-gray-500 block mb-3">
-          {isUpdatePlan ? 'Ended' : 'Completed'}: {formatDate(project.updatedAt || project.createdAt)}
+          {isRejected 
+            ? `Rejected: ${formatDate(project.updatedAt || project.createdAt)}`
+            : isUpdatePlan 
+              ? `Ended: ${formatDate(project.updatedAt || project.createdAt)}`
+              : `Completed: ${formatDate(project.updatedAt || project.createdAt)}`
+          }
         </span>
         
         {/* Status items */}
         <div className="mb-4">
-          {isUpdatePlan ? (
+          {isRejected ? (
+            // For rejected projects
+            <div className="bg-white p-3 rounded-md border border-red-100">
+              <p className="text-sm text-gray-700 h-[50px]">
+                {project.rejectionReason || "Your payment for this order was rejected."}
+              </p>
+            </div>
+          ) : isUpdatePlan ? (
+            // For completed update plans
             <>
               <div className="flex items-center mb-2">
                 <div className="w-5 h-5 bg-white rounded-full shadow-sm flex items-center justify-center mr-2">
@@ -505,6 +641,7 @@ const Dashboard = () => {
               </div>
             </>
           ) : (
+            // For completed website projects
             <>
               <div className="flex items-center mb-2">
                 <div className="w-5 h-5 bg-white rounded-full shadow-sm flex items-center justify-center mr-2">
@@ -523,17 +660,28 @@ const Dashboard = () => {
         </div>
         
         {/* Action button */}
-        <button 
-          className="w-full py-2 bg-emerald-600 rounded-md shadow-sm hover:shadow-md transition-shadow flex items-center justify-center text-white text-sm font-medium group"
-          onClick={() => handleViewProjectDetails(project._id)}
-        >
-          <span>View {isUpdatePlan ? 'Details' : 'Project'}</span>
-          <ChevronRight size={14} className="ml-1 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300" />
-        </button>
+        {isRejected ? (
+          <div className="flex space-x-3">
+            <button 
+              className="flex-1 py-2 bg-red-600 text-white rounded-md shadow-sm hover:bg-red-700 transition-all flex items-center justify-center text-sm font-medium"
+              onClick={() => navigate(`/project-details/${project._id}`)}
+            >
+              View Details
+            </button>
+          </div>
+        ) : (
+          <button 
+            className="w-full py-2 bg-emerald-600 rounded-md shadow-sm hover:shadow-md transition-shadow flex items-center justify-center text-white text-sm font-medium group"
+            onClick={() => handleViewProjectDetails(project._id)}
+          >
+            <span>View {isUpdatePlan ? 'Details' : 'Project'}</span>
+            <ChevronRight size={14} className="ml-1 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300" />
+          </button>
+        )}
       </div>
     </div>
   );
-            })}
+})}
               
               {/* View All Projects Card - Always shown */}
             <div className="flex-shrink-0 bg-gray-50 border border-purple-200 rounded-xl overflow-hidden shadow-md relative">
@@ -783,149 +931,181 @@ const Dashboard = () => {
       
       {/* View All Projects Modal */}
       {showAllProjectsModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-lg max-w-4xl w-full max-h-[90vh] overflow-hidden">
-            <div className="p-6 border-b flex justify-between items-center">
-              <h2 className="text-xl font-bold">All Projects</h2>
-              <button 
-                onClick={() => setShowAllProjectsModal(false)}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-              </button>
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div className="bg-white rounded-xl shadow-lg max-w-4xl w-full max-h-[90vh] overflow-hidden">
+      <div className="p-6 border-b flex justify-between items-center">
+        <h2 className="text-xl font-bold">All Projects</h2>
+        <button 
+          onClick={() => setShowAllProjectsModal(false)}
+          className="text-gray-500 hover:text-gray-700"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+      
+      <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+        {websiteProjects.length === 0 ? (
+          <div className="text-center py-8">
+            <div className="text-gray-400 mb-4">
+              <FileText className="w-16 h-16 mx-auto" />
             </div>
-            
-            <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
-              {websiteProjects.length === 0 ? (
-                <div className="text-center py-8">
-                  <div className="text-gray-400 mb-4">
-                    <FileText className="w-16 h-16 mx-auto" />
-                  </div>
-                  <p className="text-gray-600 mb-4">You don't have any projects yet.</p>
-                  <button 
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                    onClick={() => {
-                      setShowAllProjectsModal(false);
-                      handleStartProject();
-                    }}
-                  >
-                    Start Your First Project
-                  </button>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {websiteProjects.map(project => {
-                    const isUpdatePlan = project.productId?.category?.toLowerCase() === 'website_updates';
-                    const isCompleted = isUpdatePlan 
-                      ? (!project.isActive || project.updatesUsed >= project.productId?.updateCount || calculateRemainingDays(project) <= 0)
-                      : (project.projectProgress === 100 && project.currentPhase === 'completed');
+            <p className="text-gray-600 mb-4">You don't have any projects yet.</p>
+            <button 
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              onClick={() => {
+                setShowAllProjectsModal(false);
+                handleStartProject();
+              }}
+            >
+              Start Your First Project
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {websiteProjects.map(project => {
+              const isUpdatePlan = project.productId?.category?.toLowerCase() === 'website_updates';
+              const isRejected = project.orderVisibility === 'payment-rejected';
+              const isCompleted = isUpdatePlan 
+                ? (!project.isActive || project.updatesUsed >= project.productId?.updateCount || calculateRemainingDays(project) <= 0)
+                : (project.projectProgress === 100 && project.currentPhase === 'completed');
+              
+              return (
+                <div 
+                  key={project._id} 
+                  className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow"
+                >
+                  <div className={`h-2 ${
+                    isRejected
+                      ? 'bg-red-500'
+                      : isCompleted
+                        ? 'bg-green-500'
+                        : 'bg-blue-500'
+                  }`}></div>
+                  <div className="p-4">
+                    <div className="flex justify-between items-start mb-3">
+                      <div>
+                        <div className={`text-xs font-medium mb-1 px-2 py-0.5 rounded-full inline-block ${
+                          isRejected
+                            ? 'text-red-600 bg-red-50'
+                            : isCompleted
+                              ? 'text-green-600 bg-green-50'
+                              : 'text-blue-600 bg-blue-50'
+                        }`}>
+                          {isRejected
+                            ? 'Payment Rejected'
+                            : isCompleted
+                              ? 'Completed'
+                              : 'In Progress'}
+                        </div>
+                        <h4 className="font-semibold">{project.productId?.serviceName || "Project"}</h4>
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        {isRejected ? (
+                          <div>Rejected: {formatDate(project.updatedAt || project.createdAt)}</div>
+                        ) : isCompleted ? (
+                          <div>{isUpdatePlan ? 'Ended' : 'Completed'}: {formatDate(project.updatedAt || project.createdAt)}</div>
+                        ) : (
+                          <div>Started: {formatDate(project.createdAt)}</div>
+                        )}
+                      </div>
+                    </div>
                     
-                    return (
-                      <div 
-                        key={project._id} 
-                        className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow"
-                      >
-                        <div className={`h-2 ${
-                          isCompleted
-                            ? 'bg-green-500'
-                            : 'bg-blue-500'
-                        }`}></div>
-                        <div className="p-4">
-                          <div className="flex justify-between items-start mb-3">
-                            <div>
-                              <div className={`text-xs font-medium mb-1 px-2 py-0.5 rounded-full inline-block ${
-                                isCompleted
-                                  ? 'text-green-600 bg-green-50'
-                                  : 'text-blue-600 bg-blue-50'
-                              }`}>
-                                {isCompleted
-                                  ? 'Completed'
-                                  : 'In Progress'}
-                              </div>
-                              <h4 className="font-semibold">{project.productId?.serviceName || "Project"}</h4>
-                            </div>
-                            <div className="text-xs text-gray-500">
-                              {isCompleted ? (
-                                <div>{isUpdatePlan ? 'Ended' : 'Completed'}: {formatDate(project.updatedAt || project.createdAt)}</div>
-                              ) : (
-                                <div>Started: {formatDate(project.createdAt)}</div>
-                              )}
-                            </div>
-                          </div>
-                          
-                          {isCompleted ? (
-                            <div className="mb-4 text-sm text-gray-600">
-                              {isUpdatePlan ? (
-                                <div className="flex items-center">
-                                  <Check size={16} className="text-green-500 mr-2" />
-                                  <span>Updates Used: {project.updatesUsed || 0} of {project.productId?.updateCount || 0}</span>
-                                </div>
-                              ) : (
-                                <div className="flex items-center">
-                                  <Check size={16} className="text-green-500 mr-2" />
-                                  <span>Successfully Completed</span>
-                                </div>
-                              )}
-                            </div>
-                          ) : (
-                            <div className="mb-4 text-sm text-gray-600">
-                              {isUpdatePlan ? (
-                                <>
-                                  <div className="flex items-center justify-between mb-1">
-                                    <span>Updates Remaining</span>
-                                    <span className="font-medium">
-                                      {project.productId?.updateCount - (project.updatesUsed || 0)} of {project.productId?.updateCount}
-                                    </span>
-                                  </div>
-                                  <div className="w-full bg-gray-200 rounded-full h-1.5 mb-2">
-                                    <div 
-                                      className="bg-blue-600 h-1.5 rounded-full" 
-                                      style={{ 
-                                        width: `${((project.productId?.updateCount - (project.updatesUsed || 0)) / project.productId?.updateCount) * 100}%` 
-                                      }}
-                                    ></div>
-                                  </div>
-                                </>
-                              ) : (
-                                <>
-                                  <div className="flex items-center justify-between mb-1">
-                                    <span>Progress</span>
-                                    <span className="font-medium">{project.projectProgress || 0}%</span>
-                                  </div>
-                                  <div className="w-full bg-gray-200 rounded-full h-1.5">
-                                    <div 
-                                      className="bg-blue-600 h-1.5 rounded-full"
-                                      style={{ width: `${project.projectProgress || 0}%` }}
-                                    ></div>
-                                  </div>
-                                </>
-                              )}
-                            </div>
-                          )}
-                          
-                          <button 
-                            className={`w-full py-2 rounded-lg font-medium ${
-                              isCompleted
-                                ? 'bg-green-50 text-green-600 hover:bg-green-100'
-                                : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
-                            }`}
-                            onClick={() => {
-                              setShowAllProjectsModal(false);
-                              handleViewProjectDetails(project._id);
-                            }}
-                          >
-                            View Details
-                          </button>
+                    {isRejected ? (
+                      <div className="mb-4 text-sm text-gray-600">
+                        <div className="flex items-center">
+                          <svg className="w-4 h-4 text-red-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                          <span>Payment verification failed</span>
                         </div>
                       </div>
-                    );
-                  })}
+                    ) : isCompleted ? (
+                      <div className="mb-4 text-sm text-gray-600">
+                        {isUpdatePlan ? (
+                          <div className="flex items-center">
+                            <Check size={16} className="text-green-500 mr-2" />
+                            <span>Updates Used: {project.updatesUsed || 0} of {project.productId?.updateCount || 0}</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center">
+                            <Check size={16} className="text-green-500 mr-2" />
+                            <span>Successfully Completed</span>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="mb-4 text-sm text-gray-600">
+                        {isUpdatePlan ? (
+                          <>
+                            <div className="flex items-center justify-between mb-1">
+                              <span>Updates Remaining</span>
+                              <span className="font-medium">
+                                {project.productId?.updateCount - (project.updatesUsed || 0)} of {project.productId?.updateCount}
+                              </span>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-1.5 mb-2">
+                              <div 
+                                className="bg-blue-600 h-1.5 rounded-full" 
+                                style={{ 
+                                  width: `${((project.productId?.updateCount - (project.updatesUsed || 0)) / project.productId?.updateCount) * 100}%` 
+                                }}
+                              ></div>
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <div className="flex items-center justify-between mb-1">
+                              <span>Progress</span>
+                              <span className="font-medium">{project.projectProgress || 0}%</span>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-1.5">
+                              <div 
+                                className="bg-blue-600 h-1.5 rounded-full"
+                                style={{ width: `${project.projectProgress || 0}%` }}
+                              ></div>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    )}
+                    
+                    {isRejected ? (
+                      <div className="flex space-x-2">
+                        <button 
+                          className="flex-1 py-2 rounded-lg font-medium bg-red-50 text-red-600 hover:bg-red-100"
+                          onClick={() => {
+                            setShowAllProjectsModal(false);
+                            navigate(`/project-details/${project._id}`);
+                          }}
+                        >
+                          View Details
+                        </button>
+                      </div>
+                    ) : (
+                      <button 
+                        className={`w-full py-2 rounded-lg font-medium ${
+                          isCompleted
+                            ? 'bg-green-50 text-green-600 hover:bg-green-100'
+                            : 'bg-blue-50 text-blue-600 hover:bg-blue-100'
+                        }`}
+                        onClick={() => {
+                          setShowAllProjectsModal(false);
+                          handleViewProjectDetails(project._id);
+                        }}
+                      >
+                        View Details
+                      </button>
+                    )}
+                  </div>
                 </div>
-              )}
-            </div>
+              );
+            })}
           </div>
-        </div>
-      )}
+        )}
+      </div>
+    </div>
+  </div>
+)}
 
       {/* Update Request Modal */}
       {showUpdateRequestModal && activeUpdatePlan && (

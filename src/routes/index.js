@@ -44,6 +44,7 @@ import DeliveryPolicyPage from "../pages/DeliveryPolicyPage";
 import RefundPolicyPage from "../pages/RefundPolicyPage";
 import DisclaimersPage from "../pages/DisclaimersPage";
 import DeveloperPanel from "../pages/DeveloperPanel";
+import AdminOrdersPage from "../pages/AdminOrdersPage";
 
 
 // Create a conditional home route
@@ -183,6 +184,10 @@ const router = createBrowserRouter([
                     {
                         path: "admin-settings",
                         element: <AdminFileSettings/>
+                    },
+                    {
+                        path : "order-approval",
+                        element : <AdminOrdersPage/>
                     },
                     {
                         path: "payment-verification",

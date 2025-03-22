@@ -61,19 +61,29 @@ const AdminPaymentVerification = () => {
             : transaction.orderId)     
         : null;  
     
-        // More strict check for installment payments
-        if ((transaction.isInstallmentPayment === true || transaction.type === 'payment') && 
-            orderId && 
-            transaction.installmentNumber) {
-                // Add this check for partial payments
-        if (transaction.isPartialInstallmentPayment) {
+        // Check for wallet payments for orders
+        if (transaction.paymentMethod === 'wallet' && transaction.type === 'payment') {
             return {
-                type: 'Partial UPI Payment',
-                cssClass: 'bg-purple-100 text-purple-800',
-                details: `UPI Portion of Installment #${transaction.installmentNumber} for Order #${orderId}`,
+                type: 'Wallet Payment',
+                cssClass: 'bg-indigo-100 text-indigo-800',
+                details: orderId ? `Order #${orderId}` : 'Order payment',
                 isWalletCredit: false
             };
         }
+        
+        // Check for installment/partial payments
+        if ((transaction.isInstallmentPayment === true || transaction.type === 'payment') && 
+            orderId && 
+            transaction.installmentNumber) {
+            // Add this check for partial payments
+            if (transaction.isPartialInstallmentPayment) {
+                return {
+                    type: 'Partial UPI Payment',
+                    cssClass: 'bg-purple-100 text-purple-800',
+                    details: `UPI Portion of Installment #${transaction.installmentNumber} for Order #${orderId}`,
+                    isWalletCredit: false
+                };
+            }
             return {
                 type: 'Installment Payment',
                 cssClass: 'bg-blue-100 text-blue-800',
@@ -82,7 +92,7 @@ const AdminPaymentVerification = () => {
             };
         }
         
-        // Regular wallet recharge - more explicit check
+        // Regular wallet recharge
         if (transaction.type === 'deposit' || !transaction.isInstallmentPayment) {
             return {
                 type: 'Wallet Recharge',
@@ -122,111 +132,81 @@ const AdminPaymentVerification = () => {
     };
 
     // Approve transaction
-   // Approve transaction function for AdminPaymentVerification.js
-const approveTransaction = async (transaction) => {
-    setProcessingId(transaction._id);
-    try {
-        // Determine if this is an installment payment
-        const transactionDetails = getTransactionDisplay(transaction);
-        
-        // First approve the transaction without waiting for order details
-        console.log("Approving transaction:", transaction._id);
-        
-        const response = await fetch(SummaryApi.wallet.approveTransaction.url, {
-            method: SummaryApi.wallet.approveTransaction.method,
-            credentials: 'include',
-            headers: {
-                "Content-Type": 'application/json'
-            },
-            body: JSON.stringify({
-                transactionId: transaction._id,
-                userId: transaction.userId._id || transaction.userId,
-                skipWalletCredit: !transactionDetails.isWalletCredit // Skip adding to wallet for installment payments
-            })
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            console.log("Transaction approved successfully:", data);
-        }
-        
-        // console.log("Transaction approved successfully:", data);
-        
-        // For installment payments, update the installment directly without fetching the order
-        
-        // Show appropriate success message
-        toast.success(transactionDetails.isWalletCredit ? 
-            'Wallet recharge approved successfully' : 
-            'Installment payment approved successfully');
-        
-        fetchPendingTransactions();
-        closeModal();
-    } catch (error) {
-        console.error('Error approving transaction:', error);
-        toast.error('Failed to approve transaction: ' + (error.message || 'Unknown error'));
-    } finally {
-        setProcessingId(null);
-    }
-};
-
-    // Reject transaction
-    const rejectTransaction = async (transaction) => {
+    const approveTransaction = async (transaction) => {
         setProcessingId(transaction._id);
         try {
-            const response = await fetch(SummaryApi.wallet.rejectTransaction.url, {
-                method: SummaryApi.wallet.rejectTransaction.method,
+            // Determine if this is an installment payment
+            const transactionDetails = getTransactionDisplay(transaction);
+            
+            // First approve the transaction
+            console.log("Approving transaction:", transaction._id);
+            
+            const response = await fetch(SummaryApi.wallet.approveTransaction.url, {
+                method: SummaryApi.wallet.approveTransaction.method,
                 credentials: 'include',
                 headers: {
                     "Content-Type": 'application/json'
                 },
                 body: JSON.stringify({
-                    transactionId: transaction._id
+                    transactionId: transaction._id,
+                    userId: transaction.userId._id || transaction.userId,
+                    skipWalletCredit: !transactionDetails.isWalletCredit // Skip adding to wallet for installment payments
                 })
             });
             
             const data = await response.json();
             
             if (data.success) {
-                // If this was an installment payment, also update its status
-                const transactionDetails = getTransactionDisplay(transaction);
-                if (!transactionDetails.isWalletCredit && transaction.orderId) {
-                    try {
-                        // Update the installment status to rejected
-                        const updateResponse = await fetch(SummaryApi.payInstallment.url, {
-                            method: SummaryApi.payInstallment.method,
-                            credentials: 'include',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                orderId: transaction.orderId,
-                                installmentNumber: transaction.installmentNumber,
-                                paymentStatus: 'rejected',
-                                transactionId: transaction.transactionId || transaction._id
-                            })
-                        });
-                        
-                        const updateData = await updateResponse.json();
-                        if (!updateData.success) {
-                            console.error('Error updating installment status:', updateData);
-                        }
-                    } catch (error) {
-                        console.error('Error updating installment status:', error);
-                    }
-                }
+                console.log("Transaction approved successfully:", data);
                 
-                toast.success('Transaction rejected');
+                // Show appropriate success message
+                toast.success(transactionDetails.isWalletCredit ? 
+                    'Wallet recharge approved successfully' : 
+                    'Payment approved successfully');
+                
                 fetchPendingTransactions();
                 closeModal();
             } else {
-                toast.error(data.message);
+                toast.error(data.message || 'Approval failed');
             }
         } catch (error) {
-            console.error('Error rejecting transaction:', error);
-            toast.error('Failed to reject transaction');
+            console.error('Error approving transaction:', error);
+            toast.error('Failed to approve transaction: ' + (error.message || 'Unknown error'));
         } finally {
             setProcessingId(null);
+        }
+    };
+
+    // Reject transaction
+    const rejectTransaction = async (transaction, rejectionReason) => {
+        setProcessingId(transaction._id);
+        try {
+          const response = await fetch(SummaryApi.wallet.rejectTransaction.url, {
+            method: SummaryApi.wallet.rejectTransaction.method,
+            credentials: 'include',
+            headers: {
+              "Content-Type": 'application/json'
+            },
+            body: JSON.stringify({
+              transactionId: transaction._id,
+              rejectionReason: rejectionReason
+            })
+          });
+          
+          const data = await response.json();
+          
+          if (data.success) {
+            toast.success('Transaction rejected');
+            fetchPendingTransactions();
+            closeModal();
+          } else {
+            toast.error(data.message);
+          }
+        } catch (error) {
+          console.error('Error rejecting transaction:', error);
+          toast.error('Failed to reject transaction');
+        } finally {
+          setProcessingId(null);
         }
     };
 

@@ -24,6 +24,7 @@ const DirectPayment = () => {
   const [isPartialPayment, setIsPartialPayment] = useState(false);
   const [installmentNumber, setInstallmentNumber] = useState(1);
   const [remainingPayments, setRemainingPayments] = useState([]);
+  
 
   useEffect(() => {
     // Get payment data from location state
@@ -47,6 +48,19 @@ const DirectPayment = () => {
       // No payment data, redirect to home
       toast.error('Payment information not found');
       navigate('/');
+    }
+    if (location.state?.retryPaymentId) {
+      // This is a retry payment scenario
+      const retryPaymentData = location.state.paymentData;
+      
+      // Populate the payment data from the rejected order
+      setPaymentData(retryPaymentData);
+      
+      // Calculate if wallet balance is sufficient
+      const paymentAmount = retryPaymentData.totalPrice;
+      if (context.walletBalance < paymentAmount) {
+        setRemainingAmount(paymentAmount - context.walletBalance);
+      }
     }
   }, [location, navigate, context.walletBalance]);                                
 
@@ -76,117 +90,167 @@ const calculateFeatureDiscount = (feature, totalDiscount, originalTotal) => {
   };
 
   // Proceed with wallet payment
-  const handleWalletPayment = async () => {
-    if (!paymentData) return;
+ // Proceed with wallet payment
+const handleWalletPayment = async () => {
+  if (!paymentData) return;
+  
+  try {
+    setLoading(true);
     
-    try {
-      setLoading(true);
+    // Get the correct amount to charge
+    const amountToCharge = paymentData.currentPaymentAmount || paymentData.totalPrice;
+    
+    // SCENARIO 1: If wallet has sufficient balance
+    if (context.walletBalance >= amountToCharge) {
+      console.log("Sufficient wallet balance. Creating transaction for admin approval.");
       
-      // Get the correct amount to charge
-      const amountToCharge = paymentData.currentPaymentAmount || paymentData.totalPrice;
+      // Generate transaction ID for wallet payment
+      const txnId = generateTransactionId();
       
-      // SCENARIO 2: If wallet has sufficient balance
-      if (context.walletBalance >= amountToCharge) {
-        console.log("Sufficient wallet balance. Processing full payment from wallet.");
+      // Create order first with pending status
+  try {
+    const createdOrder = await createOrder('wallet-pending');
+    
+    if (createdOrder && createdOrder.orderId) {
+      // Create a transaction record for admin approval instead of directly deducting
+      const requestBody = {
+        transactionId: txnId,
+        amount: amountToCharge,
+        // Include both fields to satisfy the validation
+        upiTransactionId: "WALLET-" + txnId, // Dummy UPI ID for wallet transactions
+        paymentMethod: 'wallet',
+        isInstallmentPayment: isPartialPayment || false,
+        type: 'payment',
+        orderId: createdOrder.orderId,
+        installmentNumber: isPartialPayment ? installmentNumber : null,
+        description: `Wallet payment for ${paymentData?.product?.serviceName}`
+      };
+      
+      // Submit payment verification request
+      const response = await fetch(SummaryApi.wallet.verifyPayment.url, {
+        method: SummaryApi.wallet.verifyPayment.method,
+        credentials: 'include',
+        headers: {
+          "Content-Type": 'application/json'
+        },
+        body: JSON.stringify(requestBody)
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        // Show success message for pending approval
+        toast.success('Your payment has been submitted for approval');
         
-        // Process payment for current installment amount from wallet
-        const response = await fetch(SummaryApi.wallet.deduct.url, {
-          method: SummaryApi.wallet.deduct.method,
-          credentials: 'include',
-          headers: {
-            "content-type": 'application/json'
-          },
-          body: JSON.stringify({
-            amount: amountToCharge,
-            isInstallmentPayment: isPartialPayment
-          })
+        // Redirect to success page with pending message
+        navigate('/dashboard', { 
+          state: { 
+            pendingApproval: true,
+            message: "Your payment is being processed. Project details will be available after admin approval." 
+          }
         });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-          // Create order with wallet payment info
-          await createOrder('wallet');
-          
-          // Update wallet balance
-          context.fetchWalletBalance();
-          
-          // Redirect to success
-          navigate('/success');
-        } else {
-          toast.error(data.message || 'Payment failed');
-        }
-      } 
-      // SCENARIO 3: Partial wallet balance
-      else if (context.walletBalance > 0) {
-        console.log("Partial wallet balance. Deducting available balance and showing QR for remainder.");
-        
-        // First deduct whatever is in the wallet
-        const response = await fetch(SummaryApi.wallet.deduct.url, {
-          method: SummaryApi.wallet.deduct.method,
-          credentials: 'include',
-          headers: {
-            "content-type": 'application/json'
-          },
-          body: JSON.stringify({
-            amount: context.walletBalance,
-            isInstallmentPayment: isPartialPayment,
-            isPartialPayment: true // Add flag for partial wallet payment
-          })
-        });
-        
-        const data = await response.json();
-        
-        if (!data.success) {
-          toast.error(data.message || 'Wallet payment failed');
-          setLoading(false);
-          return;
-        }
-        
-        // Update wallet balance
-        context.fetchWalletBalance();
-        
-        // Generate QR for remaining amount
-        const txnId = generateTransactionId();
-        setTransactionId(txnId);
-        
-        // Create UPI payment link for REMAINING amount
-        const upiId = 'vacomputers.com@okhdfcbank';
-        const payeeName = 'VA Computer';
-        const upi = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(payeeName)}&am=${remainingAmount}&cu=INR&tn=${encodeURIComponent(`Order Payment - ${txnId}`)}&tr=${txnId}`;
-        
-        setUpiLink(upi);
-        setShowQR(true);
+      } else {
+        toast.error(data.message || 'Payment submission failed');
       }
-      // SCENARIO 1: No wallet balance at all
-      else {
-        console.log("No wallet balance. Showing QR for full payment.");
-        
-        // Generate QR for full amount
-        const txnId = generateTransactionId();
-        setTransactionId(txnId);
-        
-        // Create UPI payment link
-        const upiId = 'vacomputers.com@okhdfcbank';
-        const payeeName = 'VA Computer';
-        const upi = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(payeeName)}&am=${remainingAmount}&cu=INR&tn=${encodeURIComponent(`Order Payment - ${txnId}`)}&tr=${txnId}`;
-        
-        setUpiLink(upi);
-        setShowQR(true);
-      }
-    } catch (error) {
-      console.error('Error processing payment:', error);
-      toast.error('Payment processing failed');
-    } finally {
-      setLoading(false);
     }
-  };
+  } catch (error) {
+    console.error('Error processing payment:', error);
+    toast.error('Error processing payment. Please try again.');
+  }
+}
+    // SCENARIO 2: Partial wallet balance
+    else if (context.walletBalance > 0) {
+      console.log("Partial wallet balance. Need admin approval for both portions.");
+      
+      // Generate transaction IDs for both payment portions
+      const walletTxnId = generateTransactionId() + "-W";
+      const upiTxnId = generateTransactionId() + "-U";
+      setTransactionId(upiTxnId); // For UPI QR code
+      
+      // Create order first with pending status
+      try {
+        console.log("Creating order with pending status...");
+        const createdOrder = await createOrder('combined-pending');
+        console.log("Order creation response:", createdOrder);
+        
+        if (createdOrder && createdOrder.orderId) {
+          const orderId = createdOrder.orderId;
+          
+          // Create wallet portion transaction for admin approval
+          const walletRequestBody = {
+            transactionId: walletTxnId,
+            amount: context.walletBalance,
+            paymentMethod: 'wallet',
+            isInstallmentPayment: isPartialPayment || false,
+            type: 'payment',
+            orderId: orderId,
+            installmentNumber: isPartialPayment ? installmentNumber : null,
+            isPartialInstallmentPayment: true,
+            parentTransactionId: upiTxnId, // Link to the UPI transaction
+            description: `Wallet portion (${displayINRCurrency(context.walletBalance)}) for ${paymentData?.product?.serviceName}`
+          };
+          
+          // Submit wallet portion for admin approval
+          await fetch(SummaryApi.wallet.verifyPayment.url, {
+            method: SummaryApi.wallet.verifyPayment.method,
+            credentials: 'include',
+            headers: {
+              "Content-Type": 'application/json'
+            },
+            body: JSON.stringify(walletRequestBody)
+          });
+          
+          // Create UPI payment link for REMAINING amount
+          const upiId = 'vacomputers.com@okhdfcbank';
+          const payeeName = 'VA Computer';
+          const upi = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(payeeName)}&am=${remainingAmount}&cu=INR&tn=${encodeURIComponent(`Order Payment - ${upiTxnId}`)}&tr=${upiTxnId}`;
+          
+          // Show QR code for remaining amount
+          setUpiLink(upi);
+          setShowQR(true);
+        }
+      } catch (error) {
+        console.error('Error creating order:', error);
+        toast.error('Error processing payment. Please try again.');
+      }
+    }
+   // SCENARIO 3: No wallet balance at all
+    else {
+      console.log("No wallet balance. Showing QR for full payment.");
+      
+      // Generate QR for full amount
+      const txnId = generateTransactionId();
+      setTransactionId(txnId);
+      
+      // Create UPI payment link
+      const upiId = 'vacomputers.com@okhdfcbank';
+      const payeeName = 'VA Computer';
+      const upi = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(payeeName)}&am=${amountToCharge}&cu=INR&tn=${encodeURIComponent(`Order Payment - ${txnId}`)}&tr=${txnId}`;
+      
+      setUpiLink(upi);
+      setShowQR(true);
+    }
+  } catch (error) {
+    console.error('Error processing payment:', error);
+    toast.error('Payment processing failed');
+  } finally {
+    setLoading(false);
+  }
+};
   
 
  // Update the createOrder function
-const createOrder = async (paymentMethod = 'upi') => {
+ const createOrder = async (paymentMethod = 'upi') => {
   try {
     console.log("Creating order with payment method:", paymentMethod);
+
+    console.log("Payment Data:", {
+      productId: paymentData.product._id,
+      features: paymentData.selectedFeatures.map(f => ({
+        id: f.id || f._id,
+        name: f.name || f.serviceName
+      }))
+    });
     
     // Get payment option info
     const isPartialPayment = paymentData.paymentOption === 'partial';
@@ -207,6 +271,55 @@ const createOrder = async (paymentMethod = 'upi') => {
         paymentData.couponData.data.discountAmount
       ) : 0;
     
+    // Create orderItems array starting with the main product
+    const orderItems = [
+      {
+        id: paymentData.product._id,
+        name: paymentData.product.serviceName,
+        type: 'main',
+        quantity: 1,
+        originalPrice: paymentData.product.sellingPrice,
+        finalPrice: paymentData.product.sellingPrice,
+        additionalQuantity: 0
+      }
+    ];
+    
+    // Process features and add them to orderItems
+    // Process additional features without individual discounts
+if (paymentData.selectedFeatures && paymentData.selectedFeatures.length > 0) {
+  paymentData.selectedFeatures.forEach(feature => {
+    // Skip invalid features
+    if (!feature) return;
+    
+    const featureId = feature.id || feature._id;
+    if (!featureId) return;
+    
+    const featureName = feature.name || feature.serviceName || "Unknown Feature";
+    const quantity = feature.quantity || 1;
+    
+    // Calculate base price without any discount
+    let featurePrice;
+    const isAddNewPage = featureName.toLowerCase().includes('add new page');
+    
+    if (isAddNewPage) {
+      const additionalQuantity = Math.max(0, quantity - paymentData.product.totalPages);
+      featurePrice = feature.sellingPrice * additionalQuantity;
+    } else {
+      featurePrice = feature.sellingPrice * quantity;
+    }
+    
+    orderItems.push({
+      id: featureId,
+      name: featureName,
+      type: 'feature',
+      quantity: quantity,
+      originalPrice: feature.sellingPrice,
+      finalPrice: feature.sellingPrice, // No individual discount
+      additionalQuantity: isAddNewPage ? Math.max(0, quantity - paymentData.product.totalPages) : 0
+    });
+  });
+}
+    
     // Calculate the actual price to charge for this installment
     let priceToCharge;
     if (isPartialPayment) {
@@ -214,19 +327,57 @@ const createOrder = async (paymentMethod = 'upi') => {
       priceToCharge = currentPaymentAmount;
     } else {
       // For full payment, use the full discounted price
-      priceToCharge = paymentData.product.sellingPrice - mainProductDiscount;
+      priceToCharge = paymentData.totalPrice; // Use the total price after discount
     }
     
-    // Create payment data object
+    // Calculate installments if needed
+    let installments = [];
+    if (isPartialPayment) {
+      // Create installment structure
+      installments = [
+        {
+          installmentNumber: 1,
+          percentage: 30,
+          amount: currentPaymentAmount,
+          paid: paymentMethod === 'wallet',
+          paymentStatus: paymentMethod === 'wallet' ? 'none' : 'pending-approval',
+          paidDate: paymentMethod === 'wallet' ? new Date() : null
+        },
+        {
+          installmentNumber: 2,
+          percentage: 30,
+          amount: paymentData.totalPrice * 0.3,
+          paid: false,
+          paymentStatus: 'none',
+          dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+        },
+        {
+          installmentNumber: 3,
+          percentage: 40,
+          amount: paymentData.totalPrice * 0.4,
+          paid: false,
+          paymentStatus: 'none',
+          dueDate: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000)
+        }
+      ];
+    }
+    
+    // Create payment data object for the combined order
     const paymentRequestData = {
       productId: paymentData.product._id,
       quantity: 1,
       price: priceToCharge,
-      originalPrice: paymentData.product.sellingPrice,
+      originalPrice: originalTotal,
       couponApplied: paymentData.couponData?.data?.couponCode || null,
-      discountAmount: mainProductDiscount,
-      // Add payment method information
-      paymentMethod: paymentMethod
+      discountAmount: originalTotal - paymentData.totalPrice,
+      paymentMethod: paymentMethod,
+      orderVisibility: 'pending-approval',
+      paymentStatus: 'pending-approval',
+      orderItems: orderItems,
+      isCombinedOrder: true, // Flag this as a combined order
+      selectedFeatures: paymentData.selectedFeatures,
+      isRetryPayment: !!location.state?.retryPaymentId,
+      previousOrderId: location.state?.retryPaymentId || null
     };
     
     // Add partial payment fields for installment payments
@@ -237,16 +388,12 @@ const createOrder = async (paymentMethod = 'upi') => {
       paymentRequestData.totalAmount = paymentData.totalPrice;
       paymentRequestData.remainingAmount = paymentData.totalPrice - currentPaymentAmount;
       paymentRequestData.remainingPayments = paymentData.remainingPayments || [];
-      
-      // If using UPI payment, set payment status to pending
-      if (paymentMethod === 'upi') {
-        paymentRequestData.upiPaymentStatus = 'pending-approval';
-      }
+      paymentRequestData.installments = installments;
     }
     
-    console.log("Sending payment data:", paymentRequestData);
+    console.log("Sending combined order payment data:", paymentRequestData);
     
-    // Create main product order
+    // Create a single combined order with all items
     const orderResponse = await fetch(SummaryApi.createOrder.url, {
       method: SummaryApi.createOrder.method,
       credentials: 'include',
@@ -265,121 +412,7 @@ const createOrder = async (paymentMethod = 'upi') => {
     // Store the actual order ID
     const actualOrderId = orderData.data?._id || orderData.data?.orderId;
     
-    // Process additional features with same payment logic
-    if (paymentData.selectedFeatures && paymentData.selectedFeatures.length > 0) {
-      await Promise.all(paymentData.selectedFeatures.map(async (feature) => {
-        // Use correct quantity for pricing
-        const isAddNewPage = feature.serviceName.toLowerCase().includes('add new page');
-        const quantity = feature.quantity || 1;
-        
-        // For Add New Page, use additionalQuantity for price calculation
-        let featureTotal;
-        if (isAddNewPage) {
-          const additionalPages = feature.additionalQuantity || 
-                                  Math.max(0, quantity - paymentData.product.totalPages);
-          featureTotal = feature.sellingPrice * additionalPages;
-        } else {
-          featureTotal = feature.sellingPrice * quantity;
-        }
-        
-        // Calculate feature discount
-        const featureDiscount = paymentData.couponData ?
-          calculateItemDiscount(
-            featureTotal,
-            originalTotal,
-            paymentData.couponData.data.discountAmount
-          ) : 0;
-        
-        const discountedTotal = featureTotal - featureDiscount;
-        
-        // Calculate feature price for this installment
-        let featurePriceForThisPayment;
-        if (isPartialPayment) {
-          // For partial payment, charge 30% of the feature price
-          featurePriceForThisPayment = discountedTotal * 0.3;
-        } else {
-          // For full payment, charge the full discounted price
-          featurePriceForThisPayment = discountedTotal;
-        }
-        
-        const pricePerUnit = featurePriceForThisPayment / (isAddNewPage ? 
-          (feature.additionalQuantity || Math.max(0, quantity - paymentData.product.totalPages)) || 1 : 
-          quantity);
-        
-        // Create feature installments if needed
-        let featureInstallments = [];
-        if (isPartialPayment) {
-          // First installment for feature
-          featureInstallments.push({
-            installmentNumber: 1,
-            percentage: 30,
-            amount: featurePriceForThisPayment,
-            // Only mark as paid for wallet payments
-            paid: paymentMethod === 'wallet',
-            paymentStatus: paymentMethod === 'wallet' ? 'none' : 'pending-approval',
-            paidDate: paymentMethod === 'wallet' ? new Date() : null
-          });
-          
-          // Second installment (30%)
-          featureInstallments.push({
-            installmentNumber: 2,
-            percentage: 30,
-            amount: discountedTotal * 0.3,
-            paid: false,
-            paymentStatus: 'none',
-            dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-          });
-          
-          // Third installment (40%)
-          featureInstallments.push({
-            installmentNumber: 3,
-            percentage: 40,
-            amount: discountedTotal * 0.4,
-            paid: false,
-            paymentStatus: 'none',
-            dueDate: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000)
-          });
-        }
-        
-        // Create feature order
-        const featureOrderResponse = await fetch(SummaryApi.createOrder.url, {
-          method: SummaryApi.createOrder.method,
-          credentials: 'include',
-          headers: {
-            "content-type": 'application/json'
-          },
-          body: JSON.stringify({
-            productId: feature._id,
-            quantity: isAddNewPage ? 
-              (feature.additionalQuantity || Math.max(0, quantity - paymentData.product.totalPages)) : 
-              quantity,
-            price: pricePerUnit,
-            originalPrice: feature.sellingPrice,
-            couponApplied: featureDiscount > 0 ? paymentData.couponData?.data?.couponCode : null,
-            discountAmount: featureDiscount,
-            // Add payment method
-            paymentMethod: paymentMethod,
-            // Add these fields for partial payment tracking for features
-            isPartialPayment: isPartialPayment,
-            currentInstallment: 1, // Start with installment 1
-            totalAmount: isPartialPayment ? discountedTotal : null,
-            // Only mark as paid for wallet payments
-            paidAmount: isPartialPayment && paymentMethod === 'wallet' ? featurePriceForThisPayment : 0,
-            remainingAmount: isPartialPayment ? 
-              (paymentMethod === 'wallet' ? discountedTotal - featurePriceForThisPayment : discountedTotal) : 0,
-            installments: featureInstallments
-          })
-        });
-        
-        const featureOrderData = await featureOrderResponse.json();
-        
-        if (!featureOrderData.success) {
-          throw new Error(featureOrderData.message || 'Failed to create feature order');
-        }
-      }));
-    }
-    
-    // Return success with actual order ID
+    // Return success with actual order ID - no need to create separate feature orders
     return {
       success: true,
       orderId: actualOrderId
@@ -474,27 +507,19 @@ const createOrder = async (paymentMethod = 'upi') => {
       console.log("Verification response:", data);
       
       if (data.success) {
-        // Rest of the function remains the same
-        // ...
-        
         // Show appropriate success message
-        if (isPartialPayment) {
-          setVerificationStatus('Your payment verification has been submitted. Your project will proceed after admin approval (1-4 hours).');
-          toast.success('Payment submitted successfully! We\'ll notify you once it\'s approved.');
-          
-          // Redirect to project details
-          setTimeout(() => {
-            navigate(`/project-details/${orderId}`);
-          }, 3000);
-        } else {
-          setVerificationStatus('Your payment verification has been submitted. Your order will be processed after admin approval (1-4 hours).');
-          toast.success('Payment submitted successfully! We\'ll notify you once it\'s approved.');
-          
-          // Redirect to success page
-          setTimeout(() => {
-            navigate('/success');
-          }, 3000);
-        }
+        setVerificationStatus('Your payment verification has been submitted. Your project will proceed after admin approval (1-4 hours).');
+        toast.success('Payment submitted successfully! We\'ll notify you once it\'s approved.');
+        
+        // Redirect to dashboard with pending flag
+        setTimeout(() => {
+          navigate('/dashboard', { 
+            state: { 
+              pendingApproval: true,
+              message: "Your payment is being processed. Project details will be available after admin approval." 
+            }
+          });
+        }, 3000);
         
         // Set payment processed flag
         setPaymentProcessed(true);
@@ -606,9 +631,19 @@ const createOrder = async (paymentMethod = 'upi') => {
   {paymentData.selectedFeatures && paymentData.selectedFeatures.length > 0 && (
     <>
       <h4 className="text-md font-medium mt-3 mb-2">Selected Features</h4>
-      {paymentData.selectedFeatures.map((feature, index) => {
+
+     {paymentData.selectedFeatures.map((feature, index) => {
+  // Check if feature is valid
+  if (!feature) {
+    console.error("Feature is undefined");
+    return null;
+  }
+  
+  // Use name instead of serviceName (with fallback)
+  const featureName = feature.name || feature.serviceName || "Unknown Feature";
+  
   // For Add New Page, use additionalQuantity instead of quantity
-  const isAddNewPage = feature.serviceName.toLowerCase().includes('add new page');
+  const isAddNewPage = featureName.toLowerCase().includes('add new page');
   
   // Get the correct quantity to display
   let displayQuantity;
@@ -619,7 +654,7 @@ const createOrder = async (paymentMethod = 'upi') => {
   } else {
     displayQuantity = feature.quantity || 1;
   }
-  
+
   // Use the correct price calculation based on the feature type
   const originalPrice = isAddNewPage 
     ? feature.sellingPrice * displayQuantity 
@@ -636,7 +671,7 @@ const createOrder = async (paymentMethod = 'upi') => {
   return (
     <div key={index} className="flex justify-between items-center mb-2">
       <div>
-        <span className="text-gray-600">{feature.serviceName}</span>
+        <span className="text-gray-600">{featureName}</span>
         {isAddNewPage && displayQuantity > 0 && (
           <span className="text-gray-500 text-sm ml-2">× {displayQuantity}</span>
         )}
@@ -734,7 +769,7 @@ const createOrder = async (paymentMethod = 'upi') => {
                     className="bg-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors"
                   >
                     {remainingAmount > 0 
-                      ? 'Pay with Wallet & Continue' 
+                      ? 'Pay with QR & Continue' 
                       : 'Complete Payment'}
                   </button>
                 </div>

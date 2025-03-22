@@ -48,6 +48,27 @@ const ProjectDetails = () => {
       
       if (orderData.success) {
         const order = orderData.data;
+
+        // Check if this order is visible to the user
+      if (order.orderVisibility === 'pending-approval') {
+        // Show loading or pending approval state instead of the actual project
+        setOrder({
+          ...order,
+          isPendingApproval: true,
+          pendingMessage: "Your payment is being processed. Project details will be available after admin approval."
+        });
+        return; // Exit early
+      }
+      
+      if (order.orderVisibility === 'payment-rejected') {
+        // Show rejected payment state
+        setOrder({
+          ...order,
+          isPaymentRejected: true,
+          rejectionReason: order.rejectionReason || "Your payment was rejected. Please retry payment to access this project."
+        });
+        return; // Exit early
+      }
         
         // If there's an assigned developer ID but it's not already populated (it's just an ID string)
         if (order.assignedDeveloper && typeof order.assignedDeveloper === 'string') {
@@ -274,6 +295,97 @@ const checkPaymentStatus = async (order) => {
       </DashboardLayout>
     );
   }
+
+  // Add special rendering for pending approval
+if (order && order.isPendingApproval) {
+  return (
+    <DashboardLayout user={user}>
+      <div className="p-6">
+        <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg shadow-sm">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <h3 className="text-lg font-medium text-blue-800">Payment Processing</h3>
+              <div className="mt-2 text-blue-700">
+                <p>{order.pendingMessage}</p>
+                <p className="mt-2">This process usually takes 1-4 hours. You'll receive a notification once your payment is approved.</p>
+              </div>
+              <div className="mt-4">
+                <button
+                  onClick={() => navigate('/dashboard')}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                >
+                  Back to Dashboard
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </DashboardLayout>
+  );
+}
+
+// Add special rendering for rejected payments
+if (order && order.isPaymentRejected) {
+  return (
+    <DashboardLayout user={user}>
+      <div className="p-6">
+        <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg shadow-sm">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <h3 className="text-lg font-medium text-red-800">Payment Rejected</h3>
+              <div className="mt-2 text-red-700">
+                <p>Your payment for this project was rejected.</p>
+                <p className="mt-2 font-medium">Reason: {order.rejectionReason || "Payment verification failed"}</p>
+              </div>
+              <div className="mt-4 flex space-x-4">
+                <button
+                  onClick={() => navigate('/dashboard')}
+                  className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+                >
+                  Back to Dashboard
+                </button>
+                <button
+                onClick={() => navigate(`/direct-payment`, {
+                  state: { 
+                    retryPaymentId: order._id,
+                    productId: order.productId?._id,
+                    paymentData: {
+                      product: order.productId,
+                      selectedFeatures: order.orderItems?.filter(item => item.type === 'feature').map(item => ({
+                        id: item.id,
+                        name: item.name,
+                        quantity: item.quantity || 1,
+                        sellingPrice: item.originalPrice || 0, // Use originalPrice as sellingPrice
+                        totalPrice: item.finalPrice || 0
+                      })) || [],
+                      totalPrice: order.price,
+                      originalTotalPrice: order.originalPrice || order.price
+                    }
+                  }
+                })}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+              >
+                Retry Payment
+              </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </DashboardLayout>
+  );
+}
 
   if (!order) {
     return (
