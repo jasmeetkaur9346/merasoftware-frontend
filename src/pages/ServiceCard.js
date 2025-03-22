@@ -1,223 +1,186 @@
 import React, { useState } from 'react';
-import { Calendar, Clock, CheckCircle, AlertCircle, RefreshCw, Eye } from 'lucide-react';
+import { User, Camera, LogOut, Edit, ChevronRight, Settings, Mail, Phone, Calendar } from 'lucide-react';
 
-const OrderStatusBadge = ({ status }) => {
-  const statusConfig = {
-    'In Progress': { 
-      color: 'bg-blue-500 text-white', 
-      icon: <RefreshCw size={14} className="mr-1" /> 
-    },
-    'Rejected': { 
-      color: 'bg-red-500 text-white', 
-      icon: <AlertCircle size={14} className="mr-1" /> 
-    },
-    'Processing': { 
-      color: 'bg-gray-500 text-white', 
-      icon: <Clock size={14} className="mr-1" /> 
-    },
-    'Completed': { 
-      color: 'bg-green-500 text-white', 
-      icon: <CheckCircle size={14} className="mr-1" /> 
+const ProfileSettings = () => {
+  const [user, setUser] = useState({
+    name: 'Sandeep Singh',
+    email: 'singhsandeep178@gmail.com',
+    phone: '9256537003',
+    age: 38,
+    profilePic: null // Default no profile picture
+  });
+
+  const handleProfilePicChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setUser(prev => ({ ...prev, profilePic: reader.result }));
+      };
+      reader.readAsDataURL(file);
     }
   };
-
-  const config = statusConfig[status] || statusConfig['Processing'];
-
-  return (
-    <span className={`flex items-center px-3 py-1 rounded-full text-xs font-medium ${config.color}`}>
-      {config.icon}
-      {status}
-    </span>
-  );
-};
-
-const OrderItem = ({ order }) => {
-  const handleClick = () => {
-    // Handle click event - could navigate to order details page
-    console.log(`Order ${order.id} clicked`);
-  };
-
-  return (
-    <button 
-      onClick={handleClick}
-      className="w-full text-left bg-white rounded-lg shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200 overflow-hidden hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
-    >
-      <div className="p-4">
-        <div className="flex justify-between items-start mb-3">
-          <div>
-            <h3 className="font-medium text-gray-900">{order.title}</h3>
-            <p className="text-sm text-gray-500">{order.category}</p>
-          </div>
-          <OrderStatusBadge status={order.status} />
-        </div>
-        
-        <div className="flex items-center justify-between mt-4">
-          <div className="flex items-center text-gray-500 text-sm">
-            <Calendar size={16} className="mr-2" />
-            {order.date}
-          </div>
-          
-          <div className="flex items-center text-sm text-blue-600">
-            <Eye size={16} className="mr-1" />
-            View Details
-          </div>
-        </div>
-      </div>
-    </button>
-  );
-};
-
-const OrdersApp = () => {
-  const [activeTab, setActiveTab] = useState('all');
-  const [windowWidth, setWindowWidth] = useState(
-    typeof window !== 'undefined' ? window.innerWidth : 1200
-  );
-
-  // Handle window resize
-  React.useEffect(() => {
-    const handleResize = () => {
-      setWindowWidth(window.innerWidth);
-    };
-    
-    if (typeof window !== 'undefined') {
-      window.addEventListener('resize', handleResize);
-      return () => window.removeEventListener('resize', handleResize);
-    }
-  }, []);
-  
-  const orders = [
-    { 
-      id: 1, 
-      title: 'Restaurant Website', 
-      category: 'standard websites', 
-      date: '22/03/2025', 
-      status: 'In Progress' 
-    },
-    { 
-      id: 2, 
-      title: 'Restaurant Website', 
-      category: 'standard websites', 
-      date: '22/03/2025', 
-      status: 'Rejected' 
-    },
-    { 
-      id: 3, 
-      title: 'Website Update - Basic Plan', 
-      category: 'website updates', 
-      date: '16/03/2025', 
-      status: 'Processing' 
-    },
-    { 
-      id: 4, 
-      title: 'Appointment Booking Website', 
-      category: 'dynamic websites', 
-      date: '12/03/2025', 
-      status: 'Completed' 
-    },
-    { 
-      id: 5, 
-      title: 'Dynamic Gallery', 
-      category: 'feature upgrades', 
-      date: '12/03/2025', 
-      status: 'Processing' 
-    },
-    { 
-      id: 6, 
-      title: 'Dynamic Page with Panel', 
-      category: 'feature upgrades', 
-      date: '12/03/2025', 
-      status: 'Processing' 
-    },
-    { 
-      id: 7, 
-      title: 'Restaurant Website', 
-      category: 'standard websites', 
-      date: '12/03/2025', 
-      status: 'Completed' 
-    }
-  ];
-
-  const filteredOrders = activeTab === 'all' 
-    ? orders 
-    : orders.filter(order => 
-        activeTab === 'completed' 
-          ? order.status === 'Completed' 
-          : order.status !== 'Completed'
-      );
-      
-  // Determine grid columns based on screen width
-  let gridColsClass = "grid-cols-1";
-  
-  if (windowWidth >= 640 && windowWidth < 1024) {
-    gridColsClass = "grid-cols-2";
-  } else if (windowWidth >= 1024) {
-    gridColsClass = "grid-cols-3";
-  }
 
   return (
     <div className="bg-gray-50 min-h-screen">
-      <header className="bg-blue-600 text-white py-4 sm:py-6 px-4 sm:px-6 md:px-8">
-        <div className="max-w-6xl mx-auto">
-          <h1 className="text-xl sm:text-2xl font-bold">My Orders</h1>
-          <p className="text-blue-100 text-sm sm:text-base mt-1">Manage and track your website development orders</p>
-        </div>
-      </header>
-      
-      <main className="max-w-6xl mx-auto px-3 sm:px-4 py-4 sm:py-6 md:px-8">
-        <div className="bg-white rounded-lg shadow-sm p-3 sm:p-4 mb-4 sm:mb-6 overflow-x-auto">
-          <div className="flex min-w-max space-x-1 md:space-x-2">
-            <button 
-              onClick={() => setActiveTab('all')}
-              className={`px-3 sm:px-4 py-2 text-xs sm:text-sm md:text-base rounded-md transition-colors ${
-                activeTab === 'all' 
-                  ? 'bg-blue-100 text-blue-700 font-medium' 
-                  : 'text-gray-600 hover:bg-gray-100'
-              }`}
-            >
-              All Orders
-            </button>
-            <button 
-              onClick={() => setActiveTab('active')}
-              className={`px-3 sm:px-4 py-2 text-xs sm:text-sm md:text-base rounded-md transition-colors ${
-                activeTab === 'active' 
-                  ? 'bg-blue-100 text-blue-700 font-medium' 
-                  : 'text-gray-600 hover:bg-gray-100'
-              }`}
-            >
-              Active
-            </button>
-            <button 
-              onClick={() => setActiveTab('completed')}
-              className={`px-3 sm:px-4 py-2 text-xs sm:text-sm md:text-base rounded-md transition-colors ${
-                activeTab === 'completed' 
-                  ? 'bg-blue-100 text-blue-700 font-medium' 
-                  : 'text-gray-600 hover:bg-gray-100'
-              }`}
-            >
-              Completed
-            </button>
+      <div className="container mx-auto p-4">
+        <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+          {/* Header with title */}
+          <div className="bg-blue-600 px-6 py-4">
+            <h1 className="text-xl md:text-2xl font-bold text-white">Profile Settings</h1>
+          </div>
+          
+          <div className="md:flex">
+            {/* Left sidebar with profile picture */}
+            <div className="md:w-1/3 bg-gray-50 p-6 flex flex-col items-center border-b md:border-b-0 md:border-r border-gray-200">
+              <div className="relative group">
+                <div className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden border-4 border-white shadow-md">
+                  {user.profilePic ? (
+                    <img 
+                      src={user.profilePic} 
+                      alt="Profile" 
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <User size={64} className="text-gray-400" />
+                  )}
+                </div>
+                <label 
+                  htmlFor="profile-pic-upload" 
+                  className="absolute bottom-2 right-2 bg-blue-500 rounded-full p-3 cursor-pointer shadow-lg hover:bg-blue-600 transition-colors"
+                >
+                  <Camera size={20} className="text-white" />
+                  <input 
+                    type="file" 
+                    id="profile-pic-upload" 
+                    className="hidden" 
+                    accept="image/*"
+                    onChange={handleProfilePicChange}
+                  />
+                </label>
+              </div>
+              
+              <h2 className="mt-4 text-xl font-semibold text-gray-800">{user.name}</h2>
+              <p className="text-gray-500 mb-6">{user.email}</p>
+              
+              {/* Logout button in sidebar */}
+              <button className="mt-auto w-full flex items-center justify-center gap-2 py-3 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors font-medium">
+                <LogOut size={18} />
+                <span>Sign Out</span>
+              </button>
+            </div>
+            
+            {/* Right content area */}
+            <div className="md:w-2/3 p-6">
+              <div className="space-y-6">
+                {/* Personal Information Section */}
+                <div>
+                  <h3 className="text-lg font-medium text-gray-800 mb-4 flex items-center gap-2">
+                    <User size={20} className="text-blue-500" />
+                    Personal Information
+                  </h3>
+                  
+                  <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                    <div className="flex items-center justify-between p-4 border-b border-gray-100 hover:bg-gray-50">
+                      <div className="flex items-center gap-3">
+                        <User className="text-gray-400" size={20} />
+                        <div>
+                          <p className="text-sm font-medium text-gray-800">{user.name}</p>
+                          <p className="text-xs text-gray-500">Full Name</p>
+                        </div>
+                      </div>
+                      <button className="p-2 text-blue-500 hover:bg-blue-50 rounded-full">
+                        <Edit size={18} />
+                      </button>
+                    </div>
+                    
+                    <div className="flex items-center justify-between p-4 border-b border-gray-100 hover:bg-gray-50">
+                      <div className="flex items-center gap-3">
+                        <Mail className="text-gray-400" size={20} />
+                        <div>
+                          <p className="text-sm font-medium text-gray-800">{user.email}</p>
+                          <p className="text-xs text-gray-500">Email Address</p>
+                        </div>
+                      </div>
+                      <button className="p-2 text-blue-500 hover:bg-blue-50 rounded-full">
+                        <Edit size={18} />
+                      </button>
+                    </div>
+                    
+                    <div className="flex items-center justify-between p-4 border-b border-gray-100 hover:bg-gray-50">
+                      <div className="flex items-center gap-3">
+                        <Phone className="text-gray-400" size={20} />
+                        <div>
+                          <p className="text-sm font-medium text-gray-800">{user.phone}</p>
+                          <p className="text-xs text-gray-500">Phone Number</p>
+                        </div>
+                      </div>
+                      <button className="p-2 text-blue-500 hover:bg-blue-50 rounded-full">
+                        <Edit size={18} />
+                      </button>
+                    </div>
+                    
+                    <div className="flex items-center justify-between p-4 hover:bg-gray-50">
+                      <div className="flex items-center gap-3">
+                        <Calendar className="text-gray-400" size={20} />
+                        <div>
+                          <p className="text-sm font-medium text-gray-800">{user.age}</p>
+                          <p className="text-xs text-gray-500">Age</p>
+                        </div>
+                      </div>
+                      <button className="p-2 text-blue-500 hover:bg-blue-50 rounded-full">
+                        <Edit size={18} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Account Settings Section */}
+                <div>
+                  <h3 className="text-lg font-medium text-gray-800 mb-4 flex items-center gap-2">
+                    <Settings size={20} className="text-blue-500" />
+                    Account Settings
+                  </h3>
+                  
+                  <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                    <button className="w-full flex items-center justify-between p-4 border-b border-gray-100 hover:bg-gray-50 text-left">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-blue-50 text-blue-500 rounded-full">
+                          <Settings size={16} />
+                        </div>
+                        <span className="text-sm font-medium">Account Preferences</span>
+                      </div>
+                      <ChevronRight size={18} className="text-gray-400" />
+                    </button>
+                    
+                    <button className="w-full flex items-center justify-between p-4 border-b border-gray-100 hover:bg-gray-50 text-left">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-purple-50 text-purple-500 rounded-full">
+                          <span className="text-base">🔒</span>
+                        </div>
+                        <span className="text-sm font-medium">Privacy & Security</span>
+                      </div>
+                      <ChevronRight size={18} className="text-gray-400" />
+                    </button>
+                    
+                    <button className="w-full flex items-center justify-between p-4 hover:bg-gray-50 text-left">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-green-50 text-green-500 rounded-full">
+                          <span className="text-base">📱</span>
+                        </div>
+                        <span className="text-sm font-medium">Notification Settings</span>
+                      </div>
+                      <ChevronRight size={18} className="text-gray-400" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-        
-        <h2 className="text-lg sm:text-xl font-medium text-gray-800 mb-3 sm:mb-4">
-          {activeTab === 'all' ? 'Recent Orders' : 
-           activeTab === 'active' ? 'Active Orders' : 'Completed Orders'}
-        </h2>
-        
-        <div className={`grid ${gridColsClass} gap-3 sm:gap-4`}>
-          {filteredOrders.map(order => (
-            <OrderItem key={order.id} order={order} />
-          ))}
-        </div>
-        
-        {filteredOrders.length === 0 && (
-          <div className="text-center py-8 sm:py-12">
-            <p className="text-gray-500">No orders found</p>
-          </div>
-        )}
-      </main>
+      </div>
     </div>
   );
 };
 
-export default OrdersApp;
+export default ProfileSettings;

@@ -2,21 +2,20 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { toast } from 'react-toastify';
+import { Link, useNavigate } from 'react-router-dom';
+import { 
+  User, Camera, LogOut, Edit, ChevronRight, Settings, 
+  Mail, Phone, Calendar, ShoppingCart, Wallet, Lock, Bell 
+} from 'lucide-react';
 import SummaryApi from '../common';
 import { setUserDetails, logout } from '../store/userSlice';
-import { FaEdit } from "react-icons/fa";
-import { IoCartOutline } from "react-icons/io5";
-import { IoWalletOutline } from "react-icons/io5";
-import { IoLogOutOutline } from "react-icons/io5";
 import EditProfileModal from '../components/EditProfileModal';
-import { Link, useNavigate } from 'react-router-dom';
 import TriangleMazeLoader from '../components/TriangleMazeLoader';
 import Context from '../context';
 import CookieManager from '../utils/cookieManager';
 import StorageService from '../utils/storageService';
 import { useOnlineStatus } from '../App';
 import DashboardLayout from '../components/DashboardLayout';
-
 
 const Profile = () => {
     const dispatch = useDispatch();
@@ -27,6 +26,7 @@ const Profile = () => {
     const [showEditModal, setShowEditModal] = useState(false);
     const [loading, setLoading] = useState(true);
     const [updateLoading, setUpdateLoading] = useState(false);
+    const [editField, setEditField] = useState(null);
 
     useEffect(() => {
         fetchUserDetails();
@@ -137,6 +137,7 @@ const Profile = () => {
                 
                 dispatch(setUserDetails(data.data));
                 setShowEditModal(false);
+                setEditField(null);
                 toast.success("Profile updated successfully");
             } else {
                 toast.error(data.message || "Failed to update profile");
@@ -149,152 +150,285 @@ const Profile = () => {
         }
     };
 
-    return (
-        <DashboardLayout
-            user={user}
-        > 
-        <div className="container mx-auto p-4 mb-20">
-            {(loading || updateLoading) && (
-                <div className="fixed inset-0 bg-black bg-opacity-10 flex items-center justify-center z-50">
-                    <div className="rounded-lg p-8">
-                        <TriangleMazeLoader />
-                    </div>
-                </div>
-            )}
+    const handleFeatureUnavailable = () => {
+        toast.info("This feature is currently unavailable");
+    };
 
-            {/* User Profile Header */}
-            <div className="bg-white rounded-lg shadow-sm max-w-2xl mx-auto mb-4">
-                <div className="p-6">
-                    <div className="flex items-start gap-6">
-                        <div className="w-16 h-16">
-                            {user?.profilePic ? (
-                                <img 
-                                    src={user.profilePic}
-                                    alt={user.name}
-                                    className="w-full h-full rounded-full object-cover"
-                                />
-                            ) : (
-                                <div className="w-full h-full rounded-full bg-gray-200 flex items-center justify-center">
-                                    <span className="text-2xl text-gray-500">
-                                        {user?.name?.charAt(0)}
-                                    </span>
-                                </div>
-                            )}
+    return (
+        <DashboardLayout user={user}>
+            <div className="bg-gray-50 min-h-screen">
+                {(loading || updateLoading) && (
+                    <div className="fixed inset-0 bg-black bg-opacity-10 flex items-center justify-center z-50">
+                        <div className="rounded-lg p-8">
+                            <TriangleMazeLoader />
                         </div>
-                        <div className="flex-1">
-                            <div className="flex justify-between items-start">
-                                <div>
-                                    <h1 className="text-xl font-semibold">{user?.name}</h1>
-                                    <p className="text-sm text-gray-600 mt-1">{user?.email}</p>
-                                    <div className="mt-2">
-                                        <p className="text-sm text-gray-600">
-                                            <span className="font-medium">Phone: </span>
-                                            {user?.phone || 'Not set'}
-                                        </p>
-                                        <p className="text-sm text-gray-600">
-                                            <span className="font-medium">Age: </span>
-                                            {user?.age || 'Not set'}
-                                        </p>
+                    </div>
+                )}
+
+                <div className="container mx-auto p-4">
+                    <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+                        {/* Header with title */}
+                        <div className="bg-blue-600 px-6 py-4">
+                            <h1 className="text-xl md:text-2xl font-bold text-white">Profile Settings</h1>
+                        </div>
+                        
+                        <div className="md:flex">
+                            {/* Left sidebar with profile picture */}
+                            <div className="md:w-1/3 bg-gray-50 p-6 flex flex-col items-center border-b md:border-b-0 md:border-r border-gray-200">
+                                <div className="relative group">
+                                    <div className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden border-4 border-white shadow-md">
+                                        {user?.profilePic ? (
+                                            <img 
+                                                src={user.profilePic} 
+                                                alt="Profile" 
+                                                className="w-full h-full object-cover"
+                                            />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-500 text-4xl font-semibold">
+                                                {user?.name?.charAt(0)}
+                                            </div>
+                                        )}
                                     </div>
+                                    <label 
+                                        htmlFor="profile-pic-upload" 
+                                        className="absolute bottom-2 right-2 bg-blue-500 rounded-full p-3 cursor-pointer shadow-lg hover:bg-blue-600 transition-colors"
+                                    >
+                                        <Camera size={20} className="text-white" />
+                                        <input 
+                                            type="file" 
+                                            id="profile-pic-upload" 
+                                            className="hidden" 
+                                            accept="image/*"
+                                            onChange={(e) => {
+                                                // Implement profile pic change functionality here
+                                                toast.info("Profile picture upload will be available soon");
+                                            }}
+                                        />
+                                    </label>
                                 </div>
+                                
+                                <h2 className="mt-4 text-xl font-semibold text-gray-800">{user?.name}</h2>
+                                <p className="text-gray-500 mb-6">{user?.email}</p>
+                                
+                                {/* Logout button in sidebar */}
                                 <button 
-                                    onClick={() => setShowEditModal(true)}
-                                    className="text-gray-600 hover:text-gray-900 p-2"
+                                    onClick={handleLogout}
+                                    className="mt-auto w-full flex items-center justify-center gap-2 py-3 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors font-medium"
                                 >
-                                    <FaEdit size={18} />
+                                    <LogOut size={18} />
+                                    <span>Sign Out</span>
                                 </button>
                             </div>
+                            
+                            {/* Right content area */}
+                            <div className="md:w-2/3 p-6">
+                                <div className="space-y-6">
+                                    {/* Personal Information Section */}
+                                    <div>
+                                        <h3 className="text-lg font-medium text-gray-800 mb-4 flex items-center gap-2">
+                                            <User size={20} className="text-blue-500" />
+                                            Personal Information
+                                        </h3>
+                                        
+                                        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                                            <div className="flex items-center justify-between p-4 border-b border-gray-100 hover:bg-gray-50">
+                                                <div className="flex items-center gap-3">
+                                                    <User className="text-gray-400" size={20} />
+                                                    <div>
+                                                        <p className="text-sm font-medium text-gray-800">{user?.name}</p>
+                                                        <p className="text-xs text-gray-500">Full Name</p>
+                                                    </div>
+                                                </div>
+                                                <button 
+                                                    className="p-2 text-blue-500 hover:bg-blue-50 rounded-full"
+                                                    onClick={() => setEditField('name')}
+                                                >
+                                                    <Edit size={18} />
+                                                </button>
+                                            </div>
+                                            
+                                            <div className="flex items-center justify-between p-4 border-b border-gray-100 hover:bg-gray-50">
+                                                <div className="flex items-center gap-3">
+                                                    <Mail className="text-gray-400" size={20} />
+                                                    <div>
+                                                        <p className="text-sm font-medium text-gray-800">{user?.email}</p>
+                                                        <p className="text-xs text-gray-500">Email Address</p>
+                                                    </div>
+                                                </div>
+                                                <button 
+                                                    className="p-2 text-blue-500 hover:bg-blue-50 rounded-full"
+                                                    onClick={() => setEditField('email')}
+                                                >
+                                                    <Edit size={18} />
+                                                </button>
+                                            </div>
+                                            
+                                            <div className="flex items-center justify-between p-4 border-b border-gray-100 hover:bg-gray-50">
+                                                <div className="flex items-center gap-3">
+                                                    <Phone className="text-gray-400" size={20} />
+                                                    <div>
+                                                        <p className="text-sm font-medium text-gray-800">{user?.phone || 'Not set'}</p>
+                                                        <p className="text-xs text-gray-500">Phone Number</p>
+                                                    </div>
+                                                </div>
+                                                <button 
+                                                    className="p-2 text-blue-500 hover:bg-blue-50 rounded-full"
+                                                    onClick={() => setEditField('phone')}
+                                                >
+                                                    <Edit size={18} />
+                                                </button>
+                                            </div>
+                                            
+                                            <div className="flex items-center justify-between p-4 hover:bg-gray-50">
+                                                <div className="flex items-center gap-3">
+                                                    <Calendar className="text-gray-400" size={20} />
+                                                    <div>
+                                                        <p className="text-sm font-medium text-gray-800">{user?.age || 'Not set'}</p>
+                                                        <p className="text-xs text-gray-500">Age</p>
+                                                    </div>
+                                                </div>
+                                                <button 
+                                                    className="p-2 text-blue-500 hover:bg-blue-50 rounded-full"
+                                                    onClick={() => setEditField('age')}
+                                                >
+                                                    <Edit size={18} />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    {/* Account Settings Section */}
+                                    <div>
+                                        <h3 className="text-lg font-medium text-gray-800 mb-4 flex items-center gap-2">
+                                            <Settings size={20} className="text-blue-500" />
+                                            Account Settings
+                                        </h3>
+                                        
+                                        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                                            <button 
+                                                className="w-full flex items-center justify-between p-4 border-b border-gray-100 hover:bg-gray-50 text-left"
+                                                onClick={handleFeatureUnavailable}
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <div className="p-2 bg-blue-50 text-blue-500 rounded-full">
+                                                        <Settings size={16} />
+                                                    </div>
+                                                    <span className="text-sm font-medium">Account Preferences</span>
+                                                </div>
+                                                <ChevronRight size={18} className="text-gray-400" />
+                                            </button>
+                                            
+                                            <Link 
+                                                to="/privacy-policy"
+                                                className="w-full flex items-center justify-between p-4 border-b border-gray-100 hover:bg-gray-50 text-left"
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <div className="p-2 bg-purple-50 text-purple-500 rounded-full">
+                                                        <Lock size={16} />
+                                                    </div>
+                                                    <span className="text-sm font-medium">Privacy & Security</span>
+                                                </div>
+                                                <ChevronRight size={18} className="text-gray-400" />
+                                            </Link>
+                                            
+                                            <button 
+                                                className="w-full flex items-center justify-between p-4 hover:bg-gray-50 text-left"
+                                                onClick={handleFeatureUnavailable}
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <div className="p-2 bg-green-50 text-green-500 rounded-full">
+                                                        <Bell size={16} />
+                                                    </div>
+                                                    <span className="text-sm font-medium">Notification Settings</span>
+                                                </div>
+                                                <ChevronRight size={18} className="text-gray-400" />
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {/* Quick Links */}
+                                    {/* <div>
+                                        <h3 className="text-lg font-medium text-gray-800 mb-4 flex items-center gap-2">
+                                            <ShoppingCart size={20} className="text-blue-500" />
+                                            Quick Links
+                                        </h3>
+                                        
+                                        <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+                                            <Link 
+                                                to="/order"
+                                                className="w-full flex items-center justify-between p-4 border-b border-gray-100 hover:bg-gray-50 text-left"
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <div className="p-2 bg-blue-50 text-blue-500 rounded-full">
+                                                        <ShoppingCart size={16} />
+                                                    </div>
+                                                    <div>
+                                                        <span className="text-sm font-medium">Your Orders</span>
+                                                        <p className="text-xs text-gray-500">Track, return, or buy things again</p>
+                                                    </div>
+                                                </div>
+                                                <ChevronRight size={18} className="text-gray-400" />
+                                            </Link>
+                                            
+                                            <Link 
+                                                to="/cart"
+                                                className="w-full flex items-center justify-between p-4 border-b border-gray-100 hover:bg-gray-50 text-left"
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <div className="p-2 bg-blue-50 text-blue-500 rounded-full relative">
+                                                        <ShoppingCart size={16} />
+                                                        {context?.cartProductCount > 0 && (
+                                                            <div className="absolute -top-2 -right-2 bg-red-600 text-white w-4 h-4 rounded-full flex items-center justify-center text-xs">
+                                                                {context?.cartProductCount}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <div>
+                                                        <span className="text-sm font-medium">Your Cart</span>
+                                                        <p className="text-xs text-gray-500">
+                                                            {context?.cartProductCount || 0} items in cart
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <ChevronRight size={18} className="text-gray-400" />
+                                            </Link>
+                                            
+                                            <Link 
+                                                to="/wallet"
+                                                className="w-full flex items-center justify-between p-4 hover:bg-gray-50 text-left"
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <div className="p-2 bg-blue-50 text-blue-500 rounded-full">
+                                                        <Wallet size={16} />
+                                                    </div>
+                                                    <div>
+                                                        <span className="text-sm font-medium">Your Wallet</span>
+                                                        <p className="text-xs text-gray-500">
+                                                            Balance: ₹{context?.walletBalance || 0}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <ChevronRight size={18} className="text-gray-400" />
+                                            </Link>
+                                        </div>
+                                    </div> */}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* Menu Items */}
-            <div className="bg-white rounded-lg shadow-sm max-w-2xl mx-auto">
-                {/* Orders Section */}
-                <Link to="/order" className="block">
-                    <div className="p-4 border-b hover:bg-gray-50">
-                        <div className="flex justify-between items-center">
-                            <div>
-                                <h2 className="text-base font-medium">Your Orders</h2>
-                                <p className="text-sm text-gray-600">Track, return, or buy things again</p>
-                            </div>
-                            <span className="text-gray-400 text-xl">›</span>
-                        </div>
-                    </div>
-                </Link>
-
-                {/* Cart Section */}
-                <Link to="/cart" className="block">
-                    <div className="p-4 border-b hover:bg-gray-50">
-                        <div className="flex justify-between items-center">
-                            <div className="flex items-center gap-3">
-                                <div className="relative">
-                                    <IoCartOutline className="w-6 h-6" />
-                                    {context?.cartProductCount > 0 && (
-                                        <div className="absolute -top-2 -right-2 bg-red-600 text-white w-4 h-4 rounded-full flex items-center justify-center">
-                                            <p className="text-xs">{context?.cartProductCount}</p>
-                                        </div>
-                                    )}
-                                </div>
-                                <div>
-                                    <h2 className="text-base font-medium">Your Cart</h2>
-                                    <p className="text-sm text-gray-600">
-                                        {context?.cartProductCount || 0} items in cart
-                                    </p>
-                                </div>
-                            </div>
-                            <span className="text-gray-400 text-xl">›</span>
-                        </div>
-                    </div>
-                </Link>
-
-                {/* Wallet Section */}
-                <Link to="/wallet" className="block">
-                    <div className="p-4 border-b hover:bg-gray-50">
-                        <div className="flex justify-between items-center">
-                            <div className="flex items-center gap-3">
-                                <IoWalletOutline className="w-6 h-6" />
-                                <div>
-                                    <h2 className="text-base font-medium">Your Wallet</h2>
-                                    <p className="text-sm text-gray-600">
-                                        Balance: ₹{context?.walletBalance || 0}
-                                    </p>
-                                </div>
-                            </div>
-                            <span className="text-gray-400 text-xl">›</span>
-                        </div>
-                    </div>
-                </Link>
-
-                {/* Logout Section */}
-                <button 
-                    onClick={handleLogout}
-                    className="w-full text-left"
-                >
-                    <div className="p-4 hover:bg-gray-50 flex justify-between items-center text-red-600">
-                        <div className="flex items-center gap-3">
-                            <IoLogOutOutline className="w-6 h-6" />
-                            <div>
-                                <h2 className="text-base font-medium">Logout</h2>
-                                <p className="text-sm">Sign out of your account</p>
-                            </div>
-                        </div>
-                        <span className="text-gray-400 text-xl">›</span>
-                    </div>
-                </button>
-            </div>
-
-            {/* Edit Modal */}
-            {showEditModal && (
+            {/* Edit Modal - Show based on which field is being edited */}
+            {editField && (
                 <EditProfileModal
                     user={user}
-                    onClose={() => setShowEditModal(false)}
+                    onClose={() => setEditField(null)}
                     onUpdate={handleProfileUpdate}
                     loading={updateLoading}
+                    initialField={editField}
                 />
             )}
-        </div>
         </DashboardLayout>
     );
 };
