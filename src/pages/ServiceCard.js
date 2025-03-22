@@ -1,224 +1,343 @@
-import React from 'react';
+import React, { useState } from 'react';
 
-const ProjectDashboard = () => {
-  return (
-    <div className="p-6 bg-gray-50 min-h-screen">
-      {/* Top navigation */}
-      <div className="mb-6">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center">
-            <div className="bg-blue-600 text-white w-10 h-10 rounded flex items-center justify-center text-xl font-bold mr-2">
-              M
+// Main App Component with Order Management System
+const OrderManagement = () => {
+  const [currentPage, setCurrentPage] = useState('list'); // 'list' or 'detail'
+  const [selectedOrderId, setSelectedOrderId] = useState(null);
+
+  // Sample Orders Data
+  const orders = [
+    {
+      id: '1001',
+      orderNumber: 'ORD-1001',
+      productName: 'Premium Headphones',
+      type: 'Electronics',
+      status: 'Delivered',
+      orderDate: '2023-11-15T08:30:00',
+      items: [
+        {
+          id: '1',
+          productName: 'Premium Headphones',
+          type: 'Electronics',
+          price: 129.99,
+          quantity: 1,
+          imageUrl: '/api/placeholder/100/100'
+        }
+      ],
+      subtotal: 129.99,
+      shipping: 4.99,
+      tax: 13.50,
+      total: 148.48,
+      shippingAddress: {
+        name: 'John Doe',
+        street: '123 Main St',
+        city: 'Anytown',
+        state: 'CA',
+        zip: '90210',
+        country: 'USA'
+      },
+      paymentMethod: 'Credit Card (****1234)',
+      trackingUrl: '#'
+    },
+    {
+      id: '1002',
+      orderNumber: 'ORD-1002',
+      productName: 'Wireless Keyboard',
+      type: 'Computer Accessories',
+      status: 'Shipped',
+      orderDate: '2023-12-05T14:45:00',
+      items: [
+        {
+          id: '1',
+          productName: 'Wireless Keyboard',
+          type: 'Computer Accessories',
+          price: 59.99,
+          quantity: 1,
+          imageUrl: '/api/placeholder/100/100'
+        },
+        {
+          id: '2',
+          productName: 'Wireless Mouse',
+          type: 'Computer Accessories',
+          price: 29.99,
+          quantity: 1,
+          imageUrl: '/api/placeholder/100/100'
+        }
+      ],
+      subtotal: 89.98,
+      shipping: 5.99,
+      tax: 9.60,
+      total: 105.57,
+      shippingAddress: {
+        name: 'Jane Smith',
+        street: '456 Oak Ave',
+        city: 'Somewhere',
+        state: 'NY',
+        zip: '10001',
+        country: 'USA'
+      },
+      paymentMethod: 'PayPal',
+      trackingUrl: '#'
+    },
+    {
+      id: '1003',
+      orderNumber: 'ORD-1003',
+      productName: 'Smart Watch',
+      type: 'Wearable Tech',
+      status: 'Processing',
+      orderDate: '2023-12-15T09:20:00',
+      items: [
+        {
+          id: '1',
+          productName: 'Smart Watch',
+          type: 'Wearable Tech',
+          price: 199.99,
+          quantity: 1,
+          imageUrl: '/api/placeholder/100/100'
+        }
+      ],
+      subtotal: 199.99,
+      shipping: 0.00,
+      tax: 20.00,
+      total: 219.99,
+      shippingAddress: {
+        name: 'Robert Johnson',
+        street: '789 Pine Blvd',
+        city: 'Elsewhere',
+        state: 'TX',
+        zip: '75001',
+        country: 'USA'
+      },
+      paymentMethod: 'Credit Card (****5678)',
+      trackingUrl: '#'
+    }
+  ];
+
+  // Find selected order
+  const selectedOrder = orders.find(order => order.id === selectedOrderId);
+
+  // Handle order click
+  const handleOrderClick = (orderId) => {
+    setSelectedOrderId(orderId);
+    setCurrentPage('detail');
+  };
+
+  // Handle back button click
+  const handleBackClick = () => {
+    setCurrentPage('list');
+    setSelectedOrderId(null);
+  };
+
+  // Order Progress Component
+  const OrderProgress = ({ status }) => {
+    const steps = ['Processing', 'Confirmed', 'Shipped', 'Delivered'];
+    const currentStep = steps.indexOf(status) !== -1 ? steps.indexOf(status) : 0;
+    
+    return (
+      <div className="my-6 relative">
+        <div className="flex justify-between relative z-10">
+          {steps.map((step, index) => (
+            <div key={step} className="flex flex-col items-center w-24">
+              <div className={`w-6 h-6 rounded-full mb-1 flex items-center justify-center border-2 ${
+                index <= currentStep 
+                  ? 'border-blue-500 bg-blue-500 text-white' 
+                  : 'border-gray-300 bg-white'
+              }`}>
+                {index < currentStep && <div className="w-2 h-2 bg-white rounded-full"></div>}
+              </div>
+              <div className="text-xs text-center font-medium text-gray-600">
+                {step}
+              </div>
             </div>
-            <span className="font-bold text-lg">MeraSoftware</span>
+          ))}
+        </div>
+        <div className="absolute top-3 left-0 right-0 h-0.5 bg-gray-200 -z-0"></div>
+      </div>
+    );
+  };
+
+  // Render based on current page
+  if (currentPage === 'list') {
+    return (
+      <div className="bg-gray-100 min-h-screen">
+        <header className="bg-blue-600 text-white p-4">
+          <div className="max-w-4xl mx-auto">
+            <h1 className="text-2xl font-bold">My Orders</h1>
           </div>
+        </header>
+        
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-xl font-bold px-4 pt-8 pb-4">Recent Orders</h2>
           
-          <div className="flex items-center">
-            <div className="relative mx-4 w-64">
-              <input 
-                type="text" 
-                placeholder="Search for services..." 
-                className="w-full py-2 px-4 rounded-lg border border-gray-300"
-              />
-              <svg className="w-5 h-5 absolute left-3 top-2.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </div>
-            
-            <div className="mx-4">
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-              </svg>
-            </div>
-            
-            <button className="bg-blue-600 text-white px-4 py-1.5 rounded-lg">
-              Login
+          <div className="flex flex-col gap-4 px-4 pb-8">
+            {orders.map(order => (
+              <div 
+                key={order.id} 
+                className="bg-white rounded-lg shadow p-4 cursor-pointer hover:shadow-md transition-shadow"
+                onClick={() => handleOrderClick(order.id)}
+              >
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="font-semibold text-lg">{order.productName}</h3>
+                    <p className="text-gray-600 text-sm">{order.type}</p>
+                  </div>
+                  
+                  <div className="flex flex-col items-end gap-2">
+                    <span className="text-gray-500 text-sm">
+                      {new Date(order.orderDate).toLocaleDateString()}
+                    </span>
+                    <span className={`text-xs font-medium px-3 py-1 rounded-full ${
+                      order.status === 'Delivered' ? 'bg-green-500 text-white' :
+                      order.status === 'Shipped' ? 'bg-blue-500 text-white' :
+                      order.status === 'Processing' ? 'bg-gray-500 text-white' :
+                      'bg-yellow-500 text-white'
+                    }`}>
+                      {order.status}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  } else {
+    // Order Detail Page
+    return (
+      <div className="bg-gray-100 min-h-screen pb-8">
+        <header className="bg-blue-600 text-white p-4">
+          <div className="max-w-4xl mx-auto">
+            <h1 className="text-2xl font-bold">Order Details</h1>
+          </div>
+        </header>
+        
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-white rounded-lg shadow p-6 mt-4 mx-4">
+            <button 
+              className="text-blue-500 mb-6 font-medium flex items-center" 
+              onClick={handleBackClick}
+            >
+              ← Back to Orders
             </button>
-          </div>
-        </div>
-        
-        {/* Navigation links */}
-        <div className="flex mb-8">
-          <button className="font-medium mr-6">All Services</button>
-          <button className="font-medium mr-6">Websites Development</button>
-          <button className="font-medium mr-6">Mobile Apps</button>
-          <button className="font-medium mr-6">Cloud Softwares</button>
-          <button className="font-medium">Feature Upgrades</button>
-        </div>
-      </div>
-      
-      {/* Welcome back and Explore More section - redesigned */}
-      
-      <div className="mb-8">
-        <div className="flex flex-col md:flex-row items-stretch gap-6">
-          {/* Welcome back card */}
-          <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl p-6 flex-1 shadow-sm border border-blue-200">
-            <div className="flex items-center mb-3">
-              <div className="w-10 h-10 bg-blue-500 text-white rounded-full flex items-center justify-center mr-3">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" />
-                </svg>
-              </div>
-              <div>
-                <p className="text-blue-700 font-medium">Welcome back</p>
-                <h1 className="text-2xl font-bold text-gray-800">Let's see your projects</h1>
+            
+            <div className="border-b pb-4 mb-6">
+              <h2 className="text-2xl font-bold mb-2">Order #{selectedOrder.orderNumber}</h2>
+              <p className="text-gray-500 mb-2">
+                Ordered on {new Date(selectedOrder.orderDate).toLocaleDateString()}
+              </p>
+              <div className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
+                selectedOrder.status === 'Delivered' ? 'bg-green-500 text-white' :
+                selectedOrder.status === 'Shipped' ? 'bg-blue-500 text-white' :
+                selectedOrder.status === 'Processing' ? 'bg-gray-500 text-white' :
+                'bg-yellow-500 text-white'
+              }`}>
+                {selectedOrder.status}
               </div>
             </div>
-            <div className="mt-3 flex items-center">
-              <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center mr-2">
-                <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {/* Left Column - Order Summary */}
+              <div className="md:col-span-2">
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h3 className="text-lg font-semibold mb-4">Order Summary</h3>
+                  
+                  <div className="space-y-4 mb-6">
+                    {selectedOrder.items.map(item => (
+                      <div key={item.id} className="flex gap-4 pb-4 border-b border-gray-200">
+                        <div className="flex-shrink-0">
+                          <img 
+                            src={item.imageUrl} 
+                            alt={item.productName} 
+                            className="w-16 h-16 object-cover rounded"
+                          />
+                        </div>
+                        <div>
+                          <h4 className="font-medium">{item.productName}</h4>
+                          <p className="text-gray-500 text-sm">{item.type}</p>
+                          <p className="text-gray-800">${item.price.toFixed(2)}</p>
+                          <p className="text-gray-600 text-sm">Quantity: {item.quantity}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  <div className="space-y-2 mb-6">
+                    <div className="flex justify-between text-sm">
+                      <span>Subtotal:</span>
+                      <span>${selectedOrder.subtotal.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span>Shipping:</span>
+                      <span>${selectedOrder.shipping.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span>Tax:</span>
+                      <span>${selectedOrder.tax.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between font-semibold text-lg pt-2 border-t border-gray-300 mt-2">
+                      <span>Total:</span>
+                      <span>${selectedOrder.total.toFixed(2)}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="mb-6">
+                    <h4 className="font-semibold mb-2">Shipping Address</h4>
+                    <p className="text-gray-700">{selectedOrder.shippingAddress.name}</p>
+                    <p className="text-gray-700">{selectedOrder.shippingAddress.street}</p>
+                    <p className="text-gray-700">
+                      {selectedOrder.shippingAddress.city}, {selectedOrder.shippingAddress.state} {selectedOrder.shippingAddress.zip}
+                    </p>
+                    <p className="text-gray-700">{selectedOrder.shippingAddress.country}</p>
+                  </div>
+                  
+                  <div>
+                    <h4 className="font-semibold mb-2">Payment Method</h4>
+                    <p className="text-gray-700">{selectedOrder.paymentMethod}</p>
+                  </div>
+                </div>
               </div>
-              <p className="text-gray-600">Review your ongoing projects and track their progress</p>
+              
+              {/* Right Column - Order Progress */}
+              <div className="md:col-span-1">
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h3 className="text-lg font-semibold mb-4">Order Progress</h3>
+                  
+                  <OrderProgress status={selectedOrder.status} />
+                  
+                  <div className="mt-8 space-y-4">
+                    <button className="w-full py-2 px-4 bg-blue-500 text-white font-medium rounded hover:bg-blue-600 transition-colors">
+                      Download Invoice
+                    </button>
+                    
+                    {selectedOrder.status === 'Shipped' && (
+                      <a 
+                        href={selectedOrder.trackingUrl}
+                        className="block w-full py-2 px-4 bg-green-500 text-white font-medium rounded text-center hover:bg-green-600 transition-colors"
+                      >
+                        Track Package
+                      </a>
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
-          
-          {/* Explore More card */}
-          <div className="bg-gradient-to-r from-purple-50 to-purple-100 rounded-xl p-6 flex-1 shadow-sm border border-purple-200 cursor-pointer group hover:shadow-md transition-all">
-            <div className="flex items-center mb-3">
-              <div className="w-10 h-10 bg-purple-500 text-white rounded-full flex items-center justify-center mr-3 group-hover:bg-purple-600 transition-all">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-              </div>
-              <div>
-                <p className="text-purple-700 font-medium group-hover:text-purple-800 transition-all">Discover more</p>
-                <h2 className="text-2xl font-bold text-gray-800">Explore Our Services</h2>
-              </div>
-            </div>
-            <div className="mt-3 flex items-center">
-              <div className="h-8 w-8 bg-purple-100 rounded-full flex items-center justify-center mr-2 group-hover:bg-purple-200 transition-all">
-                <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </div>
-              <p className="text-gray-600">Find exciting features and premium plans tailored for you</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Your Projects heading */}
-      <h2 className="text-xl font-semibold text-gray-800 mb-4">Your Projects</h2>
-      
-      {/* Project cards grid - keeping the existing boxes */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* In Progress - Restaurant Website */}
-        <div className="bg-white rounded-lg shadow-md p-4 border-t-4 border-yellow-500">
-          <div className="flex items-center mb-2">
-            <span className="w-2 h-2 bg-yellow-500 rounded-full mr-2"></span>
-            <span className="text-sm text-yellow-600">In Progress</span>
-          </div>
-          
-          <h3 className="text-lg font-semibold mb-1">Restaurant Website</h3>
-          <p className="text-sm text-gray-500 mb-3">Started: 22 Mar 2025</p>
-          
-          <div className="flex items-center mb-2">
-            <svg className="w-4 h-4 text-yellow-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-            </svg>
-            <span className="text-sm">Development in progress</span>
-          </div>
-          
-          <div className="mb-3">
-            <p className="text-sm mb-1">Progress</p>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div className="bg-yellow-500 h-2 rounded-full" style={{width: '0%'}}></div>
-            </div>
-            <span className="text-xs text-right block mt-1">0%</span>
-          </div>
-          
-          <button className="w-full py-2 text-center text-yellow-600 border border-yellow-500 rounded-md hover:bg-yellow-50 transition">
-            View Project
-          </button>
-        </div>
-        
-        {/* Completed - Website Update */}
-        <div className="bg-white rounded-lg shadow-md p-4 border-t-4 border-green-500">
-          <div className="flex items-center mb-2">
-            <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-            <span className="text-sm text-green-600">Completed</span>
-          </div>
-          
-          <h3 className="text-lg font-semibold mb-1">Website Update - Basic Plan</h3>
-          <p className="text-sm text-gray-500 mb-3">Ended: 17 Mar 2025</p>
-          
-          <div className="flex items-center mb-2">
-            <svg className="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-            </svg>
-            <span className="text-sm">Updates Used: 4 of 4</span>
-          </div>
-          
-          <div className="flex items-center mb-3">
-            <svg className="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-            </svg>
-            <span className="text-sm">Plan Completed</span>
-          </div>
-          
-          <button className="w-full py-2 text-center text-white bg-green-500 rounded-md hover:bg-green-600 transition">
-            View Details
-          </button>
-        </div>
-        
-        {/* Completed - Appointment Booking Website */}
-        <div className="bg-white rounded-lg shadow-md p-4 border-t-4 border-green-500">
-          <div className="flex items-center mb-2">
-            <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-            <span className="text-sm text-green-600">Completed</span>
-          </div>
-          
-          <h3 className="text-lg font-semibold mb-1">Appointment Booking Website</h3>
-          <p className="text-sm text-gray-500 mb-3">Completed: 16 Mar 2025</p>
-          
-          <div className="flex items-center mb-2">
-            <svg className="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-            </svg>
-            <span className="text-sm">Successfully Deployed</span>
-          </div>
-          
-          <div className="flex items-center mb-3">
-            <svg className="w-4 h-4 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-            </svg>
-            <span className="text-sm">All Features Working</span>
-          </div>
-          
-          <button className="w-full py-2 text-center text-white bg-green-500 rounded-md hover:bg-green-600 transition">
-            View Project
-          </button>
-        </div>
-        
-        {/* History - View All Projects */}
-        <div className="bg-white rounded-lg shadow-md p-4 border-t-4 border-purple-500">
-          <div className="flex items-center mb-2">
-            <span className="w-2 h-2 bg-purple-500 rounded-full mr-2"></span>
-            <span className="text-sm text-purple-600">History</span>
-          </div>
-          
-          <h3 className="text-lg font-semibold mb-1">View All Projects</h3>
-          <p className="text-sm text-gray-500 mb-10">Browse your complete project history and portfolio.</p>
-          
-          <div className="bg-purple-100 rounded-lg p-3 mb-3">
-            <div className="flex items-center">
-              <div className="w-6 h-6 bg-purple-200 rounded flex items-center justify-center mr-2">
-                <svg className="w-4 h-4 text-purple-500" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <div>
-                <p className="font-medium text-sm">All Projects</p>
-                <p className="text-xs text-gray-500">View your entire portfolio</p>
+            
+            <div className="mt-8 pt-6 border-t border-gray-200">
+              <h3 className="text-lg font-semibold mb-4">Our Policies</h3>
+              <div className="flex flex-wrap gap-4">
+                <a href="#" className="text-blue-500 hover:underline">Return Policy</a>
+                <a href="#" className="text-blue-500 hover:underline">Shipping Policy</a>
+                <a href="#" className="text-blue-500 hover:underline">Refund Policy</a>
+                <a href="#" className="text-blue-500 hover:underline">Privacy Policy</a>
+                <a href="#" className="text-blue-500 hover:underline">Terms & Conditions</a>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  }
 };
 
-export default ProjectDashboard;
+export default OrderManagement;

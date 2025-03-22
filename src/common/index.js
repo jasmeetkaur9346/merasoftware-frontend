@@ -365,6 +365,10 @@ const SummaryApi = {
         url : `${backendDomain}/api/reject-order`,
         method: "post"
       },
+      downloadInvoice:{
+        url : `${backendDomain}/api/download-invoice`,
+        method: "get"
+      },
     wallet : {
         balance :{
             url : `${backendDomain}/api/wallet/balance`,
