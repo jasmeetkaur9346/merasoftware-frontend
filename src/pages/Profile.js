@@ -5,7 +5,7 @@ import { toast } from 'react-toastify';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
   User, Camera, LogOut, Edit, ChevronRight, Settings, 
-  Mail, Phone, Calendar, ShoppingCart, Wallet, Lock, Bell 
+  Mail, Phone, Calendar, ShoppingCart, Wallet, Lock, Bell, Package, MessageSquare
 } from 'lucide-react';
 import SummaryApi from '../common';
 import { setUserDetails, logout } from '../store/userSlice';
@@ -209,6 +209,34 @@ const Profile = () => {
                                 
                                 <h2 className="mt-4 text-xl font-semibold text-gray-800">{user?.name}</h2>
                                 <p className="text-gray-500 mb-6">{user?.email}</p>
+
+                                 {/* Quick Links Section */}
+          <div className="mt-6 w-full">
+            <h3 className="text-lg font-medium mb-3">Quick Links</h3>
+            <div className="bg-gray-50 p-4 rounded-lg">
+              {/* Your Orders Quick Link */}
+              <Link to={"/order"}>
+              <div className="flex items-center justify-between mb-3 pb-3 border-b border-gray-200 cursor-pointer hover:bg-gray-100 transition-colors p-2 rounded">
+                <div className="flex items-center">
+                  <Package size={18} className="text-blue-500 mr-2" />
+                  <span className='text-sm'>Your Orders</span>
+                </div>
+                <span className="text-gray-400">›</span>
+              </div>
+              </Link>
+
+              {/* Contact Support Quick Link */}
+              <Link to={"/support"}>
+              <div className="flex items-center justify-between cursor-pointer hover:bg-gray-100 transition-colors p-2 rounded">
+                <div className="flex items-center">
+                  <MessageSquare size={18} className="text-blue-500 mr-2" />
+                  <span className='text-sm'>Contact Support</span>
+                </div>
+                <span className="text-gray-400">›</span>
+              </div>
+              </Link>
+            </div>
+          </div>
                                 
                                 {/* Logout button in sidebar */}
                                 <button 
