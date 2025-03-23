@@ -184,6 +184,7 @@ const OrdersPage = () => {
   const filteredOrders = getFilteredOrders();
       
   // Determine grid columns based on screen width
+  // Keep three columns but increase card sizes
   let gridColsClass = "grid-cols-1";
   
   if (windowWidth >= 640 && windowWidth < 1024) {
@@ -206,13 +207,13 @@ const OrdersPage = () => {
     <DashboardLayout user={user}>
       <div className="bg-gray-50 min-h-full">
         <header className="bg-blue-600 text-white py-4 sm:py-6 px-4 sm:px-6 md:px-8">
-          <div className="max-w-6xl mx-auto">
+          <div className="max-w-7xl mx-auto"> {/* Increased from 6xl to 7xl for wider content */}
             <h1 className="text-xl sm:text-2xl font-bold">My Orders</h1>
             <p className="text-blue-100 text-sm sm:text-base mt-1">Manage and track your website development orders</p>
           </div>
         </header>
         
-        <main className="max-w-6xl mx-auto px-3 sm:px-4 py-4 sm:py-6 md:px-8">
+        <main className="max-w-8xl mx-auto px-3 sm:px-4 py-4 sm:py-6 md:px-8"> {/* Increased from 6xl to 7xl for wider content */}
           <div className="bg-white rounded-lg shadow-sm p-3 sm:p-4 mb-4 sm:mb-6 overflow-x-auto">
             <div className="flex min-w-max space-x-1 md:space-x-2">
               <button 
@@ -264,7 +265,7 @@ const OrdersPage = () => {
               </button>
             </div>
           ) : (
-            <div className={`grid ${gridColsClass} gap-3 sm:gap-4`}>
+            <div className={`grid ${gridColsClass} gap-5`}> {/* Increased gap between cards */}
               {filteredOrders.map(order => (
                 <OrderItem 
                   key={order._id} 

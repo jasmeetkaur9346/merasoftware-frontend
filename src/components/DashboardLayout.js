@@ -23,7 +23,7 @@ const DashboardLayout = ({ children, user, walletBalance, cartCount, isLoading }
     if (currentPath.startsWith('/order')) return 'Your Orders';
     if (currentPath.startsWith('/profile')) return 'Account Details';
     if (currentPath.startsWith('/wallet')) return 'Wallet Details';
-    if (currentPath.startsWith('/support')) return 'Support';
+    if (currentPath.startsWith('/support')) return 'Contact Support';
     return 'Dashboard';
   };
 

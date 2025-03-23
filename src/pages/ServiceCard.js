@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Bell, ChevronRight, Search, Filter, User, Plus, Menu, X, Home, Settings, FileText } from 'lucide-react';
+import { ChevronRight, Search, Filter, Plus, Menu, X, FileText, Settings } from 'lucide-react';
 
 const SupportCenter = () => {
   const [activeTab, setActiveTab] = useState('all');
@@ -111,7 +111,7 @@ const SupportCenter = () => {
               }}
               className={`w-full text-left p-3 rounded-lg flex items-center space-x-3 ${activeTab === 'open' ? 'bg-blue-50 text-blue-600' : 'hover:bg-gray-50'}`}
             >
-              <Home size={18} />
+              <FileText size={18} />
               <span>Open Tickets</span>
             </button>
             <button 
@@ -139,86 +139,59 @@ const SupportCenter = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm p-4 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center">
-            <MobileMenuButton />
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-800 ml-2">Support Center</h1>
-          </div>
-          <div className="flex items-center space-x-2 sm:space-x-4">
-            <button className="p-2 rounded-full hover:bg-gray-100 hidden sm:flex">
-              <Bell size={20} />
-            </button>
-            <div className="h-8 w-8 rounded-full bg-blue-600 text-white flex items-center justify-center">
-              <User size={16} />
-            </div>
-          </div>
+      {/* Top controls for mobile */}
+      <div className="md:hidden bg-white p-4 shadow-sm flex items-center justify-between">
+        <div className="flex items-center">
+          <MobileMenuButton />
+          <h1 className="ml-3 text-lg font-bold">Support Center</h1>
         </div>
-      </header>
+        <button className="bg-blue-600 text-white rounded-lg p-2 text-sm">
+          <Plus size={16} />
+        </button>
+      </div>
 
       <MobileMenu />
 
       {/* Desktop Navigation Bar */}
-      <div className="bg-white shadow-sm hidden md:block sticky top-16 z-10 border-b">
-        <div className="max-w-7xl mx-auto flex items-center justify-between px-4">
-          <div className="flex items-center space-x-6">
-            <button 
-              onClick={() => setActiveTab('all')}
-              className={`py-4 font-medium text-sm relative ${activeTab === 'all' ? 'text-blue-600' : 'text-gray-600 hover:text-gray-900'}`}
-            >
-              <span>All Tickets</span>
-              {activeTab === 'all' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600"></div>}
-            </button>
-            <button 
-              onClick={() => setActiveTab('open')}
-              className={`py-4 font-medium text-sm relative ${activeTab === 'open' ? 'text-blue-600' : 'text-gray-600 hover:text-gray-900'}`}
-            >
-              <span>Open Tickets</span>
-              {activeTab === 'open' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600"></div>}
-            </button>
-            <button 
-              onClick={() => setActiveTab('closed')}
-              className={`py-4 font-medium text-sm relative ${activeTab === 'closed' ? 'text-blue-600' : 'text-gray-600 hover:text-gray-900'}`}
-            >
-              <span>Closed Tickets</span>
-              {activeTab === 'closed' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600"></div>}
-            </button>
-            <button className="py-4 font-medium text-sm text-gray-600 hover:text-gray-900 relative">
-              <span>User Information</span>
+      <div className="bg-white shadow-sm hidden md:block sticky top-0 z-10 border-b">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-6">
+              <button 
+                onClick={() => setActiveTab('all')}
+                className={`py-4 font-medium text-sm relative ${activeTab === 'all' ? 'text-blue-600' : 'text-gray-600 hover:text-gray-900'}`}
+              >
+                <span>All Tickets</span>
+                {activeTab === 'all' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600"></div>}
+              </button>
+              <button 
+                onClick={() => setActiveTab('open')}
+                className={`py-4 font-medium text-sm relative ${activeTab === 'open' ? 'text-blue-600' : 'text-gray-600 hover:text-gray-900'}`}
+              >
+                <span>Open Tickets</span>
+                {activeTab === 'open' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600"></div>}
+              </button>
+              <button 
+                onClick={() => setActiveTab('closed')}
+                className={`py-4 font-medium text-sm relative ${activeTab === 'closed' ? 'text-blue-600' : 'text-gray-600 hover:text-gray-900'}`}
+              >
+                <span>Closed Tickets</span>
+                {activeTab === 'closed' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600"></div>}
+              </button>
+              <button className="py-4 font-medium text-sm text-gray-600 hover:text-gray-900 relative">
+                <span>User Information</span>
+              </button>
+            </div>
+            <button className="bg-blue-600 text-white rounded-lg px-4 py-2 flex items-center space-x-2 hover:bg-blue-700 transition-colors">
+              <Plus size={18} />
+              <span>Create New Ticket</span>
             </button>
           </div>
-          <button className="bg-blue-600 text-white rounded-lg px-4 py-2 flex items-center space-x-2 hover:bg-blue-700 transition-colors">
-            <Plus size={18} />
-            <span>Create New Ticket</span>
-          </button>
         </div>
       </div>
 
-      {/* Mobile Tab Navigation */}
-      <div className="md:hidden flex border-b bg-white sticky top-16 z-10">
-        <button 
-          onClick={() => setActiveTab('all')}
-          className={`flex-1 py-3 text-center font-medium text-sm ${activeTab === 'all' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500'}`}
-        >
-          All
-        </button>
-        <button 
-          onClick={() => setActiveTab('open')}
-          className={`flex-1 py-3 text-center font-medium text-sm ${activeTab === 'open' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500'}`}
-        >
-          Open
-        </button>
-        <button 
-          onClick={() => setActiveTab('closed')}
-          className={`flex-1 py-3 text-center font-medium text-sm ${activeTab === 'closed' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500'}`}
-        >
-          Closed
-        </button>
-      </div>
-
       {/* Main content */}
-      <div className="max-w-7xl mx-auto w-full p-2 sm:p-4">
+      <div className="max-w-7xl mx-auto w-full p-2 sm:p-4 flex-1">
         {/* Ticket list */}
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
           {/* Actions row */}
@@ -227,14 +200,6 @@ const SupportCenter = () => {
               {activeTab === 'all' ? 'All Tickets' : activeTab === 'open' ? 'Open Tickets' : 'Closed Tickets'} 
               <span className="text-gray-500 ml-2 text-sm">({filteredTickets.length})</span>
             </h2>
-            
-            {/* Mobile create button */}
-            <div className="md:hidden flex">
-              <button className="w-full bg-blue-600 text-white rounded-lg p-2 flex items-center justify-center">
-                <Plus size={18} className="mr-2" />
-                <span>Create New Ticket</span>
-              </button>
-            </div>
             
             <div className="flex items-center space-x-2 sm:space-x-3 w-full sm:w-auto">
               <div className="relative flex-1 sm:w-56 md:w-64">
