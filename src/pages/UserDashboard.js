@@ -305,22 +305,22 @@ const Dashboard = () => {
                 </svg>
               </div>
               <div>
-                <p className="text-blue-700 font-medium">Welcome back</p>
-                <h1 className="text-2xl font-bold text-gray-800">Let's see your projects</h1>
+                <p className="text-blue-700 font-medium">Welcome back,</p>
+                <h1 className="text-2xl font-bold text-gray-800 capitalize">{user.name}</h1>
               </div>
             </div>
             <div className="mt-3 flex items-center">
-              <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center mr-2">
+              {/* <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center mr-2">
                 <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
-              </div>
+              </div> */}
               <p className="text-gray-600">Review your ongoing projects and track their progress</p>
             </div>
           </div>
           
           {/* Explore More card */}
-          <Link to={"/start-new-project"}>
+          <Link to={"/start-new-project"} className='hidden md:block'>
           <div className="bg-gradient-to-r from-pink-50 to-pink-100 rounded-xl p-6 flex-1 shadow-sm border border-pink-200 cursor-pointer group hover:shadow-md transition-all">
             <div className="flex items-center mb-3">
               <div className="w-10 h-10 bg-pink-500 text-white rounded-full flex items-center justify-center mr-3 group-hover:bg-pink-600 transition-all">
@@ -519,7 +519,7 @@ const Dashboard = () => {
 
               {/* Active Project Card */}
               {activeProject && !activeUpdatePlan && (
-  <div className="flex-shrink-0 border bg-gray-100 rounded-xl overflow-hidden shadow-md relative">
+  <div className="flex-shrink-0 border bg-amber-50 border border-amber-200 rounded-xl overflow-hidden shadow-md relative">
     {/* Card background with highlight effect */}
     <div className="h-2 bg-amber-500"></div>
     
@@ -565,7 +565,7 @@ const Dashboard = () => {
       
       {/* Action button */}
       <button 
-        className="w-full py-2 bg-white rounded-md shadow-sm hover:shadow-md transition-shadow flex items-center justify-center text-amber-600 text-sm font-medium group"
+        className="w-full py-2 bg-amber-500 rounded-md shadow-sm hover:shadow-md transition-shadow flex items-center justify-center text-white text-sm font-medium group mt-8"
         onClick={() => handleViewProjectDetails(activeProject._id)}
       >
         <span>View Project</span>
@@ -585,7 +585,7 @@ const Dashboard = () => {
     <div key={project._id} className={`flex-shrink-0 border ${
       isRejected 
         ? 'bg-red-50 border-red-200' 
-        : 'bg-gray-50 border-emerald-200'
+        : 'bg-green-50 border-emerald-200'
     } rounded-xl overflow-hidden shadow-md relative`}>
       {/* Card background with highlight effect */}
       <div className={`h-2 ${isRejected ? 'bg-red-600' : 'bg-emerald-600'}`}></div>
@@ -684,7 +684,7 @@ const Dashboard = () => {
 })}
               
               {/* View All Projects Card - Always shown */}
-            <div className="flex-shrink-0 bg-gray-50 border border-purple-200 rounded-xl overflow-hidden shadow-md relative">
+            <div className="flex-shrink-0 bg-purple-50 border border-purple-200 rounded-xl overflow-hidden shadow-md relative">
                 {/* Card background with highlight effect */}
                 <div className="h-2 bg-purple-500"></div>
                 
