@@ -16,6 +16,7 @@ import {
   isCacheStale,
   clearOldCache 
 } from '../helpers/productDB';
+import LoginPopup from '../components/LoginPopup';
 
 // Alert Modal Component
 const AlertModal = ({ isOpen, message, onClose }) => {
@@ -61,6 +62,7 @@ const ProductDetails = () => {
   const [additionalFeaturesData, setAdditionalFeaturesData] = useState([]);
   const [quantities, setQuantities] = useState({});
   const [paymentOption, setPaymentOption] = useState('full');
+  const [showLoginPopup, setShowLoginPopup] = useState(false);
 
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
@@ -71,7 +73,9 @@ const ProductDetails = () => {
    const [couponData, setCouponData] = useState(null);
    const [couponError, setCouponError] = useState('');
 
-  const { fetchUserAddToCart } = useContext(Context);
+  // Get user authentication status
+  const { userDetails, fetchUserAddToCart } = useContext(Context);
+  const isAuthenticated = !!userDetails?._id;
   const navigate = useNavigate();
   const params = useParams();
 
@@ -220,6 +224,12 @@ const ProductDetails = () => {
   };
 
   const handleGetStarted = async (e) => {
+     // Check if user is logged in
+     if (!isAuthenticated) {
+      setShowLoginPopup(true);
+      return;
+    }
+
     if (data.category === 'website_updates') {
       // First check if user already has an active update plan
       try {
@@ -986,12 +996,14 @@ const ProductDetails = () => {
               
               {/* Get Started Button */}
               <div className="mt-6">
-                <button 
-                  onClick={handleGetStarted}
-                  className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
-                >
-                  {paymentOption === 'full' ? 'Proceed to Payment' : 'Pay First Installment'}
-                </button>
+                 <button 
+        onClick={handleGetStarted}
+        className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+      >
+        {isAuthenticated ? 
+          (paymentOption === 'full' ? 'Proceed to Payment' : 'Pay First Installment') : 
+          'Proceed & Continue'}
+      </button>
               </div>
             </div>
           </div>
@@ -1023,6 +1035,11 @@ const ProductDetails = () => {
       message={alertMessage}
       onClose={() => setShowAlert(false)}
     />
+
+    <LoginPopup 
+        isOpen={showLoginPopup}
+        onClose={() => setShowLoginPopup(false)}
+      />
   </div>
   );
 };

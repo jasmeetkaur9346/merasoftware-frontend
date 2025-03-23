@@ -111,9 +111,11 @@ const AppConvertingBanner = () => {
     try {
       // Try to get from localStorage first
       const cachedSlides = StorageService.getGuestSlides();
+      console.log("Cached slides:", cachedSlides); // Add this
       
       if (cachedSlides) {
         setGuestSlides(cachedSlides);
+        console.log("Setting slides from cache:", cachedSlides.length); 
         setDataInitialized(true);
         setIsLoading(false);
         
@@ -144,8 +146,11 @@ const AppConvertingBanner = () => {
     try {
       const response = await fetch(SummaryApi.guestSlides.url);
       const data = await response.json();
+      console.log("API response:", data); 
       
       if (data.success && Array.isArray(data.data)) {
+        console.log("Fetched slides count:", data.data.length); // Add this
+      console.log("Fetched slides:", data.data)
         setGuestSlides(data.data);
         setDataInitialized(true);
         
@@ -804,10 +809,14 @@ const AppConvertingBanner = () => {
 
   // If we have guest slides, show them immediately (even if other data is still loading)
   if (!user?._id && guestSlides?.length > 0) {
+    console.log("Rendering slides:", guestSlides.length);
+  console.log("Current slide index:", currentSlide);
+
     return (
-    
+      <div className="relative"> {/* Add this wrapper div with relative positioning */}
+      <div className="overflow-hidden">
         <div
-          className="transition-all duration-500 ease-in-out flex w-full"
+          className="transition-all duration-500 ease-in-out flex w-full overflow-hidden"
           style={{ transform: `translateX(-${currentSlide * 100}%)` }}
           onTouchStart={onTouchStart}
           onTouchMove={onTouchMove}
@@ -818,8 +827,9 @@ const AppConvertingBanner = () => {
           ) : (
             <GuestSlidesDesktop slide={guestSlides[currentSlide]} />
           )}
-      
-
+        </div>
+        </div>
+        
         {/* Navigation Arrows - Only show on desktop */}
         {!isMobile && guestSlides.length > 1 && (
           <>
@@ -837,7 +847,7 @@ const AppConvertingBanner = () => {
             </button>
           </>
         )}
-
+    
         {/* Slide Indicators */}
         {guestSlides.length > 1 && (
           <div className="flex justify-center mt-3 gap-2">

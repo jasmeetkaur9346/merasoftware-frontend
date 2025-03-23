@@ -46,6 +46,7 @@ import DisclaimersPage from "../pages/DisclaimersPage";
 import DeveloperPanel from "../pages/DeveloperPanel";
 import AdminOrdersPage from "../pages/AdminOrdersPage";
 import OrderDetailPage from "../pages/OrderDetailPage";
+import ContactUsForm from "../pages/ContactUsForm";
 
 
 // Create a conditional home route
@@ -177,6 +178,10 @@ const router = createBrowserRouter([
             {
                 path: "disclaimers",
                 element : <DisclaimersPage/>
+            },
+            {
+                path: "contact-us",
+                element: <ContactUsForm/>
             },
             {
                 path: "admin-panel",

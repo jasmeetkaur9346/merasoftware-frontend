@@ -55,7 +55,7 @@ const AdminEditProduct = ({
         checkpoints: productData?.checkpoints || [],
         // New feature upgrade fields
         isFeatureUpgrade: productData?.isFeatureUpgrade || false,
-        compatibleCategories: productData?.compatibleCategories || [],
+        compatibleWith: productData?.compatibleWith || [],
         keyBenefits: productData?.keyBenefits || [],
         additionalFeatures: productData?.additionalFeatures || [],
         // Website update fields
@@ -179,7 +179,7 @@ const AdminEditProduct = ({
     const handleCompatibleCategoriesChange = (selectedOptions) => {
       setData((prev) => ({
         ...prev,
-        compatibleCategories: selectedOptions.map((option) => option.value),
+        compatibleWith: selectedOptions.map((option) => option.value),
       }));
     };
 
@@ -506,10 +506,10 @@ const AdminEditProduct = ({
                 isMulti
                 options={categoryOptions}
                 value={categoryOptions.filter(option => 
-                    data.compatibleCategories.includes(option.value)
+                    data.compatibleWith.includes(option.value)
                 )}
-                name='compatibleCategories'
-                id='compatibleCategories'
+                name='compatibleWith'
+                id='compatibleWith'
                 onChange={handleCompatibleCategoriesChange}
                 className='basic-multi-select bg-slate-100 border rounded'
                 classNamePrefix='select'
@@ -587,7 +587,7 @@ const AdminEditProduct = ({
                 isMulti
                 options={categoryOptions}
                 value={categoryOptions.filter(option => 
-                    data.compatibleCategories.includes(option.value)
+                    data.compatibleWith.includes(option.value)
                 )}
                 onChange={handleCompatibleCategoriesChange}
                 className='basic-multi-select bg-slate-100 border rounded'

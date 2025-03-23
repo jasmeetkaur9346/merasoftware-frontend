@@ -163,7 +163,7 @@ const fetchCompatibleFeatures = async (category) => {
       // If category changes
       if (name === "category") {
         // Define which categories should have additional features
-        const webCategories = ['standard_websites', 'dynamic_websites', 'web_applications', 'mobile_apps', 'cloud_software_development', 'app_development'];
+        const webCategories = ['standard_websites', 'dynamic_websites', 'cloud_software_development', 'app_development'];
         
         if (webCategories.includes(value)) {
           fetchCompatibleFeatures(value);
@@ -750,4 +750,4 @@ const CustomFeatureOption = ({ data, ...props }) => {
   )
 }
 
-export default UploadProduct
+export default UploadProduct;
