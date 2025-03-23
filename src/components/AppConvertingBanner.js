@@ -495,7 +495,7 @@ const AppConvertingBanner = () => {
     const isUpdate = isUpdatePlan(order.productId?.category);
 
     return (
-       <div className="px-4">
+       <div className="px-4 mt-4">
       <div className="w-full bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
         <div className="p-4">
           <div className="flex justify-between items-start">
@@ -693,7 +693,7 @@ const AppConvertingBanner = () => {
     const description = stripHtmlTags(welcome.description);
     
     return (
-      <div className='rounded-xl shadow-md border'>
+      <div className='rounded-xl shadow-md border mt-4'>
         <div className="bg-gradient-to-r rounded-xl from-blue-50 to-red-50 px-4 py-5">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-gray-900 leading-tight mb-2 text-left">
@@ -755,7 +755,7 @@ const AppConvertingBanner = () => {
 
   // Guest Slides Mobile View
   const GuestSlidesMobile = ({ slide }) => (
-    <div className='px-4 rounded-xl shadow-sm '>
+    <div className='px-4 rounded-xl shadow-sm mt-4'>
       <div className="bg-gradient-to-r rounded-xl from-blue-50 to-red-50 px-4 py-5">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 leading-tight mb-2 text-left">
