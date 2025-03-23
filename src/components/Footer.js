@@ -1,7 +1,7 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { PlusCircle, Home, UserCircle, Wallet, FileText } from 'lucide-react';
+import { PlusCircle, Home, UserCircle, Wallet, FileText, ShoppingBag } from 'lucide-react';
 import Context from '../context';
 import SummaryApi from '../common';
 
@@ -177,14 +177,13 @@ const Footer = () => {
             </Link>
             
             {/* My Project - Using onClick handler to navigate to active project */}
-            <a 
-              href="#"
-              className={`flex flex-col items-center py-2 px-4 ${activeTab === 'project' ? 'text-blue-600' : 'text-gray-600'}`}
-              onClick={handleMyProjectClick}
-            >
-              <FileText size={20} />
-              <span className="text-xs mt-1">My Project</span>
-            </a>
+            <Link to={"/order"}
+            className={`flex flex-col items-center py-2 px-4 ${activeTab === 'orders' ? 'text-blue-600' : 'text-gray-600'}`}
+            onClick={() => setActiveTab('orders')}
+          >
+            <ShoppingBag size={20} />
+            <span className="text-xs mt-1">Orders</span>
+          </Link>
             
             {/* User Profile - Show profile image if logged in and image exists */}
             <Link to={user?._id ? "/profile" : "/login"}

@@ -219,7 +219,7 @@ const Profile = () => {
               <div className="flex items-center justify-between mb-3 pb-3 border-b border-gray-200 cursor-pointer hover:bg-gray-100 transition-colors p-2 rounded">
                 <div className="flex items-center">
                   <Package size={18} className="text-blue-500 mr-2" />
-                  <span className='text-sm'>Your Orders</span>
+                  <span className='text-sm font-medium text-gray-800'>Your Orders</span>
                 </div>
                 <span className="text-gray-400">›</span>
               </div>
@@ -230,7 +230,7 @@ const Profile = () => {
               <div className="flex items-center justify-between cursor-pointer hover:bg-gray-100 transition-colors p-2 rounded">
                 <div className="flex items-center">
                   <MessageSquare size={18} className="text-blue-500 mr-2" />
-                  <span className='text-sm'>Contact Support</span>
+                  <span className='text-sm font-medium text-gray-800'>Contact Support</span>
                 </div>
                 <span className="text-gray-400">›</span>
               </div>
