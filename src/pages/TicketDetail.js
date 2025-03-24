@@ -6,11 +6,15 @@ import { toast } from 'react-toastify';
 import SummaryApi from '../common';
 import Context from '../context';
 import TriangleMazeLoader from '../components/TriangleMazeLoader';
+import { useSelector } from 'react-redux';
 
 const TicketDetail = ({ isAdmin = false }) => {
   const { ticketId } = useParams();
   const navigate = useNavigate();
-  const { userDetails } = useContext(Context);
+  // const { userDetails } = useContext(Context);
+  // Context के बजाय Redux का उपयोग करें
+  const userDetails = useSelector((state) => state.user.user);
+  const isInitialized = useSelector((state) => state.user.initialized);
   const [ticket, setTicket] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -21,7 +25,10 @@ const TicketDetail = ({ isAdmin = false }) => {
 
   // Fetch ticket details
   const fetchTicketDetails = async () => {
-    if (!ticketId || !userDetails?._id) return;
+    if (!ticketId || !userDetails?._id) {
+      console.log("No user ID or ticket ID available");
+      return;
+    }
     
     setLoading(true);
     try {
@@ -167,10 +174,11 @@ const TicketDetail = ({ isAdmin = false }) => {
 
   // Load ticket details on component mount
   useEffect(() => {
-    if (userDetails?._id) {
+    if (isInitialized && userDetails?._id) {
+      console.log("Fetching ticket details for:", ticketId);
       fetchTicketDetails();
     }
-  }, [ticketId, userDetails]);
+  }, [ticketId, userDetails, isInitialized]);
 
   if (loading) {
     return (

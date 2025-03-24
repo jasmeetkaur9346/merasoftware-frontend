@@ -6,6 +6,7 @@ import SummaryApi from '../common';
 import Context from '../context';
 import CreateTicket from './CreateTicket';
 import TriangleMazeLoader from '../components/TriangleMazeLoader';
+import { useSelector } from 'react-redux';
 
 const TicketsList = () => {
   const [tickets, setTickets] = useState([]);
@@ -15,11 +16,16 @@ const TicketsList = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [statusFilter, setStatusFilter] = useState('');
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const { userDetails } = useContext(Context);
+  // const { userDetails } = useContext(Context);
+  const userDetails = useSelector((state) => state.user.user);
+  const isInitialized = useSelector((state) => state.user.initialized);
   
   // Fetch tickets from API
   const fetchTickets = async () => {
-    if (!userDetails?._id) return;
+    if (!userDetails?._id) {
+      console.log("No user ID available, skipping fetch");
+      return;
+    }
     
     setLoading(true);
     try {
@@ -28,6 +34,8 @@ const TicketsList = () => {
         url += `&status=${statusFilter}`;
       }
       
+      console.log("Fetching tickets with URL:", url);
+
       const response = await fetch(url, {
         method: SummaryApi.getUserTickets.method,
         headers: { "Content-Type": "application/json" },
@@ -35,8 +43,10 @@ const TicketsList = () => {
       });
       
       const result = await response.json();
+      console.log("API Response:", result);
       
       if (result.success) {
+        console.log("Setting tickets:", result.data.tickets);
         setTickets(result.data.tickets);
         setTotalPages(result.data.pagination.pages);
       } else {
@@ -172,10 +182,11 @@ const TicketsList = () => {
   
   // Effect to load tickets on component mount and when dependencies change
   useEffect(() => {
-    if (userDetails?._id) {
+    if (isInitialized && userDetails?._id) {
+      console.log("Fetching tickets for user:", userDetails._id);
       fetchTickets();
     }
-  }, [currentPage, statusFilter, userDetails]);
+  }, [currentPage, statusFilter, userDetails, isInitialized]);
   
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden">

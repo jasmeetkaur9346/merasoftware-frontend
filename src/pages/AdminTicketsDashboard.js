@@ -15,9 +15,13 @@ import { toast } from 'react-toastify';
 import SummaryApi from '../common';
 import Context from '../context';
 import TriangleMazeLoader from '../components/TriangleMazeLoader';
+import { useSelector } from 'react-redux';
 
 const AdminTicketsDashboard = () => {
-  const { userDetails } = useContext(Context);
+  // const { userDetails } = useContext(Context);
+   // Redux स्टोर से प्राप्त करें
+   const userDetails = useSelector((state) => state.user.user);
+   const isInitialized = useSelector((state) => state.user.initialized);
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -37,7 +41,10 @@ const AdminTicketsDashboard = () => {
   
   // Fetch tickets from API
   const fetchTickets = async () => {
-    if (!userDetails?._id) return;
+    if (!userDetails?._id) {
+      console.log("No user ID available");
+      return;
+    }
     
     setLoading(true);
     try {
@@ -209,10 +216,11 @@ const AdminTicketsDashboard = () => {
   
   // Effect to load tickets on component mount and when dependencies change
   useEffect(() => {
-    if (userDetails?._id) {
+    if (isInitialized && userDetails?._id) {
+      console.log("Fetching admin tickets for user:", userDetails._id);
       fetchTickets();
     }
-  }, [currentPage, statusFilter, categoryFilter, searchTerm, userDetails]);
+  }, [currentPage, statusFilter, categoryFilter, searchTerm, userDetails, isInitialized]);
   
   return (
     <div className="space-y-6">

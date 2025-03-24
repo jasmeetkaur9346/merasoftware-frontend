@@ -4,6 +4,7 @@ import { Check, AlertCircle } from 'lucide-react';
 import Context from '../context';
 import SummaryApi from '../common';
 import TriangleMazeLoader from '../components/TriangleMazeLoader';
+import { useSelector } from 'react-redux';
 
 const CreateTicket = ({ show, handleClose, refreshTickets }) => {
   const [category, setCategory] = useState('');
@@ -12,7 +13,8 @@ const CreateTicket = ({ show, handleClose, refreshTickets }) => {
   const [loading, setLoading] = useState(false);
   const [hasOpenTicket, setHasOpenTicket] = useState(false);
   const [openTicketId, setOpenTicketId] = useState('');
-  const { userDetails } = useContext(Context);
+  // const { userDetails } = useContext(Context);
+  const userDetails = useSelector((state) => state.user.user);
 
   // Check if user has any open tickets
   const checkOpenTickets = async () => {
@@ -105,7 +107,7 @@ const CreateTicket = ({ show, handleClose, refreshTickets }) => {
 
   // Effect to check for open tickets when the modal shows
   React.useEffect(() => {
-    if (show) {
+    if (show && userDetails?._id) {
       checkOpenTickets();
     }
   }, [show, userDetails]);

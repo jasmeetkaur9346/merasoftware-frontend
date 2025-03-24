@@ -76,6 +76,11 @@ const OrderDetailPage = () => {
 
   const handleDownloadInvoice = async () => {
     try {
+      // यदि ऑर्डर अप्रूव नहीं है तो फंक्शन को आगे नहीं बढ़ने दें
+    if (order.orderVisibility !== 'approved' && 
+      !(order.projectProgress >= 100 || order.currentPhase === 'completed')) {
+    return; // अगर ऑर्डर अप्रूव नहीं है तो यहीं से फंक्शन रिटर्न कर दें
+  }
       // Download invoice API call
       const response = await fetch(`${SummaryApi.downloadInvoice.url}/${orderId}`, {
         method: SummaryApi.downloadInvoice.method,
@@ -190,23 +195,42 @@ const OrderDetailPage = () => {
                 
                 {/* Order totals */}
                 <div className="pt-4">
-                  <div className="flex justify-between mb-2">
-                    <span className="text-gray-600">Subtotal:</span>
-                    <span>₹{subtotal.toLocaleString()}</span>
-                  </div>
-                  
-                  {discount > 0 && (
-                    <div className="flex justify-between mb-2 text-green-600">
-                      <span>Discount {order.couponApplied ? `(${order.couponApplied})` : ''}:</span>
-                      <span>-₹{discount.toLocaleString()}</span>
-                    </div>
-                  )}
-                  
-                  <div className="flex justify-between font-bold text-lg pt-2 border-t">
-                    <span>Total:</span>
-                    <span>₹{total.toLocaleString()}</span>
-                  </div>
-                </div>
+  <div className="flex justify-between mb-2">
+    <span className="text-gray-600">Subtotal:</span>
+    <span>₹{subtotal.toLocaleString()}</span>
+  </div>
+  
+  {discount > 0 && (
+    <div className="flex justify-between mb-2 text-green-600">
+      <span>Discount {order.couponApplied ? `(${order.couponApplied})` : ''}:</span>
+      <span>-₹{discount.toLocaleString()}</span>
+    </div>
+  )}
+  
+  <div className="flex justify-between font-bold text-lg pt-2 border-t">
+    <span>Total Amount:</span>
+    <span>₹{total.toLocaleString()}</span>
+  </div>
+  
+  {/* Add new code for Received and Balance (image style) */}
+  <div className="flex justify-between mt-2 text-gray-800">
+    <span>Received Amount:</span>
+    <span className="font-medium text-green-600">
+      ₹{(order.paidAmount || 0).toLocaleString()}
+    </span>
+  </div>
+  
+  {/* Only show balance if it's greater than 0 */}
+  {(total - (order.paidAmount || 0)) > 0 && (
+    <div className="flex justify-between mt-1 text-gray-800">
+      <span>Balance:</span>
+      <span className="font-medium text-blue-600">
+        ₹{(total - (order.paidAmount || 0)).toLocaleString()}
+      </span>
+    </div>
+  )}
+</div>
+
               </div>
             </div>
             
@@ -214,56 +238,123 @@ const OrderDetailPage = () => {
               <div className="space-y-6">
                 {/* Action buttons */}
                 <div className="space-y-3">
-                  <button
-                    onClick={handleDownloadInvoice}
-                    className="w-full py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
-                  >
-                    Download Invoice
-                  </button>
-                  
-                  {order.orderVisibility !== 'payment-rejected' && (
-                    <button
-                      onClick={handleTrackProject}
-                      className="w-full py-3 border border-blue-600 text-blue-600 rounded-lg font-medium hover:bg-blue-50 transition-colors"
-                    >
-                      Track Project
-                    </button>
-                  )}
-                  
-                  {order.orderVisibility === 'payment-rejected' && (
-                    <button
-                      onClick={() => navigate(`/direct-payment`, {
-                        state: { 
-                          retryPaymentId: order._id,
-                          productId: order.productId?._id,
-                          paymentData: {
-                            product: order.productId,
-                            selectedFeatures: order.orderItems?.filter(item => item.type === 'feature').map(item => ({
-                              id: item.id,
-                              name: item.name,
-                              quantity: item.quantity || 1,
-                              sellingPrice: item.originalPrice || 0,
-                              totalPrice: item.finalPrice || 0
-                            })) || [],
-                            totalPrice: order.price,
-                            originalTotalPrice: order.originalPrice || order.price
-                          }
-                        }
-                      })}
-                      className="w-full py-3 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors"
-                    >
-                      Retry Payment
-                    </button>
-                  )}
-                </div>
+  <button
+    onClick={handleDownloadInvoice}
+    disabled={order.orderVisibility !== 'approved' && 
+             !(order.projectProgress >= 100 || order.currentPhase === 'completed')}
+    className={`w-full py-3 rounded-lg font-medium transition-colors ${
+      order.orderVisibility === 'approved' || 
+      order.projectProgress >= 100 || 
+      order.currentPhase === 'completed'
+        ? 'bg-blue-600 text-white hover:bg-blue-700' 
+        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+    }`}
+  >
+    Download Invoice
+  </button>
+  
+  {order.orderVisibility !== 'payment-rejected' && (
+    <button
+      onClick={handleTrackProject}
+      className="w-full py-3 border border-blue-600 text-blue-600 rounded-lg font-medium hover:bg-blue-50 transition-colors"
+    >
+      Track Project
+    </button>
+  )}
+  
+  {/* Show Pay Now button for remaining installments */}
+  {order.isPartialPayment && 
+   order.installments && 
+   order.installments.some(i => !i.paid) && 
+   order.orderVisibility === 'approved' && (
+    <button
+      onClick={() => {
+        // Find next unpaid installment
+        const nextInstallment = order.installments.find(i => !i.paid);
+        if (nextInstallment) {
+          navigate(`/direct-payment`, {
+            state: {
+              installmentPayment: true,
+              orderId: order._id,
+              installmentNumber: nextInstallment.installmentNumber,
+              installmentAmount: nextInstallment.amount,
+              productName: order.productId?.serviceName || 'Product'
+            }
+          });
+        }
+      }}
+      className="w-full py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors"
+    >
+      Pay Next Installment
+    </button>
+  )}
+  
+  {order.orderVisibility === 'payment-rejected' && (
+    <button
+      onClick={() => navigate(`/direct-payment`, {
+        state: { 
+          retryPaymentId: order._id,
+          productId: order.productId?._id,
+          paymentData: {
+            product: order.productId,
+            selectedFeatures: order.orderItems?.filter(item => item.type === 'feature').map(item => ({
+              id: item.id,
+              name: item.name,
+              quantity: item.quantity || 1,
+              sellingPrice: item.originalPrice || 0,
+              totalPrice: item.finalPrice || 0
+            })) || [],
+            totalPrice: order.price,
+            originalTotalPrice: order.originalPrice || order.price
+          }
+        }
+      })}
+      className="w-full py-3 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 transition-colors"
+    >
+      Retry Payment
+    </button>
+  )}
+</div>
                 
                 {/* Payment information */}
                 <div className="bg-gray-50 p-4 rounded-lg">
-                  <h4 className="font-medium mb-2">Payment Method</h4>
-                  <p>{order.paymentMethod === 'wallet' ? 'Wallet Payment' : 
-                      order.paymentMethod === 'upi' ? 'UPI Payment' : 
-                      order.paymentMethod === 'combined' ? 'Wallet + UPI' : 'Online Payment'}</p>
-                </div>
+  <h4 className="font-medium mb-2">Payment Method</h4>
+  <p>{order.paymentMethod === 'wallet' ? 'Wallet Payment' : 
+      order.paymentMethod === 'upi' ? 'UPI Payment' : 
+      order.paymentMethod === 'combined' ? 'Wallet + UPI' : 'Online Payment'}</p>
+  
+  {/* Simplified Payment Status */}
+  <div className="mt-3 pt-3 border-t border-gray-200">
+    <h4 className="font-medium mb-2">Payment Status</h4>
+    
+    <div className="space-y-2">
+      <div className="flex justify-between text-sm">
+        <span>Payment Type:</span>
+        <span className="font-medium">
+          {order.isPartialPayment ? 'Installment Plan (3 parts)' : 'Full Payment'}
+        </span>
+      </div>
+      
+      <div className="flex justify-between text-sm">
+        <span>Total Paid:</span>
+        <span className="font-medium text-green-600">
+          ₹{(order.paidAmount || 0).toLocaleString()}
+        </span>
+      </div>
+      
+      {/* Only show remaining balance if there's still an amount due */}
+      {(total - (order.paidAmount || 0)) > 0 && (
+        <div className="flex justify-between text-sm">
+          <span>Remaining Balance:</span>
+          <span className="font-medium text-blue-600">
+            ₹{(total - (order.paidAmount || 0)).toLocaleString()}
+          </span>
+        </div>
+      )}
+    </div>
+  </div>
+</div>
+                
                 
                 {/* Order status progress */}
                 <div className="bg-gray-50 p-4 rounded-lg">
@@ -301,7 +392,8 @@ const OrderDetailPage = () => {
       );
     })}
   </div>
-</div>
+              </div>
+
               </div>
             </div>
           </div>

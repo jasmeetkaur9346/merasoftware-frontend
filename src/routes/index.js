@@ -190,6 +190,10 @@ const router = createBrowserRouter([
                 element: <TicketDetail/>
             },
             {
+                path: "admin-tickets/:ticketId",
+                element: <TicketDetail isAdmin={true} />
+            },
+            {
                 path: "admin-panel",
                 element : <AdminPanel/>,
                 children :[
@@ -208,10 +212,6 @@ const router = createBrowserRouter([
                     {
                         path: "admin-tickets",
                         element: <AdminTicketsDashboard/>
-                    },
-                    {
-                        path: "admin-tickets/:ticketId",
-                        element: <TicketDetail isAdmin={true} />
                     },
                     {
                         path: "payment-verification",
