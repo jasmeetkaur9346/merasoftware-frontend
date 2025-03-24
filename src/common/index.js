@@ -373,6 +373,30 @@ const SummaryApi = {
         url : `${backendDomain}/api/contact-us`,
         method: "post"
       },
+      createTicket: {
+        url : `${backendDomain}/api/create-ticket`,
+        method: "post"
+      },
+      getUserTickets: {
+        url : `${backendDomain}/api/get-user-tickets`,
+        method: "get"
+      },
+      getTicketDetails: {
+        url : `${backendDomain}/api/get-ticket-details`,
+        method: "get"
+      },
+      replyTicket: {
+        url : `${backendDomain}/api/ticket-reply`,
+        method: "post"
+      },
+      closeTicket: {
+        url : `${backendDomain}/api/ticket-close`,
+        method: "post"
+      },
+      getAllTickets: {
+        url : `${backendDomain}/api/get-all-tickets`,
+        method: "get"
+      },
     wallet : {
         balance :{
             url : `${backendDomain}/api/wallet/balance`,

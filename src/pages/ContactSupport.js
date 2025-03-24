@@ -1,266 +1,151 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { ChevronRight, Search, Filter, Plus, Menu, X, FileText, Settings } from 'lucide-react';
+import React, { useState, useContext } from 'react';
+import { Phone, Mail, MessageSquare, HelpCircle, ChevronDown, ChevronUp } from 'lucide-react';
+import { toast } from 'react-toastify';
 import Context from '../context';
-import { useSelector } from 'react-redux';
-import DashboardLayout from '../components/DashboardLayout';
+import CreateTicket from '../components/CreateTicket';
+import TicketsList from '../components/TicketsList';
 
-const SupportCenter = () => {
-  const [activeTab, setActiveTab] = useState('all');
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 0);
-  const user = useSelector(state => state?.user?.user);
-    const context = useContext(Context);
+const ContactSupportPage = () => {
+  const { userDetails } = useContext(Context);
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [openFaq, setOpenFaq] = useState(null);
   
-  useEffect(() => {
-    const handleResize = () => {
-      setWindowWidth(window.innerWidth);
-      if (window.innerWidth >= 768) {
-        setIsMobileMenuOpen(false);
-      }
-    };
-    
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-  
-  const tickets = [
+  // Common FAQs
+  const faqs = [
     {
-      id: 'TKT-001234',
-      title: 'Cannot access my account settings',
-      description: 'When I try to access my account settings page, I get a 404 error.',
-      status: 'open',
-      priority: 'high',
-      date: '10 Mar 2025, 09:15 pm'
+      question: 'How do I create a new support ticket?',
+      answer: 'Click on the "Create New Ticket" button, select a category related to your issue, provide a clear subject, and describe your problem in detail. Our support team will review your ticket as soon as possible.'
     },
     {
-      id: 'TKT-002345',
-      title: 'Double charged for monthly subscription',
-      description: 'I was charged twice for my monthly subscription on March 1st.',
-      status: 'closed',
-      priority: 'medium',
-      date: '5 Mar 2025, 04:57 pm'
+      question: 'How long will it take to get a response?',
+      answer: "We aim to respond to all tickets within 24 hours. Complex issues may take longer to resolve, but we'll keep you updated on the progress throughout the process."
     },
     {
-      id: 'TKT-003456',
-      title: 'Feature request: Dark mode support',
-      description: 'It would be great to have dark mode support across the entire platform.',
-      status: 'open',
-      priority: 'low',
-      date: '3 Mar 2025, 11:22 am'
+      question: 'Can I have multiple tickets open at once?',
+      answer: 'No, you can only have one active ticket at a time. This helps us focus on resolving your current issue effectively before addressing new concerns.'
     },
     {
-      id: 'TKT-004567',
-      title: 'Mobile app keeps crashing',
-      description: 'The mobile app crashes whenever I try to upload images.',
-      status: 'open',
-      priority: 'high',
-      date: '1 Mar 2025, 02:45 pm'
+      question: 'How do I know when my ticket status changes?',
+      answer: "You can check your ticket status in the 'My Tickets' section. The status will change from Pending to Open when our team starts working on it, and to Closed when it's resolved."
+    },
+    {
+      question: 'How do I provide more information for my ticket?',
+      answer: "Simply open your existing ticket and use the reply section at the bottom to add more information or respond to our team's questions."
     }
   ];
 
-  const filteredTickets = activeTab === 'all' 
-    ? tickets 
-    : tickets.filter(ticket => 
-        activeTab === 'open' ? ticket.status === 'open' : ticket.status === 'closed'
-      );
-
-  const getPriorityColor = (priority) => {
-    switch(priority) {
-      case 'high': return 'bg-red-500';
-      case 'medium': return 'bg-yellow-500';
-      case 'low': return 'bg-green-500';
-      default: return 'bg-gray-500';
-    }
-  };
-
-  const MobileMenuButton = () => (
-    <button 
-      onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-      className="md:hidden p-2 rounded-lg text-gray-600 hover:bg-gray-100"
-    >
-      {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-    </button>
-  );
-
-  const MobileMenu = () => (
-    <div className={`fixed inset-0 bg-gray-800 bg-opacity-75 z-50 md:hidden transition-opacity duration-300 ${isMobileMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-      <div className={`bg-white h-full w-64 shadow-lg transform transition-transform duration-300 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        <div className="p-4 border-b flex justify-between items-center">
-          <span className="font-bold text-lg">Support Center</span>
-          <button onClick={() => setIsMobileMenuOpen(false)}>
-            <X size={24} />
-          </button>
+  return (
+    <div className="bg-gray-50 min-h-screen">
+      <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-16">
+          <h1 className="text-4xl font-extrabold text-gray-900 mb-4">How Can We Help You?</h1>
+          <p className="text-xl text-gray-500 max-w-3xl mx-auto">
+            Our dedicated support team is here to assist you with any questions or issues you might encounter.
+          </p>
         </div>
         
-        <div className="p-4">
-          <button className="w-full bg-blue-600 text-white rounded-lg p-3 flex items-center justify-center space-x-2 mb-6 hover:bg-blue-700 transition-colors">
-            <Plus size={18} />
-            <span>Create New Ticket</span>
-          </button>
-          
-          <nav className="space-y-1">
-            <button 
-              onClick={() => {
-                setActiveTab('all');
-                setIsMobileMenuOpen(false);
-              }}
-              className={`w-full text-left p-3 rounded-lg flex items-center space-x-3 ${activeTab === 'all' ? 'bg-blue-50 text-blue-600' : 'hover:bg-gray-50'}`}
-            >
-              <FileText size={18} />
-              <span>All Tickets</span>
-            </button>
-            <button 
-              onClick={() => {
-                setActiveTab('open');
-                setIsMobileMenuOpen(false);
-              }}
-              className={`w-full text-left p-3 rounded-lg flex items-center space-x-3 ${activeTab === 'open' ? 'bg-blue-50 text-blue-600' : 'hover:bg-gray-50'}`}
-            >
-              <FileText size={18} />
-              <span>Open Tickets</span>
-            </button>
-            <button 
-              onClick={() => {
-                setActiveTab('closed');
-                setIsMobileMenuOpen(false);
-              }}
-              className={`w-full text-left p-3 rounded-lg flex items-center space-x-3 ${activeTab === 'closed' ? 'bg-blue-50 text-blue-600' : 'hover:bg-gray-50'}`}
-            >
-              <FileText size={18} />
-              <span>Closed Tickets</span>
-            </button>
-          </nav>
-          
-          <div className="mt-8 pt-6 border-t">
-            <button className="w-full text-left p-3 rounded-lg flex items-center space-x-3 hover:bg-gray-50">
-              <Settings size={18} />
-              <span>User Information</span>
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  return (
-    <DashboardLayout user={user}>
-    <div className="flex flex-col min-h-screen bg-gray-50">
-      {/* Top controls for mobile */}
-      <div className="md:hidden bg-white p-4 shadow-sm flex items-center justify-between">
-        <div className="flex items-center">
-          <MobileMenuButton />
-          <h1 className="ml-3 text-lg font-bold">Support Center</h1>
-        </div>
-        <button className="bg-blue-600 text-white rounded-lg p-2 text-sm">
-          <Plus size={16} />
-        </button>
-      </div>
-
-      <MobileMenu />
-
-      {/* Desktop Navigation Bar */}
-      <div className="bg-white shadow-sm hidden md:block sticky top-0 z-10 border-b">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-6">
-              <button 
-                onClick={() => setActiveTab('all')}
-                className={`py-4 font-medium text-sm relative ${activeTab === 'all' ? 'text-blue-600' : 'text-gray-600 hover:text-gray-900'}`}
-              >
-                <span>All Tickets</span>
-                {activeTab === 'all' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600"></div>}
-              </button>
-              <button 
-                onClick={() => setActiveTab('open')}
-                className={`py-4 font-medium text-sm relative ${activeTab === 'open' ? 'text-blue-600' : 'text-gray-600 hover:text-gray-900'}`}
-              >
-                <span>Open Tickets</span>
-                {activeTab === 'open' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600"></div>}
-              </button>
-              <button 
-                onClick={() => setActiveTab('closed')}
-                className={`py-4 font-medium text-sm relative ${activeTab === 'closed' ? 'text-blue-600' : 'text-gray-600 hover:text-gray-900'}`}
-              >
-                <span>Closed Tickets</span>
-                {activeTab === 'closed' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600"></div>}
-              </button>
-              <button className="py-4 font-medium text-sm text-gray-600 hover:text-gray-900 relative">
-                <span>User Information</span>
-              </button>
-            </div>
-            <button className="bg-blue-600 text-white rounded-lg px-4 py-2 flex items-center space-x-2 hover:bg-blue-700 transition-colors">
-              <Plus size={18} />
-              <span>Create New Ticket</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Main content */}
-      <div className="max-w-7xl mx-auto w-full p-2 sm:p-4 flex-1">
-        {/* Ticket list */}
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-          {/* Actions row */}
-          <div className="flex flex-col space-y-3 p-3 sm:p-4 border-b sm:space-y-0 sm:flex-row sm:items-center sm:justify-between">
-            <h2 className="text-lg sm:text-xl font-semibold">
-              {activeTab === 'all' ? 'All Tickets' : activeTab === 'open' ? 'Open Tickets' : 'Closed Tickets'} 
-              <span className="text-gray-500 ml-2 text-sm">({filteredTickets.length})</span>
-            </h2>
-            
-            <div className="flex items-center space-x-2 sm:space-x-3 w-full sm:w-auto">
-              <div className="relative flex-1 sm:w-56 md:w-64">
-                <input 
-                  type="text" 
-                  placeholder="Search tickets..." 
-                  className="w-full pl-9 pr-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+        {/* Contact Options */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+          <div className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow overflow-hidden">
+            <div className="p-6 flex flex-col items-center text-center">
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                <MessageSquare className="h-8 w-8 text-blue-600" />
               </div>
-              <button className="p-2 border rounded-lg hover:bg-gray-50">
-                <Filter size={16} />
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Support Ticket</h3>
+              <p className="text-gray-500 mb-6">
+                Create a support ticket for any issues or questions you have.
+              </p>
+              <button 
+                onClick={() => setShowCreateForm(true)}
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700"
+              >
+                Create New Ticket
               </button>
             </div>
           </div>
           
-          {/* Tickets */}
-          <div className="divide-y">
-            {filteredTickets.map(ticket => (
-              <div key={ticket.id} className="p-3 sm:p-4 hover:bg-gray-50 transition-colors cursor-pointer">
-                <div className="flex flex-wrap items-start justify-between mb-2 gap-y-2">
-                  <div className="flex items-center space-x-2 sm:space-x-3">
-                    <div className={`h-2 w-2 rounded-full ${ticket.status === 'open' ? 'bg-green-500' : 'bg-gray-400'}`}></div>
-                    <span className="capitalize text-xs sm:text-sm text-gray-500">{ticket.status}</span>
-                    <div className={`text-xs px-2 py-0.5 rounded-full text-white ${getPriorityColor(ticket.priority)}`}>
-                      {ticket.priority}
-                    </div>
+          <div className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow overflow-hidden">
+            <div className="p-6 flex flex-col items-center text-center">
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                <Phone className="h-8 w-8 text-blue-600" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Call Us</h3>
+              <p className="text-gray-500 mb-6">
+                For urgent matters, feel free to call our support team directly.
+              </p>
+              <p className="text-xl font-semibold text-blue-600">+91 XXXX XXX XXX</p>
+              <p className="text-sm text-gray-500 mt-1">
+                Monday-Friday: 9AM-6PM IST
+              </p>
+            </div>
+          </div>
+          
+          <div className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow overflow-hidden">
+            <div className="p-6 flex flex-col items-center text-center">
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                <Mail className="h-8 w-8 text-blue-600" />
+              </div>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Email Us</h3>
+              <p className="text-gray-500 mb-6">
+                You can also reach our support team via email for general inquiries.
+              </p>
+              <p className="text-xl font-semibold text-blue-600">support@yourwebsite.com</p>
+              <p className="text-sm text-gray-500 mt-1">
+                We typically respond within 24 hours
+              </p>
+            </div>
+          </div>
+        </div>
+        
+        {/* Tickets List */}
+        <div className="mb-16">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">My Support Tickets</h2>
+          <TicketsList />
+        </div>
+        
+        {/* FAQs */}
+        <div>
+          <div className="flex items-center mb-6">
+            <HelpCircle className="h-6 w-6 text-blue-600 mr-2" />
+            <h2 className="text-2xl font-bold text-gray-900">Frequently Asked Questions</h2>
+          </div>
+          
+          <div className="bg-white rounded-xl shadow-md overflow-hidden divide-y divide-gray-200">
+            {faqs.map((faq, index) => (
+              <div key={index} className="hover:bg-gray-50">
+                <button
+                  className="w-full px-6 py-4 text-left focus:outline-none"
+                  onClick={() => setOpenFaq(openFaq === index ? null : index)}
+                >
+                  <div className="flex justify-between items-center">
+                    <h3 className="text-lg font-medium text-gray-900">{faq.question}</h3>
+                    {openFaq === index ? (
+                      <ChevronUp className="h-5 w-5 text-gray-500" />
+                    ) : (
+                      <ChevronDown className="h-5 w-5 text-gray-500" />
+                    )}
                   </div>
-                  <div className="flex items-center space-x-2 text-xs sm:text-sm text-gray-500">
-                    <span>{ticket.id}</span>
-                    <span className="hidden xs:inline">{ticket.date}</span>
-                    <span className="xs:hidden">{ticket.date.split(',')[0]}</span>
+                </button>
+                {openFaq === index && (
+                  <div className="px-6 pb-4">
+                    <p className="text-gray-500">{faq.answer}</p>
                   </div>
-                </div>
-                <div className="flex items-start sm:items-center justify-between">
-                  <div className="pr-4">
-                    <h3 className="font-medium text-sm sm:text-base">{ticket.title}</h3>
-                    <p className="text-xs sm:text-sm text-gray-600 mt-1 line-clamp-2 sm:line-clamp-1">{ticket.description}</p>
-                  </div>
-                  <ChevronRight size={18} className="text-gray-400 flex-shrink-0 mt-1 sm:mt-0" />
-                </div>
+                )}
               </div>
             ))}
-            
-            {filteredTickets.length === 0 && (
-              <div className="p-8 text-center text-gray-500">
-                No tickets found.
-              </div>
-            )}
           </div>
         </div>
       </div>
+      
+      {/* Create Ticket Modal */}
+      {showCreateForm && (
+        <CreateTicket
+          show={showCreateForm}
+          handleClose={() => setShowCreateForm(false)}
+        />
+      )}
     </div>
-    </DashboardLayout>
   );
 };
 
-export default SupportCenter;
+export default ContactSupportPage;

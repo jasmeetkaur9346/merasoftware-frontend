@@ -74,16 +74,17 @@ const DisclaimersPage = () => {
         <div ref={contentRef} className="bg-white rounded-xl shadow-lg overflow-hidden mb-8">
           {/* Header */}
           <div className="bg-green-700 py-6 px-8">
-            <h1 className="text-3xl font-bold text-white">Disclaimers</h1>
-            <p className="mt-2 text-green-100">Last updated: March 14, 2025</p>
+            <h1 className="text-3xl font-bold text-white">User Guidelines and Disclaimer</h1>
+            <p className="mt-2 text-green-100">Last updated: March 24, 2025</p>
           </div>
           
           {/* Introduction */}
           <div className="py-8 px-8">
             <div className="text-gray-600 leading-relaxed mb-8">
-              <p>
-                While we strive to provide the best service possible, there are certain limitations to our responsibilities. 
-                The following disclaimers outline the boundaries of our services and help establish clear expectations for our clients.
+              <p className="font-medium text-lg text-gray-800 mb-4">
+                At Mera Software, we are committed to providing transparent, efficient, and high-quality services. 
+                Our goal is to deliver exceptional software solutions while maintaining clear communication and 
+                well-defined responsibilities. Below is an overview of our working process, responsibilities, and limitations.
               </p>
             </div>
             
@@ -91,25 +92,12 @@ const DisclaimersPage = () => {
             <div className="mb-8">
               <h2 className="text-xl font-semibold text-gray-800 flex items-center">
                 <span className="flex items-center justify-center w-8 h-8 rounded-full bg-green-100 text-green-800 mr-3">1</span>
-                Delays Due to Client Factors
+                Our Working Process
               </h2>
               <div className="mt-4 pl-11 text-gray-600 leading-relaxed">
                 <p>
-                  We are not responsible for delays caused due to the customer's failure to provide necessary data or payments on time. 
-                  Project timelines are established with the assumption of timely client cooperation and input.
+                  To ensure a smooth project experience, we follow a structured process:
                 </p>
-                <div className="mt-4 p-4 bg-amber-50 rounded-lg border border-amber-100">
-                  <div className="flex">
-                    <div className="flex-shrink-0">
-                      <svg className="h-5 w-5 text-amber-600" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                    <p className="ml-3 text-amber-700">
-                      Delays caused by late provision of content, assets, approvals, or payments will extend project timelines accordingly.
-                    </p>
-                  </div>
-                </div>
               </div>
             </div>
             
@@ -117,51 +105,16 @@ const DisclaimersPage = () => {
             <div className="mb-8">
               <h2 className="text-xl font-semibold text-gray-800 flex items-center">
                 <span className="flex items-center justify-center w-8 h-8 rounded-full bg-green-100 text-green-800 mr-3">2</span>
-                Documentation of Agreements
+                Service Selection
               </h2>
               <div className="mt-4 pl-11 text-gray-600 leading-relaxed">
-                <p>
-                  We ensure that all agreements and project scopes are properly documented before starting the work to avoid 
-                  any confusion or disputes. This documentation serves as the definitive reference for project expectations.
-                </p>
-                <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                    <div className="flex items-center justify-center h-12 w-12 rounded-md bg-green-100 text-green-600 mx-auto mb-3">
-                      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
-                    </div>
-                    <h3 className="text-center font-medium text-gray-700 mb-2">Project Scope</h3>
-                    <p className="text-sm text-gray-500 text-center">
-                      Detailed documentation of features, functionalities, and deliverables.
-                    </p>
-                  </div>
-                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                    <div className="flex items-center justify-center h-12 w-12 rounded-md bg-green-100 text-green-600 mx-auto mb-3">
-                      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                    </div>
-                    <h3 className="text-center font-medium text-gray-700 mb-2">Timeline</h3>
-                    <p className="text-sm text-gray-500 text-center">
-                      Agreed-upon milestones and delivery dates based on project requirements.
-                    </p>
-                  </div>
-                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                    <div className="flex items-center justify-center h-12 w-12 rounded-md bg-green-100 text-green-600 mx-auto mb-3">
-                      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2z" />
-                      </svg>
-                    </div>
-                    <h3 className="text-center font-medium text-gray-700 mb-2">Payment Terms</h3>
-                    <p className="text-sm text-gray-500 text-center">
-                      Clear payment schedule and amounts for project phases.
-                    </p>
-                  </div>
-                </div>
-                <p className="mt-4 text-sm text-gray-500 italic">
-                  Any changes to the scope, timeline, or deliverables must be documented in writing and agreed upon by both parties.
-                </p>
+                <ul className="space-y-2 list-disc pl-5">
+                  <li>Choose a service that best fits your needs.</li>
+                  <li>After selecting a service, go to the product page and click on 'Proceed.' A popup will appear with options to log in or contact us.</li>
+                  <li>Provide your basic details (name, phone number, and email ID) and submit the form.</li>
+                  <li>Our team will reach out within 12 hours to create your login credentials (username and password).</li>
+                  <li>Once you receive your credentials, log in to your dashboard and complete the payment to start your project.</li>
+                </ul>
               </div>
             </div>
             
@@ -169,45 +122,16 @@ const DisclaimersPage = () => {
             <div className="mb-8">
               <h2 className="text-xl font-semibold text-gray-800 flex items-center">
                 <span className="flex items-center justify-center w-8 h-8 rounded-full bg-green-100 text-green-800 mr-3">3</span>
-                Third-Party Services and Integrations
+                Project Assessment and Customization
               </h2>
               <div className="mt-4 pl-11 text-gray-600 leading-relaxed">
-                <p>
-                  While we provide support to our clients, we do not take responsibility for issues caused by third-party services, 
-                  software updates, or integrations that are beyond our control.
-                </p>
-                <div className="mt-4 space-y-3">
-                  <div className="flex p-3 bg-gray-50 rounded-lg">
-                    <div className="flex-shrink-0">
-                      <svg className="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                    </div>
-                    <p className="ml-3 text-sm text-gray-600">
-                      <strong>API Changes:</strong> Changes to third-party APIs may affect functionality and require additional development work.
-                    </p>
-                  </div>
-                  <div className="flex p-3 bg-gray-50 rounded-lg">
-                    <div className="flex-shrink-0">
-                      <svg className="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                    </div>
-                    <p className="ml-3 text-sm text-gray-600">
-                      <strong>Plugin/Library Updates:</strong> Updates to plugins or libraries may cause compatibility issues requiring maintenance.
-                    </p>
-                  </div>
-                  <div className="flex p-3 bg-gray-50 rounded-lg">
-                    <div className="flex-shrink-0">
-                      <svg className="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                    </div>
-                    <p className="ml-3 text-sm text-gray-600">
-                      <strong>Hosting Service Issues:</strong> Server downtime or issues with hosting providers are outside our direct control.
-                    </p>
-                  </div>
-                </div>
+                <ul className="space-y-2 list-disc pl-5">
+                  <li>After selecting a project, our team will review your requirements.</li>
+                  <li>If we have a suitable plan, we will guide you through the payment process.</li>
+                  <li>If none of our existing plans match your needs, we will create a plan based on your requirements.</li>
+                  <li>A contract agreement will be signed, and our agent will assist you with the payment process.</li>
+                  <li>Once the payment is completed, we will begin the development process.</li>
+                </ul>
               </div>
             </div>
             
@@ -215,44 +139,13 @@ const DisclaimersPage = () => {
             <div className="mb-8">
               <h2 className="text-xl font-semibold text-gray-800 flex items-center">
                 <span className="flex items-center justify-center w-8 h-8 rounded-full bg-green-100 text-green-800 mr-3">4</span>
-                Maintenance and Support
+                Development and Support
               </h2>
               <div className="mt-4 pl-11 text-gray-600 leading-relaxed">
-                <p>
-                  Ongoing maintenance and support services are provided as per the agreed terms in the service contract. 
-                  Any support requests beyond the scope of the agreement may incur additional charges.
-                </p>
-                <div className="mt-4 border border-gray-200 rounded-lg overflow-hidden">
-                  <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
-                    <h3 className="text-sm font-medium text-gray-700">Support Coverage</h3>
-                  </div>
-                  <div className="divide-y divide-gray-200">
-                    <div className="flex items-center px-4 py-3">
-                      <svg className="h-5 w-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                      <span className="ml-3 text-sm text-gray-600">Bug fixes for issues within our codebase</span>
-                    </div>
-                    <div className="flex items-center px-4 py-3">
-                      <svg className="h-5 w-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                      <span className="ml-3 text-sm text-gray-600">Technical support during agreed business hours</span>
-                    </div>
-                    <div className="flex items-center px-4 py-3">
-                      <svg className="h-5 w-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                      </svg>
-                      <span className="ml-3 text-sm text-gray-600">Major feature additions or changes</span>
-                    </div>
-                    <div className="flex items-center px-4 py-3">
-                      <svg className="h-5 w-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                      </svg>
-                      <span className="ml-3 text-sm text-gray-600">Issues with third-party services or integrations</span>
-                    </div>
-                  </div>
-                </div>
+                <ul className="space-y-2 list-disc pl-5">
+                  <li>Our team manually manages the entire process to ensure smooth execution.</li>
+                  <li>A dedicated developer will be assigned to your project and will oversee its completion.</li>
+                </ul>
               </div>
             </div>
             
@@ -260,32 +153,64 @@ const DisclaimersPage = () => {
             <div className="mb-8">
               <h2 className="text-xl font-semibold text-gray-800 flex items-center">
                 <span className="flex items-center justify-center w-8 h-8 rounded-full bg-green-100 text-green-800 mr-3">5</span>
-                Transparency and Fairness
+                Complaints and Feedback
               </h2>
               <div className="mt-4 pl-11 text-gray-600 leading-relaxed">
-                <p>
-                  Our system is designed to be transparent and fair, ensuring a smooth experience for every client. 
-                  We strive to maintain clear communication and set realistic expectations throughout the project lifecycle.
-                </p>
-                <div className="mt-4 flex items-center justify-center">
-                  <div className="py-6 px-6 bg-green-50 rounded-xl max-w-lg">
-                    <div className="flex items-center justify-center mb-4">
-                      <svg className="w-12 h-12 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
-                      </svg>
-                    </div>
-                    <p className="text-center text-gray-700 font-medium">
-                      We value our client relationships and are committed to being fair, honest, and transparent in all our business dealings.
-                    </p>
-                  </div>
+                <ul className="space-y-2 list-disc pl-5">
+                  <li>For any complaints, you can contact our support team and raise a ticket.</li>
+                  <li>If you have suggestions or feedback, you can submit them through our feedback section.</li>
+                </ul>
+              </div>
+            </div>
+            
+            {/* Section 6 */}
+            <div className="mb-8">
+              <h2 className="text-xl font-semibold text-gray-800 flex items-center">
+                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-green-100 text-green-800 mr-3">6</span>
+                Responsibilities and Limitations
+              </h2>
+              <div className="mt-4 pl-11 text-gray-600 leading-relaxed space-y-6">
+                <div className="bg-gray-50 rounded-lg p-5 border-l-4 border-green-600">
+                  <h3 className="font-medium text-gray-800 mb-2">1. Client Cooperation and Timely Input</h3>
+                  <p>We rely on timely inputs from clients. Any delays in providing necessary content, assets, or approvals may extend project timelines. Payment delays will also impact project progress.</p>
+                </div>
+                
+                <div className="bg-gray-50 rounded-lg p-5 border-l-4 border-green-600">
+                  <h3 className="font-medium text-gray-800 mb-2">2. Documentation of Agreements</h3>
+                  <p>All project agreements, including scope, timelines, and payment schedules, are documented before starting. Any changes must be agreed upon in writing by both parties.</p>
+                </div>
+                
+                <div className="bg-gray-50 rounded-lg p-5 border-l-4 border-green-600">
+                  <h3 className="font-medium text-gray-800 mb-2">3. Third-Party Services</h3>
+                  <p>We provide support for third-party integrations but are not responsible for issues caused by external API changes, plugin updates, or hosting service problems.</p>
+                </div>
+                
+                <div className="bg-gray-50 rounded-lg p-5 border-l-4 border-green-600">
+                  <h3 className="font-medium text-gray-800 mb-2">4. Maintenance and Support</h3>
+                  <p>Our support covers bug fixes within our codebase and technical assistance during agreed business hours. Additional feature requests or major updates will be charged separately.</p>
+                </div>
+                
+                <div className="bg-gray-50 rounded-lg p-5 border-l-4 border-green-600">
+                  <h3 className="font-medium text-gray-800 mb-2">5. Transparency and Fairness</h3>
+                  <p>We maintain transparency throughout the project. Our communication channels ensure that clients are always informed and involved in decision-making.</p>
                 </div>
               </div>
+            </div>
+            
+            {/* Conclusion */}
+            <div className="mt-8 mb-4 p-5 bg-green-50 rounded-lg border border-green-100">
+              <p className="text-gray-700">
+                By proceeding with our services, you acknowledge and agree to the terms outlined in this disclaimer. For further clarification, please contact our support team.
+              </p>
+              <p className="text-gray-700 font-medium mt-4">
+                Thank you for choosing Mera Software!
+              </p>
             </div>
             
             {/* Last updated date */}
             <div className="mt-10 pt-6 border-t border-gray-200">
               <div className="text-gray-500 text-sm">
-                Last updated: March 14, 2025
+                Last updated: March 24, 2025
               </div>
             </div>
           </div>

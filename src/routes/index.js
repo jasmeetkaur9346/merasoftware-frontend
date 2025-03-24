@@ -47,6 +47,8 @@ import DeveloperPanel from "../pages/DeveloperPanel";
 import AdminOrdersPage from "../pages/AdminOrdersPage";
 import OrderDetailPage from "../pages/OrderDetailPage";
 import ContactUsForm from "../pages/ContactUsForm";
+import AdminTicketsDashboard from "../pages/AdminTicketsDashboard";
+import TicketDetail from "../pages/TicketDetail";
 
 
 // Create a conditional home route
@@ -184,6 +186,10 @@ const router = createBrowserRouter([
                 element: <ContactUsForm/>
             },
             {
+                path: "support-tickets/:ticketId",
+                element: <TicketDetail/>
+            },
+            {
                 path: "admin-panel",
                 element : <AdminPanel/>,
                 children :[
@@ -198,6 +204,14 @@ const router = createBrowserRouter([
                     {
                         path : "order-approval",
                         element : <AdminOrdersPage/>
+                    },
+                    {
+                        path: "admin-tickets",
+                        element: <AdminTicketsDashboard/>
+                    },
+                    {
+                        path: "admin-tickets/:ticketId",
+                        element: <TicketDetail isAdmin={true} />
                     },
                     {
                         path: "payment-verification",

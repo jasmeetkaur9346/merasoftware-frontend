@@ -62,7 +62,7 @@ const ProductDetails = () => {
   const [additionalFeaturesData, setAdditionalFeaturesData] = useState([]);
   const [quantities, setQuantities] = useState({});
   const [paymentOption, setPaymentOption] = useState('full');
-  const [showLoginPopup, setShowLoginPopup] = useState(false);
+  const [showLoginContactForm, setShowLoginContactForm] = useState(false);
 
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
@@ -226,7 +226,7 @@ const ProductDetails = () => {
   const handleGetStarted = async (e) => {
      // Check if user is logged in
      if (!isAuthenticated) {
-      setShowLoginPopup(true);
+      setShowLoginContactForm(true);
       return;
     }
 
@@ -1037,9 +1037,10 @@ const ProductDetails = () => {
     />
 
     <LoginPopup 
-        isOpen={showLoginPopup}
-        onClose={() => setShowLoginPopup(false)}
-      />
+       isOpen={showLoginContactForm}
+       onClose={() => setShowLoginContactForm(false)}
+       productId={params?.id}
+       />
   </div>
   );
 };
