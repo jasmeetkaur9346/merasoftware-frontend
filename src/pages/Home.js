@@ -17,6 +17,9 @@ const Home = () => {
       <VerticalCardProduct category={"dynamic_websites"} heading={"Dynamic Websites"}/>
       
       <BannerProduct serviceName="home"/>
+      <VerticalCardProduct category={"app_development"} heading={"Mobile Apps"}/>
+      <VerticalCardProduct category={"cloud_software_development"} heading={"Cloud Software Development"}/>
+      <VerticalCardProduct category={"feature_upgrades"} heading={"Feature Upgrades"}/>
 
       <HomeSecondBanner/>
     

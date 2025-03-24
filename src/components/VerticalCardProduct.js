@@ -28,8 +28,8 @@ const VerticalCardProduct = ({category, heading}) => {
             bg: "bg-white",
             border: "border-blue-200",
             text: "text-blue-950",
-            textSecondary: "#e91e63",
-            headingColor: "#e91e63",
+            textSecondary: "#3980f5",
+            headingColor: "#3980f5",
             headerBg: "bg-blue-500", // Blue ribbon for standard websites
             button: "bg-blue-600",
             tagBg: "bg-white text-blue-600 border-indigo-100"
@@ -38,8 +38,38 @@ const VerticalCardProduct = ({category, heading}) => {
             bg: "bg-white",
             border: "border-green-200",
             text: "text-green-950",
+            textSecondary: "#003399",
+            headingColor: "#003399",
+            headerBg: "bg-blue-500", // Updated to match image
+            button: "bg-green-600",
+            tagBg: "bg-white text-green-600 border-green-100"
+        },
+        'app_development': {
+            bg: "bg-white",
+            border: "border-blue-200",
+            text: "text-blue-950",
+            textSecondary: "#e91e63",
+            headingColor: "#e91e63",
+            headerBg: "bg-blue-500", // Blue ribbon for standard websites
+            button: "bg-blue-600",
+            tagBg: "bg-white text-blue-600 border-indigo-100"
+        },
+        'cloud_software_development': {
+            bg: "bg-white",
+            border: "border-green-200",
+            text: "text-green-950",
             textSecondary: "#009688",
             headingColor: "#009688",
+            headerBg: "bg-blue-500", // Updated to match image
+            button: "bg-green-600",
+            tagBg: "bg-white text-green-600 border-green-100"
+        },
+        'feature_upgrades': {
+            bg: "bg-white",
+            border: "border-green-200",
+            text: "text-green-950",
+            textSecondary: "#334155",
+            headingColor: "#334155",
             headerBg: "bg-blue-500", // Updated to match image
             button: "bg-green-600",
             tagBg: "bg-white text-green-600 border-green-100"
@@ -148,9 +178,9 @@ const VerticalCardProduct = ({category, heading}) => {
                                     className="flex-none w-full md:max-w-[320px] md:min-w-[280px] max-w-[240px] min-w-[220px] rounded-lg overflow-hidden shadow-md bg-white border border-gray-300" 
                                 >
                                     {/* Service Name Header - No background color, just colored text */}
-                                    <div className="ml-4 font-bold line-clamp-1 overflow-hidden py-2.5 text-sm md:text-[17px] " style={{ color: style.textSecondary }}>
-                                        {product?.serviceName.toUpperCase()}
-                                    </div>
+                                    <div className="px-4 font-bold whitespace-nowrap overflow-hidden text-ellipsis py-2.5 text-sm md:text-[17px]" style={{ color: style.textSecondary }}>
+                                    {product?.serviceName.toUpperCase()}
+                                </div>
                                     
                                     {/* Website Preview Image */}
                                     <Link to={`product/${product?._id}`}>
