@@ -17,6 +17,7 @@ import {
   clearOldCache 
 } from '../helpers/productDB';
 import LoginPopup from '../components/LoginPopup';
+import { useSelector } from 'react-redux';
 
 // Alert Modal Component
 const AlertModal = ({ isOpen, message, onClose }) => {
@@ -74,8 +75,10 @@ const ProductDetails = () => {
    const [couponError, setCouponError] = useState('');
 
   // Get user authentication status
-  const { userDetails, fetchUserAddToCart } = useContext(Context);
-  const isAuthenticated = !!userDetails?._id;
+  const userDetails = useSelector((state) => state.user.user);
+const isAuthenticated = !!userDetails?._id;
+const isInitialized = useSelector((state) => state.user.initialized);
+
   const navigate = useNavigate();
   const params = useParams();
 
@@ -192,40 +195,47 @@ const ProductDetails = () => {
     }
   };
 
-  const handleAddToCart = async (e) => {
-    try {
-      setAddToCartLoading(true);
-      // Add base product to cart with coupon info if available
-      const result = await addToCart(
-        e, 
-        data?._id, 
-        1, 
-        couponData ? {
-          couponCode: couponData.data.couponCode,
-          discountAmount: couponData.data.discountAmount,
-          finalPrice: couponData.data.finalPrice
-        } : null
-      );
+  // const handleAddToCart = async (e) => {
+  //   try {
+  //     setAddToCartLoading(true);
+  //     const result = await addToCart(
+  //       e, 
+  //       data?._id, 
+  //       1, 
+  //       couponData ? {
+  //         couponCode: couponData.data.couponCode,
+  //         discountAmount: couponData.data.discountAmount,
+  //         finalPrice: couponData.data.finalPrice
+  //       } : null
+  //     );
       
-      if (selectedFeatures.length > 0) {
-        await Promise.all(selectedFeatures.map(featureId => {
-          const quantity = quantities[featureId] || data.totalPages;
-          return addToCart(e, featureId, quantity);
-        }));
-      }
+  //     if (selectedFeatures.length > 0) {
+  //       await Promise.all(selectedFeatures.map(featureId => {
+  //         const quantity = quantities[featureId] || data.totalPages;
+  //         return addToCart(e, featureId, quantity);
+  //       }));
+  //     }
 
-      await fetchUserAddToCart();
-      setAddToCartLoading(false);
-      setShowCartPopup(true);
-    } catch (error) {
-      console.error("Error adding to cart:", error);
-      setAddToCartLoading(false);
-    }
-  };
+  //     await fetchUserAddToCart();
+  //     setAddToCartLoading(false);
+  //     setShowCartPopup(true);
+  //   } catch (error) {
+  //     console.error("Error adding to cart:", error);
+  //     setAddToCartLoading(false);
+  //   }
+  // };
 
   const handleGetStarted = async (e) => {
-     // Check if user is logged in
-     if (!isAuthenticated) {
+    console.log("Authentication check:", { 
+      userDetails, 
+      isAuthenticated: !!userDetails?._id, 
+      userId: userDetails?._id,
+      isInitialized
+    });
+  
+    // Wait until user state is initialized
+    if (isInitialized && !userDetails) {
+      console.log("User not authenticated, showing login form");
       setShowLoginContactForm(true);
       return;
     }

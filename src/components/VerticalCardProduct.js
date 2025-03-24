@@ -127,7 +127,7 @@ const VerticalCardProduct = ({category, heading}) => {
     return (
         <div className='container mx-auto md:px-14 px-4 my-1 mb-6 relative'>
             <div className="flex justify-between items-center mb-6">
-                <h2 className='text-2xl font-bold'>{heading}</h2>
+                <h2 className='text-xl md:text-2xl font-bold'>{heading}</h2>
                 <Link 
                     to={`/product-category?category=${category}`}
                     className="text-blue-600 hover:underline"
