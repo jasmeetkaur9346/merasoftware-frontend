@@ -73,7 +73,7 @@ const ContactSupportPage = () => {
               <p className="text-gray-500 mb-6">
                 For urgent matters, feel free to call our support team directly.
               </p>
-              <p className="text-xl font-semibold text-blue-600">+91 XXXX XXX XXX</p>
+              <p className="text-xl font-semibold text-blue-600">+91 92565 37003</p>
               <p className="text-sm text-gray-500 mt-1">
                 Monday-Friday: 9AM-6PM IST
               </p>
@@ -89,7 +89,7 @@ const ContactSupportPage = () => {
               <p className="text-gray-500 mb-6">
                 You can also reach our support team via email for general inquiries.
               </p>
-              <p className="text-xl font-semibold text-blue-600">support@yourwebsite.com</p>
+              <p className="text-xl font-semibold text-blue-600">info@vacomputers.com</p>
               <p className="text-sm text-gray-500 mt-1">
                 We typically respond within 24 hours
               </p>
