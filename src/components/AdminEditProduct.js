@@ -84,38 +84,65 @@ const AdminEditProduct = ({
 
     // Calculate checkpoints whenever totalPages changes
     useEffect(() => {
-      if (shouldShowWebsiteFields(data.category) && data.totalPages >= 4) {
-        // Structure checkpoints
-        const structureCheckpoints = [
-          { name: "Website Structure ready", percentage: 2 },
-          { name: "Header created", percentage: 5 },
-          { name: "Footer created", percentage: 5 },
-        ];
-
-        // Calculate percentage per page
-        const remainingPercentage = 78; // 100 - (2 + 5 + 5 + 10)
-        const percentagePerPage = Number((remainingPercentage / data.totalPages).toFixed(2));
-
-        // Generate page checkpoints (fixed + additional if any)
-        const pageCheckpoints = Array.from({ length: data.totalPages }, (_, index) => ({
-          name: index < 4 ? BASE_PAGES[index] : `Additional Page ${index - 3}`,
-          percentage: percentagePerPage
-        }));
-
-        // Final testing checkpoint
-        const finalCheckpoint = [{ name: "Final Testing", percentage: 10 }];
-
-        // Combine all checkpoints
-        setData(prev => ({
-          ...prev,
-          checkpoints: [
-            ...structureCheckpoints,
-            ...pageCheckpoints,
-            ...finalCheckpoint
-          ]
-        }));
+      if (data.category) {
+        const websiteCategories = ['standard_websites', 'dynamic_websites'];
+        
+        if (websiteCategories.includes(data.category) && data.totalPages >= 4) {
+          // वेबसाइट चेकपॉइंट कैलकुलेशन
+          const structureCheckpoints = [
+            { name: "Website Structure ready", percentage: 2 },
+            { name: "Header created", percentage: 5 },
+            { name: "Footer created", percentage: 5 },
+          ];
+    
+          const remainingPercentage = 78;
+          const percentagePerPage = Number((remainingPercentage / data.totalPages).toFixed(2));
+    
+          const pageCheckpoints = Array.from({ length: data.totalPages }, (_, index) => ({
+            name: index < 4 ? BASE_PAGES[index] : `Additional Page ${index - 3}`,
+            percentage: percentagePerPage
+          }));
+    
+          const finalCheckpoint = [{ name: "Final Testing", percentage: 10 }];
+    
+          setData(prev => ({
+            ...prev,
+            checkpoints: [
+              ...structureCheckpoints,
+              ...pageCheckpoints,
+              ...finalCheckpoint
+            ]
+          }));
+        } else if (data.category === 'cloud_software_development') {
+          // क्लाउड सॉफ्टवेयर चेकपॉइंट्स
+          setData(prev => ({
+            ...prev,
+            checkpoints: [
+              { name: "Project Initiation", percentage: 4 },
+              { name: "Core Backend & Database Setup", percentage: 2 },
+              { name: "Server & database architecture setup", percentage: 2 },
+              { name: "User roles & authentication system", percentage: 8 },
+              { name: "Dashboard structure & data flow design", percentage: 4 },
+              { name: "Basic backend functionality setup", percentage: 5 },
+              { name: "Core Modules Development", percentage: 5 },
+              { name: "Frontend Development & UI Implementation", percentage: 20 },
+              { name: "Dashboard & reports visualization", percentage: 5 },
+              { name: "Integration of UI with backend functions", percentage: 20 },
+              { name: "Responsive design for mobile & desktop", percentage: 5 },
+              { name: "User-friendly navigation & search features", percentage: 2 },
+              { name: "Email & SMS Notifications", percentage: 3 },
+              { name: "Role-Based Access Control", percentage: 3 },
+              { name: "Basic Third-Party Integrations", percentage: 4 },
+              { name: "Performance testing across devices", percentage: 2 },
+              { name: "Fixing bugs & security updates", percentage: 2 },
+              { name: "User Acceptance Testing (UAT)", percentage: 2 },
+              { name: "Final review & approval by client", percentage: 2 },
+              { name: "Deployment & Launch", percentage: 0 }
+            ]
+          }));
+        }
       }
-    }, [data.totalPages, data.category]);
+    }, [data.category, data.totalPages]);
 
      // Add fetchCompatibleFeatures function
      const fetchCompatibleFeatures = async (category) => {
@@ -146,34 +173,35 @@ const AdminEditProduct = ({
     }, [productData]);
 
 
-    const handleOnChange = (e)=> {
+    const handleOnChange = (e) => {
       const { name, value } = e.target
-
-      setData((preve)=>{
+    
+      setData((preve) => {
         if (name === "category") {
-          // Fetch compatible features if it's a website service
+          // वेबसाइट सर्विस के लिए कंपैटिबल फीचर्स फेच करें
           const servicesWithFeatures = ['standard_websites', 'dynamic_websites', 'cloud_software_development', 'app_development'];
           if (servicesWithFeatures.includes(value)) {
             fetchCompatibleFeatures(value);
           } else {
-            setCompatibleFeatures([]); // Clear features if not applicable
+            setCompatibleFeatures([]); // अगर लागू नहीं है, तो फीचर्स को क्लियर करें
           }
-
-          if (defaultFields[value]) {
-            return {
-              ...preve,
-              [name]: value,
-              websiteTypeDescription: defaultFields[value].websiteTypeDescription,
-            }
-          }
+    
+          // वेबसाइट स्पेसिफिक फील्ड्स की विज़िबिलिटी हैंडल करें
+          return {
+            ...preve,
+            [name]: value,
+            isWebsiteService: servicesWithFeatures.includes(value),
+            isFeatureUpgrade: value === 'feature_upgrades'
+          };
         }
-
+        
+        // अन्यथा, बस फील्ड को अपडेट करें
         return {
           ...preve,
           [name]: value
         }
-      })
-    }
+      });
+    };
 
     // Add new handlers for feature-related fields
     const handleCompatibleCategoriesChange = (selectedOptions) => {

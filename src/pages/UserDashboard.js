@@ -419,6 +419,13 @@ const Dashboard = () => {
                       <p className="text-xs text-gray-600 ml-7">
                         This usually takes 1-4 hours. You'll be notified once approved.
                       </p>
+                      {/* <button 
+                className="w-full py-2 bg-amber-500 rounded-md shadow-sm hover:shadow-md transition-shadow flex items-center justify-center text-white text-sm font-medium group mt-8"
+                onClick={() => handleViewProjectDetails(pendingApprovalProjects._id)}
+              >
+                <span>View Project</span>
+                <ChevronRight size={14} className="ml-1 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300" />
+              </button> */}
                     </div>
                   </div>
                 </div>
