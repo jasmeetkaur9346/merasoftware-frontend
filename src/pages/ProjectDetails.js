@@ -48,6 +48,8 @@ const ProjectDetails = () => {
       
       if (orderData.success) {
         const order = orderData.data;
+        console.log('Order checkpoints received in frontend:', order.checkpoints);
+  console.log('Order category:', order.productId?.category);
 
         // Check if this order is visible to the user
       if (order.orderVisibility === 'pending-approval') {

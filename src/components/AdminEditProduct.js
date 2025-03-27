@@ -175,32 +175,31 @@ const AdminEditProduct = ({
 
     const handleOnChange = (e) => {
       const { name, value } = e.target
-    
-      setData((preve) => {
-        if (name === "category") {
-          // वेबसाइट सर्विस के लिए कंपैटिबल फीचर्स फेच करें
-          const servicesWithFeatures = ['standard_websites', 'dynamic_websites', 'cloud_software_development', 'app_development'];
-          if (servicesWithFeatures.includes(value)) {
-            fetchCompatibleFeatures(value);
-          } else {
-            setCompatibleFeatures([]); // अगर लागू नहीं है, तो फीचर्स को क्लियर करें
-          }
-    
-          // वेबसाइट स्पेसिफिक फील्ड्स की विज़िबिलिटी हैंडल करें
-          return {
-            ...preve,
-            [name]: value,
-            isWebsiteService: servicesWithFeatures.includes(value),
-            isFeatureUpgrade: value === 'feature_upgrades'
-          };
+      
+      if (name === "category") {
+        // Define which categories should have additional features
+        const webCategories = ['standard_websites', 'dynamic_websites', 'cloud_software_development', 'app_development'];
+        
+        if (webCategories.includes(value)) {
+          fetchCompatibleFeatures(value);
+        } else {
+          setCompatibleFeatures([]); // Clear features if not applicable
         }
         
-        // अन्यथा, बस फील्ड को अपडेट करें
-        return {
-          ...preve,
+        // Update all category-dependent fields in one go
+        setData(prev => ({
+          ...prev,
+          [name]: value,
+          isWebsiteService: webCategories.includes(value),
+          isFeatureUpgrade: value === 'feature_upgrades'
+        }));
+      } else {
+        // For other fields, just update normally
+        setData(prev => ({
+          ...prev,
           [name]: value
-        }
-      });
+        }));
+      }
     };
 
     // Add new handlers for feature-related fields
@@ -406,53 +405,61 @@ const AdminEditProduct = ({
         {shouldShowWebsiteFields(data.category) && (
           <>
             {/* Number of Pages Dropdown */}
-            <div className='mt-3'>
-              <label htmlFor='totalPages' className='block mb-2'>
-                Number of Pages: <span className='text-sm text-gray-500'>(Includes {BASE_PAGES.join(", ")})</span>
-              </label>
-              <select
-                id='totalPages'
-                name='totalPages'
-                value={data.totalPages}
-                onChange={(e) => setData(prev => ({
-                  ...prev,
-                  totalPages: parseInt(e.target.value)
-                }))}
-                className='w-full p-2 bg-slate-100 border rounded'
-              >
-                {Array.from({ length: 47 }, (_, i) => i + 4).map((num) => (
-                  <option key={num} value={num}>
-                    {num} Pages {num === 4 ? '(Minimum)' : ''}
-                  </option>
-                ))}
-              </select>
-            </div>
+            {['standard_websites', 'dynamic_websites'].includes(data.category) && (
+      <div className='mt-3'>
+        <label htmlFor='totalPages' className='block mb-2'>
+          Number of Pages: <span className='text-sm text-gray-500'>(Includes {BASE_PAGES.join(", ")})</span>
+        </label>
+        <select
+          id='totalPages'
+          name='totalPages'
+          value={data.totalPages}
+          onChange={(e) => setData(prev => ({
+            ...prev,
+            totalPages: parseInt(e.target.value)
+          }))}
+          className='w-full p-2 bg-slate-100 border rounded'
+        >
+          {Array.from({ length: 47 }, (_, i) => i + 4).map((num) => (
+            <option key={num} value={num}>
+              {num} Pages {num === 4 ? '(Minimum)' : ''}
+            </option>
+          ))}
+        </select>
+      </div>
+    )}
 
             {/* Display checkpoints */}
             {data.checkpoints.length > 0 && (
-              <div className='mt-3'>
-                <label className='block mb-2'>Progress Checkpoints:</label>
-                <div className='bg-slate-50 p-3 rounded mt-1 max-h-60 overflow-y-auto'>
-                  {data.checkpoints.map((checkpoint, index) => (
-                    <div 
-                      key={index} 
-                      className={`flex justify-between items-center py-1 border-b last:border-0 ${
-                        BASE_PAGES.includes(checkpoint.name) ? 'font-medium' : ''
-                      }`}
-                    >
-                      <span className='text-sm'>{checkpoint.name}</span>
-                      <span className='text-sm text-gray-600'>{checkpoint.percentage}%</span>
-                    </div>
-                  ))}
-                  <div className='mt-2 pt-2 border-t'>
-                    <div className='flex justify-between font-medium'>
-                      <span>Total Pages:</span>
-                      <span>{data.totalPages}</span>
-                    </div>
-                  </div>
-                </div>
+      <div className='mt-3'>
+        <label className='block mb-2'>Progress Checkpoints:</label>
+        <div className='bg-slate-50 p-3 rounded mt-1 max-h-60 overflow-y-auto'>
+          {data.checkpoints.map((checkpoint, index) => (
+            <div 
+              key={index} 
+              className={`flex justify-between items-center py-1 border-b last:border-0`}
+            >
+              <span className='text-sm'>{checkpoint.name}</span>
+              <span className='text-sm text-gray-600'>{checkpoint.percentage}%</span>
+            </div>
+          ))}
+          <div className='mt-2 pt-2 border-t'>
+            <div className='flex justify-between font-medium'>
+              <span>Total Percentage:</span>
+              <span>
+                {data.checkpoints.reduce((sum, cp) => sum + cp.percentage, 0).toFixed(2)}%
+              </span>
+            </div>
+            {['standard_websites', 'dynamic_websites'].includes(data.category) && (
+              <div className='flex justify-between font-medium'>
+                <span>Total Pages:</span>
+                <span>{data.totalPages}</span>
               </div>
             )}
+          </div>
+        </div>
+      </div>
+    )}
 
             <label htmlFor='packageIncludes' className='mt-3'>Package Includes:</label>
             <PackageSelect
@@ -586,12 +593,12 @@ const AdminEditProduct = ({
               placeholder="Select package options"
             />
             
-            <label htmlFor='validityPeriod' className='mt-3'>Validity Period (months):</label>
+            <label htmlFor='validityPeriod' className='mt-3'>Validity Period (Days):</label>
             <input 
                 type='number' 
                 id='validityPeriod'
                 name='validityPeriod'
-                placeholder='Enter validity period in months'
+                placeholder='Enter validity period in days'
                 value={data.validityPeriod}
                 onChange={handleOnChange}
                 className='p-2 bg-slate-100 border rounded'
