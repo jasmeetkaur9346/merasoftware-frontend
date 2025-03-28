@@ -146,7 +146,7 @@ const AdminProjects = () => {
       const data = await response.json();
       
       if(data.success) {
-        toast.success('Developer assigned successfully');
+        toast.success('Developer assigned successfully! Notifications have been sent to both client and developer.');
         setIsAssignModalOpen(false);
         setSelectedDeveloper('');
         fetchProjects();
