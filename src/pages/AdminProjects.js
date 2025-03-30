@@ -101,7 +101,10 @@ const AdminProjects = () => {
           projectId,
           message: message.trim(),
           messageId: editingMessageId,
-          isEdit: Boolean(editingMessageId) // Add flag to indicate if this is an edit
+          isEdit: Boolean(editingMessageId),
+           // Add these new properties:
+    checkpointId: selectedCheckpoint ? selectedCheckpoint.checkpointId : null,
+    checkpointName: selectedCheckpoint ? selectedCheckpoint.name : null
         })
       });
 
