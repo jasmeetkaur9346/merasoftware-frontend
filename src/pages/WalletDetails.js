@@ -19,6 +19,7 @@ const WalletDetails = () => {
   const [verificationStatus, setVerificationStatus] = useState('');
   const [verificationSubmitted, setVerificationSubmitted] = useState(false);
   const [upiTransactionId, setUpiTransactionId] = useState('');
+  const [activeProject, setActiveProject] = useState(null);
   const user = useSelector(state => state?.user?.user);
   const context = useContext(Context);
   
@@ -67,9 +68,43 @@ const WalletDetails = () => {
       setLoading(false);
     }
   };
+
+  const fetchActiveProject = async () => {
+    try {
+      const response = await fetch(SummaryApi.ordersList.url, {
+        method: SummaryApi.ordersList.method,
+        credentials: 'include'
+      });
+      
+      const data = await response.json();
+      if (data.success) {
+        // Find active (in-progress) project
+        const allOrders = data.data || [];
+        const activeProj = allOrders.find(order => {
+          const category = order.productId?.category?.toLowerCase();
+          if (!category) return false;
+          
+          // Only consider website projects, not update plans
+          if (['standard_websites', 'dynamic_websites', 'cloud_software_development', 'app_development'].includes(category)) {
+            if (order.orderVisibility === 'pending-approval' || order.orderVisibility === 'payment-rejected') {
+              return false; // Don't show as active if pending approval or rejected
+            }
+
+            return order.projectProgress < 100 || order.currentPhase !== 'completed';
+          }
+          return false;
+        });
+        
+        setActiveProject(activeProj || null);
+      }
+    } catch (error) {
+      console.error("Error fetching active project:", error);
+    }
+  };
   
   useEffect(() => {
     fetchWalletHistory();
+    fetchActiveProject(); 
     // Refresh wallet balance
     if (context?.fetchWalletBalance) {
       context.fetchWalletBalance();
@@ -211,6 +246,7 @@ const WalletDetails = () => {
       setLoading(false);
     }
   };
+  
 
   // Set quick amount
   const handleQuickAmount = (quickAmount) => {
@@ -218,7 +254,8 @@ const WalletDetails = () => {
   };
 
   return (
-    <DashboardLayout user={user}>
+    <DashboardLayout user={user}
+    activeProject={activeProject}>
       <div className="min-h-screen bg-gray-100 p-4">
         <div className="max-w-6xl mx-auto">
           {/* Header with User Info and Balance */}
