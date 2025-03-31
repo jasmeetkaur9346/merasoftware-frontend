@@ -4,11 +4,13 @@ import { toast } from 'react-toastify';
 import Context from '../context';
 import CreateTicket from '../components/CreateTicket';
 import TicketsList from '../components/TicketsList';
+import DashboardLayout from '../components/DashboardLayout';
 
 const ContactSupportPage = () => {
   const { userDetails } = useContext(Context);
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [openFaq, setOpenFaq] = useState(null);
+  const [user, setUser] = useState(null);
   
   // Common FAQs
   const faqs = [
@@ -35,6 +37,7 @@ const ContactSupportPage = () => {
   ];
 
   return (
+    <DashboardLayout user={user}>
     <div className="bg-gray-50 min-h-screen">
       <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
@@ -97,8 +100,8 @@ const ContactSupportPage = () => {
           </div>
         </div>
         
-        {/* Tickets List */}
-        <div className="mb-16">
+         {/* Tickets List */}
+         <div className="mb-16">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">My Support Tickets</h2>
           <TicketsList />
         </div>
@@ -145,6 +148,7 @@ const ContactSupportPage = () => {
         />
       )}
     </div>
+    </DashboardLayout>
   );
 };
 

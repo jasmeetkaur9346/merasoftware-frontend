@@ -27,10 +27,47 @@ const Profile = () => {
     const [loading, setLoading] = useState(true);
     const [updateLoading, setUpdateLoading] = useState(false);
     const [editField, setEditField] = useState(null);
+    const [activeProject, setActiveProject] = useState(null);
 
     useEffect(() => {
         fetchUserDetails();
+        fetchActiveProject(); 
     }, []);
+
+    const fetchActiveProject = async () => {
+        try {
+            if (!isOnline) return;
+            
+            const response = await fetch(SummaryApi.ordersList.url, {
+                method: SummaryApi.ordersList.method,
+                credentials: 'include'
+            });
+            
+            const data = await response.json();
+            if (data.success) {
+                // Find active (in-progress) project
+                const allOrders = data.data || [];
+                const activeProj = allOrders.find(order => {
+                    const category = order.productId?.category?.toLowerCase();
+                    if (!category) return false;
+                    
+                    // Only consider website projects, not update plans
+                    if (['standard_websites', 'dynamic_websites', 'cloud_software_development', 'app_development'].includes(category)) {
+                        if (order.orderVisibility === 'pending-approval' || order.orderVisibility === 'payment-rejected') {
+                            return false; // Don't show as active if pending approval or rejected
+                        }
+    
+                        return order.projectProgress < 100 || order.currentPhase !== 'completed';
+                    }
+                    return false;
+                });
+                
+                setActiveProject(activeProj || null);
+            }
+        } catch (error) {
+            console.error("Error fetching active project:", error);
+        }
+    };
 
     const fetchUserDetails = async () => {
         setLoading(true);
@@ -155,7 +192,8 @@ const Profile = () => {
     };
 
     return (
-        <DashboardLayout user={user}>
+        <DashboardLayout user={user}
+        activeProject={activeProject}>
             <div className="bg-gray-50 min-h-screen">
                 {(loading || updateLoading) && (
                     <div className="fixed inset-0 bg-black bg-opacity-10 flex items-center justify-center z-50">

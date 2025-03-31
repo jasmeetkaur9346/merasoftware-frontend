@@ -107,6 +107,9 @@ const OrdersPage = () => {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
   const [activeTab, setActiveTab] = useState('all');
+  const [walletBalance, setWalletBalance] = useState(0);
+  const [cartCount, setCartCount] = useState(0);
+  const [activeProject, setActiveProject] = useState(null);
   const [windowWidth, setWindowWidth] = useState(
     typeof window !== 'undefined' ? window.innerWidth : 1200
   );
@@ -147,7 +150,26 @@ const OrdersPage = () => {
         const allOrders = data.data || [];
         allOrders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         setOrders(allOrders);
+
+        // Find active (in-progress) project
+      const activeProj = allOrders.find(order => {
+        const category = order.productId?.category?.toLowerCase();
+        if (!category) return false;
+        
+        // Only consider website projects, not update plans
+        if (['standard_websites', 'dynamic_websites', 'cloud_software_development', 'app_development'].includes(category)) {
+          if (order.orderVisibility === 'pending-approval' || order.orderVisibility === 'payment-rejected') {
+            return false; // Don't show as active if pending approval or rejected
+          }
+
+          return order.projectProgress < 100 || order.currentPhase !== 'completed';
+        }
+        return false;
+      });
+      
+      setActiveProject(activeProj || null);
       }
+      
     } catch (error) {
       console.error('Error fetching orders:', error);
     } finally {
@@ -195,7 +217,10 @@ const OrdersPage = () => {
 
   if (loading) {
     return (
-      <DashboardLayout user={user}>
+      <DashboardLayout user={user}
+      walletBalance={walletBalance}
+    cartCount={cartCount}
+    activeProject={activeProject}>
         <div className="fixed inset-0 bg-black bg-opacity-10 flex items-center justify-center z-50">
           <TriangleMazeLoader />
         </div>
@@ -204,7 +229,11 @@ const OrdersPage = () => {
   }
 
   return (
-    <DashboardLayout user={user}>
+    <DashboardLayout user={user}
+    walletBalance={walletBalance}
+    cartCount={cartCount}
+    activeProject={activeProject}>
+      
       <div className="bg-gray-50 min-h-full">
         <header className="bg-blue-600 text-white py-4 sm:py-6 px-4 sm:px-6 md:px-8">
           <div className="max-w-7xl mx-auto"> {/* Increased from 6xl to 7xl for wider content */}

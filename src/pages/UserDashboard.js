@@ -289,6 +289,7 @@ const Dashboard = () => {
     user={user}
     walletBalance={walletBalance}
     cartCount={cartCount}
+    activeProject={activeProject}
   >  
         
         {/* Main Dashboard Content */}

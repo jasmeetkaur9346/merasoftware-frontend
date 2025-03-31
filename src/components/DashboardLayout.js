@@ -3,10 +3,11 @@ import React from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { 
   Home, ShoppingBag, UserCircle, Wallet, MessageSquare, LogOut,
-  Search, Bell, ChevronDown, User
+  Search, Bell, ChevronDown, User,
+  FileText
 } from 'lucide-react';
 
-const DashboardLayout = ({ children, user, walletBalance, cartCount, isLoading }) => {
+const DashboardLayout = ({ children, user, walletBalance, cartCount, isLoading, activeProject }) => {
   const location = useLocation();
   const currentPath = location.pathname;
   
@@ -21,10 +22,26 @@ const DashboardLayout = ({ children, user, walletBalance, cartCount, isLoading }
   const getPageTitle = () => {
     if (currentPath.startsWith('/dashboard')) return 'Dashboard';
     if (currentPath.startsWith('/order')) return 'Your Orders';
+    if (currentPath.startsWith('/project-details')) return 'Your Project';
     if (currentPath.startsWith('/profile')) return 'Account Details';
     if (currentPath.startsWith('/wallet')) return 'Wallet Details';
     if (currentPath.startsWith('/support')) return 'Contact Support';
     return 'Dashboard';
+  };
+
+  const getProjectLink = () => {
+    // If activeProject is provided and has an _id, use it
+    if (activeProject && activeProject._id) {
+      return `/project-details/${activeProject._id}`;
+    }
+    
+    // If user is already on a project details page, keep them on that project
+    if (currentPath.startsWith('/project-details/')) {
+      return currentPath;
+    }
+    
+    // Otherwise, redirect to orders page where they can select a project
+    return '/order';
   };
 
   // Loading state
@@ -78,6 +95,19 @@ const DashboardLayout = ({ children, user, walletBalance, cartCount, isLoading }
               >
                 <ShoppingBag size={20} className="mr-3" />
                 <span className="font-medium">Your Orders</span>
+              </Link>
+            </li>
+            <li>
+              <Link 
+                 to={getProjectLink()} 
+                className={`flex items-center px-4 py-3 ${
+                  isActive('/project-details') 
+                    ? 'text-blue-600 bg-blue-50 border-r-4 border-blue-600' 
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                <FileText size={20} className="mr-3" />
+                <span className="font-medium">Your Project</span>
               </Link>
             </li>
             <li>

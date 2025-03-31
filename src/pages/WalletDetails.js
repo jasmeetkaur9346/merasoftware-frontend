@@ -23,15 +23,14 @@ const WalletDetails = () => {
   const context = useContext(Context);
   
   // Calculate total spending for today
-  const getTodaySpending = () => {
-    const today = new Date().toLocaleDateString();
-    
+  const getTotalSpending = () => {
     return walletHistory
-      .filter(transaction => {
-        const transactionDate = new Date(transaction.date).toLocaleDateString();
-        return transactionDate === today && 
-               (transaction.type === 'payment' || transaction.amount < 0);
-      })
+      .filter(transaction => 
+        // Include all spending transactions regardless of date
+        transaction.type === 'payment' || 
+        transaction.type === 'service' || 
+        (transaction.amount < 0 && transaction.type !== 'deposit')
+      )
       .reduce((total, transaction) => total + Math.abs(transaction.amount), 0);
   };
   
@@ -413,29 +412,29 @@ const WalletDetails = () => {
               <h2 className="text-xl font-semibold text-gray-800 mb-6">Activity Summary</h2>
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-sm font-medium text-gray-500 mb-3">Today's Activity</h3>
+                  <h3 className="text-sm font-medium text-gray-500 mb-3">User's Activity</h3>
                   <div className="flex justify-between mb-2">
                     <span className="text-gray-700">Total Spending</span>
-                    <span className="font-medium">{displayINRCurrency(getTodaySpending())}</span>
+                    <span className="font-medium">{displayINRCurrency(getTotalSpending())}</span>
                   </div>
-                  <div className="flex justify-between mb-2">
+                  {/* <div className="flex justify-between mb-2">
                     <span className="text-gray-700">Number of Transactions</span>
                     <span className="font-medium">{getTodayTransactionCount()}</span>
-                  </div>
-                  <div className="h-2 bg-gray-200 rounded-full mt-2">
+                  </div> */}
+                  {/* <div className="h-2 bg-gray-200 rounded-full mt-2">
                     <div 
                       className="h-2 bg-blue-600 rounded-full" 
                       style={{ 
                         width: `${Math.min(getTodayTransactionCount() * 10, 100)}%` 
                       }}
                     ></div>
-                  </div>
+                  </div> */}
                 </div>
                 
                 <div>
                   <h3 className="text-sm font-medium text-gray-500 mb-3">Previous Transactions</h3>
-                  <div className="space-y-3">
-                    {walletHistory.slice(0, 2).map((transaction, index) => {
+                  <div className="space-y-5">
+                    {walletHistory.slice(0, 3).map((transaction, index) => {
                       const display = getTransactionDisplay(transaction);
                       return (
                         <div key={index} className="flex justify-between p-3 bg-gray-50 rounded-lg">
