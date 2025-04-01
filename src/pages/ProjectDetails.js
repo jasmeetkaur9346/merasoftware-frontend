@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { 
   Bell, MessageCircle, X, ArrowLeft, ChevronRight, 
   Send, Clock, Check, ChevronUp, ChevronDown, List, Upload,
-  CheckCircle
+  CheckCircle, ExternalLink
 } from 'lucide-react';
 import SummaryApi from '../common';
 import TriangleMazeLoader from '../components/TriangleMazeLoader';
@@ -498,6 +498,21 @@ const ProjectDetails = () => {
                     <span className="font-medium">Request Update</span>
                   </button>
                 </div>
+
+                 {/* View Project Button - Only show if projectLink exists */}
+          {order.projectLink && order.projectLink.trim() !== '' && (
+            <div className="mt-2 bg-green-500 hover:bg-green-600 text-white px-4 py-4 rounded-lg transition-all duration-300 shadow-md hover:shadow-lg cursor-pointer transform hover:scale-105">
+              <a
+                href={order.projectLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full flex items-center justify-center"
+              >
+                <ExternalLink className="w-5 h-5 mr-2" />
+                <span className="font-medium">View Project</span>
+              </a>
+            </div>
+          )}
               </div>
             </div>
             

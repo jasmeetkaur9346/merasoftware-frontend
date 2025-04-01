@@ -209,6 +209,10 @@ const SummaryApi = {
         url : `${backendDomain}/api/project-message`,
         method : "post"
     },
+    updateProjectLink:{
+      url : `${backendDomain}/api/update-project-link`,
+      method: "post"
+    },
     guestSlides: {
         url: `${backendDomain}/api/get-guest-slides`,
         method: "get"
