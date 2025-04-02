@@ -206,8 +206,8 @@ const ProjectDetails = () => {
         
         // Determine if we should show the alert based on progress
         const shouldPause = 
-          (nextUnpaidInstallment.installmentNumber === 2 && Math.round(order.projectProgress) >= 50) ||
-          (nextUnpaidInstallment.installmentNumber === 3 && Math.round(order.projectProgress) >= 90);
+          (nextUnpaidInstallment.installmentNumber === 2 && Math.round(order.projectProgress) >= 40) ||
+          (nextUnpaidInstallment.installmentNumber === 3 && Math.round(order.projectProgress) >= 75);
         
         setShouldShowPaymentAlert(shouldPause);
         setIsProjectPaused(shouldPause);
