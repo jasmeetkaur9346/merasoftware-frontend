@@ -279,8 +279,40 @@ const AdminProjects = () => {
   );
 
   const EditModal = () => {
-    if (!selectedProject) return null;
+      // यहां हम नए state variables जोड़ेंगे
+  const [showLinkForm, setShowLinkForm] = useState(false);
+  const [linkText, setLinkText] = useState('');
+  const [linkUrl, setLinkUrl] = useState('');
   
+    if (!selectedProject) return null;
+    
+
+  // लिंक बटन को मैसेज में जोड़ने का फंक्शन
+  const addLinkToMessage = () => {
+    if (!linkText.trim() || !linkUrl.trim()) {
+      toast.error('Please enter both button text and URL');
+      return;
+    }
+    
+    // लिंक को एक विशेष फॉर्मेट में जोड़ें: [[TEXT||URL]]
+    const linkMarkup = `[[${linkText}||${linkUrl}]]`;
+    
+    // मैसेज में इस लिंक मार्कअप को जोड़ें
+    setMessage(prevMessage => prevMessage + ' ' + linkMarkup);
+    
+    // फॉर्म को रीसेट करें
+    setLinkText('');
+    setLinkUrl('');
+    setShowLinkForm(false);
+    
+    // फोकस को वापस मैसेज टेक्स्टएरिया पर करें
+    setTimeout(() => {
+      if (messageTextareaRef.current) {
+        messageTextareaRef.current.focus();
+      }
+    }, 0);
+  };
+
     const nextCheckpointIndex = getNextCheckpoint(selectedProject.checkpoints);
       
     return (
@@ -447,6 +479,52 @@ const AdminProjects = () => {
                 </button>
               </div>
             )}
+
+            {/* Link Button Form */}
+          {showLinkForm && (
+            <div className="bg-gray-50 p-3 rounded border">
+              <div className="flex justify-between items-center mb-2">
+                <h4 className="text-sm font-medium">Add Link Button</h4>
+                <button 
+                  onClick={() => setShowLinkForm(false)}
+                  className="text-gray-500 hover:text-gray-700 text-xs"
+                >
+                  ✕
+                </button>
+              </div>
+              <div className="space-y-2">
+                <input
+                  type="text"
+                  value={linkText}
+                  onChange={(e) => setLinkText(e.target.value)}
+                  placeholder="Button Text (e.g. Access Your Software)"
+                  className="w-full p-2 border rounded text-sm focus:outline-none focus:border-blue-500"
+                />
+                <input
+                  type="text"
+                  value={linkUrl}
+                  onChange={(e) => setLinkUrl(e.target.value)}
+                  placeholder="URL (e.g. https://example.com)"
+                  className="w-full p-2 border rounded text-sm focus:outline-none focus:border-blue-500"
+                />
+                <div className="flex justify-end space-x-2">
+                  <button
+                    onClick={() => setShowLinkForm(false)}
+                    className="px-3 py-1 border rounded text-sm hover:bg-gray-100"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={addLinkToMessage}
+                    className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
+                  >
+                    Add Link
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
             <div className="flex gap-2">
               <div className="flex-1 relative">
               <textarea
@@ -488,6 +566,7 @@ const AdminProjects = () => {
                   {message.length} characters
                 </div>
               </div>
+               <div className="flex flex-col space-y-2">
               <button
                 onClick={() => handleSendUpdate(selectedProject._id, projectLink)}
                 disabled={selectedCheckpoint && !message.trim()}
@@ -499,12 +578,37 @@ const AdminProjects = () => {
               >
                 {editingMessageId ? 'Save Changes' : 'Send'}
               </button>
+              
+              {/* Add Link Button */}
+              <button
+                onClick={() => setShowLinkForm(true)}
+                className="px-4 py-2 rounded text-sm whitespace-nowrap bg-gray-200 hover:bg-gray-300 text-gray-700"
+              >
+                Add Link
+              </button>
             </div>
           </div>
+          
+          {/* Preview section to show how links will appear */}
+          {message.includes('[[') && message.includes('||') && message.includes(']]') && (
+            <div className="mt-3 bg-gray-50 p-3 rounded border">
+              <p className="text-xs font-medium mb-2">Preview:</p>
+              <div className="text-sm" dangerouslySetInnerHTML={{ 
+                __html: message.replace(
+                  /\[\[(.+?)\|\|(.+?)\]\]/g, 
+                  '<span class="text-blue-600 cursor-pointer px-2 py-1 bg-blue-100 rounded">👉 $1</span>'
+                ) 
+              }} />
+              <p className="text-xs text-gray-500 mt-2">
+                Links will appear as buttons in the client's email
+              </p>
+            </div>
+          )}
         </div>
       </div>
-    );
-  };
+    </div>
+  );
+};
 
   const AssignDeveloperModal = () => {
     if (!selectedProject) return null;
