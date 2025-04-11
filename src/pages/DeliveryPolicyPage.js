@@ -239,6 +239,123 @@ const DeliveryPolicyPage = () => {
               </div>
             </div>
             
+            {/* New Section 5 - Software Usage Rights */}
+            <div className="mb-8">
+              <h2 className="text-xl font-semibold text-gray-800 flex items-center">
+                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-green-100 text-green-800 mr-3">5</span>
+                Software Usage Rights
+              </h2>
+              <div className="mt-4 pl-11 text-gray-600 leading-relaxed">
+                <p>
+                  After delivering the software to the client, they have full rights to use and sell the software according to the terms defined in the contract. The client becomes the owner of the specific software functionality they have received.
+                </p>
+                <div className="mt-4 space-y-3">
+                  <div className="flex">
+                    <div className="flex-shrink-0 h-6 w-6 flex items-center justify-center rounded-full bg-green-100 text-green-800 font-medium text-sm">
+                      1
+                    </div>
+                    <p className="ml-3">Clients can use the delivered software to automate their business processes as intended.</p>
+                  </div>
+                  <div className="flex">
+                    <div className="flex-shrink-0 h-6 w-6 flex items-center justify-center rounded-full bg-green-100 text-green-800 font-medium text-sm">
+                      2
+                    </div>
+                    <p className="ml-3">Clients have the right to sell the software to any third party if they wish to do so.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* New Section 6 - Intellectual Property */}
+            <div className="mb-8">
+              <h2 className="text-xl font-semibold text-gray-800 flex items-center">
+                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-green-100 text-green-800 mr-3">6</span>
+                Intellectual Property and System Implementation
+              </h2>
+              <div className="mt-4 pl-11 text-gray-600 leading-relaxed">
+                <p>
+                  Our development approach focuses on creating automated systems that make users' tasks easier and more efficient. While we deliver full functionality to our clients, certain aspects of our development methodology remain our intellectual property.
+                </p>
+                <div className="mt-4 p-4 bg-green-50 rounded-lg border border-green-100">
+                  <p className="text-green-800">
+                    <strong>Important:</strong> The system understanding, techniques, and implementation methodologies used in our software development process remain our intellectual property. When we provide source code to a client, it does not mean we have transferred our understanding of the work systems or the copyrights to the implementation techniques.
+                  </p>
+                </div>
+                <div className="mt-4 space-y-3">
+                  <div className="flex">
+                    <div className="flex-shrink-0 h-6 w-6 flex items-center justify-center rounded-full bg-green-100 text-green-800 font-medium text-sm">
+                      1
+                    </div>
+                    <p className="ml-3">The client only owns the specific functionality of their software that was delivered to them.</p>
+                  </div>
+                  <div className="flex">
+                    <div className="flex-shrink-0 h-6 w-6 flex items-center justify-center rounded-full bg-green-100 text-green-800 font-medium text-sm">
+                      2
+                    </div>
+                    <p className="ml-3">The client cannot challenge us for using similar systems or methodologies in our other software or SaaS products.</p>
+                  </div>
+                  <div className="flex">
+                    <div className="flex-shrink-0 h-6 w-6 flex items-center justify-center rounded-full bg-green-100 text-green-800 font-medium text-sm">
+                      3
+                    </div>
+                    <p className="ml-3">The software is developed keeping in mind the client's requirements with a focus on automation and efficiency.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* New Section 7 - System Reuse and Intellectual Property Rights */}
+            <div className="mb-8">
+              <h2 className="text-xl font-semibold text-gray-800 flex items-center">
+                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-green-100 text-green-800 mr-3">7</span>
+                System Reuse and Intellectual Property Rights
+              </h2>
+              <div className="mt-4 pl-11 text-gray-600 leading-relaxed">
+                <p>
+                  We believe in clarifying the distinction between the delivered software and our underlying methodologies to ensure transparency in our business relationships.
+                </p>
+                
+                <div className="mt-4 space-y-3">
+                  <div className="flex">
+                    <div className="flex-shrink-0 h-6 w-6 flex items-center justify-center rounded-full bg-green-100 text-green-800 font-medium text-sm">
+                      1
+                    </div>
+                    <p className="ml-3"><strong>System vs. Implementation Clarification:</strong> While we provide source code and credentials to the client, the system design, architecture, and implementation methodology remain our intellectual property.</p>
+                  </div>
+                  <div className="flex">
+                    <div className="flex-shrink-0 h-6 w-6 flex items-center justify-center rounded-full bg-green-100 text-green-800 font-medium text-sm">
+                      2
+                    </div>
+                    <p className="ml-3"><strong>Pre-existing Work:</strong> Systems and methodologies developed by us prior to or during the project are considered our pre-existing work, over which we retain full rights.</p>
+                  </div>
+                  <div className="flex">
+                    <div className="flex-shrink-0 h-6 w-6 flex items-center justify-center rounded-full bg-green-100 text-green-800 font-medium text-sm">
+                      3
+                    </div>
+                    <p className="ml-3"><strong>Right to Create Similar Products:</strong> We explicitly retain the right to create software or SaaS products with similar functionality, using the same architecture, workflow, or system design.</p>
+                  </div>
+                  <div className="flex">
+                    <div className="flex-shrink-0 h-6 w-6 flex items-center justify-center rounded-full bg-green-100 text-green-800 font-medium text-sm">
+                      4
+                    </div>
+                    <p className="ml-3"><strong>Fairness Clause:</strong> The software delivered to the client is limited to that specific implementation and does not extend to the underlying system design or methodology.</p>
+                  </div>
+                  <div className="flex">
+                    <div className="flex-shrink-0 h-6 w-6 flex items-center justify-center rounded-full bg-green-100 text-green-800 font-medium text-sm">
+                      5
+                    </div>
+                    <p className="ml-3"><strong>Right to Reuse:</strong> We may reuse system components, portions of code, or system architecture in future projects. This includes the right to develop and launch similar SaaS products even after delivering a custom software solution to a client.</p>
+                  </div>
+                </div>
+                
+                <div className="mt-4 p-4 bg-green-50 rounded-lg border border-green-100">
+                  <p className="text-green-800">
+                    <strong>Declaration:</strong> Even when we have delivered all credentials and source code to the client, and we no longer possess any of their data, the client cannot challenge our right to use the same base working or system architecture in our own SaaS products or other client projects. Our understanding of the system and implementation methods remains our exclusive intellectual property.
+                  </p>
+                </div>
+              </div>
+            </div>
+            
             {/* Last updated date */}
             <div className="mt-10 pt-6 border-t border-gray-200">
               <div className="text-gray-500 text-sm">
