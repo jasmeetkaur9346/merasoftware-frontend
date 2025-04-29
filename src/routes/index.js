@@ -49,6 +49,8 @@ import OrderDetailPage from "../pages/OrderDetailPage";
 import ContactUsForm from "../pages/ContactUsForm";
 import AdminTicketsDashboard from "../pages/AdminTicketsDashboard";
 import TicketDetail from "../pages/TicketDetail";
+import ModernBusinessLandingPage from "../pages/ModernBusinessLandingPage";
+import LandingPageLayout from "../pages/LandingPageLayout";
 
 
 // Create a conditional home route
@@ -274,7 +276,17 @@ const router = createBrowserRouter([
                 ]
             }
         ]
-    }
+    },
+    {
+        path: "/",
+        element: <LandingPageLayout />,
+        children: [
+            {
+                path: "landing",
+                element: <ModernBusinessLandingPage />
+            },
+        ]
+    },
 ])
 
 export default router;
