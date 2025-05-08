@@ -88,10 +88,6 @@ const router = createBrowserRouter([
                 element: <ForgotPassword />
             },
             {
-                path: "sign-up",
-                element : <SignUp/>
-            },
-            {
                 path : "product-category/",
                 element : <CategoryProduct/>
             },
@@ -202,6 +198,10 @@ const router = createBrowserRouter([
                     {
                         path: "all-users",
                         element : <AllUsers/>
+                    },
+                    {
+                        path: "sign-up",
+                        element : <SignUp/>
                     },
                     {
                         path: "admin-settings",

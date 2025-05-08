@@ -401,6 +401,10 @@ const SummaryApi = {
         url : `${backendDomain}/api/get-all-tickets`,
         method: "get"
       },
+      getGeneralUsers: {
+         url: `${backendDomain}/api/general-users`,
+         method: "get"
+      },
     wallet : {
         balance :{
             url : `${backendDomain}/api/wallet/balance`,
