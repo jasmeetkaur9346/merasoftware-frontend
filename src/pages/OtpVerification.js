@@ -11,7 +11,7 @@ import Context from '../context';
 const OtpVerification = ({ userData, onBackToLogin}) => {
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [loading, setLoading] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(600); // 10 minutes in seconds
+  const [timeLeft, setTimeLeft] = useState(60); // 10 minutes in seconds
   const navigate = useNavigate();
   const dispatch = useDispatch(); // Redux dispatch को प्राप्त करें
   const storeUser = useSelector(state => state.user.user);
@@ -171,7 +171,7 @@ const OtpVerification = ({ userData, onBackToLogin}) => {
       const data = await response.json();
       
       if (data.success) {
-        setTimeLeft(600); // Reset timer
+        setTimeLeft(60); // Reset timer
         toast.success("New OTP sent to your email");
       } else {
         toast.error(data.message);
