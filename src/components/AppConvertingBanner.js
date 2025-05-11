@@ -66,7 +66,7 @@ const AppConvertingBanner = () => {
   
     // Otherwise, show the most recent website project
     const websiteProject = sortedOrders.find(order => 
-      ['standard_websites', 'dynamic_websites', 'web_applications', 'mobile_apps'].includes(
+      ['standard_websites', 'dynamic_websites', 'cloud_software_development', 'app_development'].includes(
         order.productId?.category?.toLowerCase()
       )
     );
@@ -261,7 +261,7 @@ const AppConvertingBanner = () => {
 
   // Helper functions remain the same
   const isWebsiteService = (category = '') => {
-    return ['static_websites', 'standard_websites', 'dynamic_websites'].includes(category?.toLowerCase());
+    return [ 'standard_websites', 'cloud_software_development', 'app_development'].includes(category?.toLowerCase());
   };
 
   const isUpdatePlan = (category = '') => {
