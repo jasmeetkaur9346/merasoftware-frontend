@@ -66,6 +66,15 @@ const NotificationBell = () => {
     }
   };
 
+  const handleBellClick = async () => {
+     // Mark all notifications as read if there are any unread notifications
+     if (unreadCount > 0) {
+       await markAllAsRead(); // Call to mark all as read
+     }
+     // Toggle the dropdown
+     setIsOpen(prev => !prev);
+   };
+
   // Mark notification as read
   const markAsRead = async (notificationId) => {
     try {
@@ -144,39 +153,38 @@ const NotificationBell = () => {
   };
 
   // Mark all as read
-  const markAllAsRead = async () => {
-    try {
-      // Only process unread notifications
-      const unreadNotifications = notifications.filter(notif => !notif.isRead);
-      
-      if (unreadNotifications.length === 0) {
-        return;
-      }
-      
-      setLoading(true);
-      
-      // Mark each notification as read
-      for (const notification of unreadNotifications) {
-        await markAsRead(notification._id);
-      }
-      
-      // Update all notifications in state
-      setNotifications(prev => prev.map(notif => ({ ...notif, isRead: true })));
-      setUnreadCount(0);
-      
-      toast.success('All notifications marked as read');
-    } catch (error) {
-      console.error('Error marking all notifications as read:', error);
-      toast.error('Failed to mark all as read');
-    } finally {
-      setLoading(false);
-    }
-  };
+     const markAllAsRead = async () => {
+     try {
+       const unreadNotifications = notifications.filter(notif => !notif.isRead);
+       
+       if (unreadNotifications.length === 0) {
+         return; // No unread notifications
+       }
+       
+       setLoading(true);
+       
+       // Mark each notification as read
+       for (const notification of unreadNotifications) {
+         await markAsRead(notification._id);
+       }
+       
+       // Update all notifications in state
+       setNotifications(prev => prev.map(notif => ({ ...notif, isRead: true })));
+       setUnreadCount(0);
+       
+       // No toast message shown here
+     } catch (error) {
+       console.error('Error marking all notifications as read:', error);
+     } finally {
+       setLoading(false);
+     }
+   };
+   
 
   return (
     <div className="relative" ref={dropdownRef}>
       <button
-        onClick={() => setIsOpen(!isOpen)}
+       onClick={handleBellClick} 
         className="relative p-2 text-gray-700 hover:bg-gray-100 rounded-full focus:outline-none"
       >
         <Bell className="w-6 h-6" />

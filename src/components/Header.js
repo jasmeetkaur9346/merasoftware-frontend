@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect, useRef, useState } from 'react'
 import Logo from '../assest/newlogo.png'
 import { GrSearch } from "react-icons/gr";
 import { FaRegCircleUser } from "react-icons/fa6";
@@ -21,21 +21,45 @@ const Header = () => {
   const user = useSelector(state => state?.user?.user)
   const dispatch = useDispatch()
   const { isOnline } = useOnlineStatus();
-  const context = useContext(Context)
-  const navigate = useNavigate()
-  const [menuDisplay,setMenuDisplay] = useState(false)
-  const searchInput = useLocation()
+  const context = useContext(Context);
+  const activeProject = context.activeProject;
+  const navigate = useNavigate();
+  const [menuDisplay,setMenuDisplay] = useState(false);
+  const dropdownRef = useRef(null); // For notification dropdown
+  const menuRef = useRef(null); // New ref for menu dropdown
+  const searchInput = useLocation();
   const URLSearch = new URLSearchParams(searchInput?.search)
   const searchQuery = URLSearch.getAll("q")
   const [search,setSearch] = useState(searchQuery)
   const [serviceTypes, setServiceTypes] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(true);
+
+  console.log("Header using context.activeProject:", activeProject);
 
   const location = useLocation();
-  const showBackButton = location.pathname !== '/';
+  // const showBackButton = location.pathname !== '/';
+    const currentPath = location.pathname;
 
   const onBack = () => {
     navigate(-1); 
+  };
+
+   const getProjectLink = () => {
+    // If activeProject is available in context
+    if (activeProject && activeProject._id) {
+      console.log("Using activeProject from context:", activeProject._id);
+      return `/project-details/${activeProject._id}`;
+    }
+    // If user is already on a project details page
+    const currentPath = window.location.pathname;
+    if (currentPath.startsWith('/project-details/')) {
+      console.log("Using current path:", currentPath);
+      return currentPath;
+    }
+    
+    // Fallback
+    console.log("Falling back to /order");
+    return '/order';
   };
 
   // Function to build query string for service type categories
@@ -75,6 +99,30 @@ const Header = () => {
 
     loadServiceTypes();
   }, [isOnline]);
+
+    
+  // Add this effect for handling clicks outside and ESC key press
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target) && menuDisplay) {
+        setMenuDisplay(false);
+      }
+    };
+    
+    const handleEscKey = (event) => {
+      if (event.key === 'Escape' && menuDisplay) {
+        setMenuDisplay(false);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleEscKey);
+    
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscKey);
+    };
+  }, [menuDisplay]);
 
   // Process categories to extract service types
   const processCategories = (data) => {
@@ -222,7 +270,7 @@ if(value){
 
     {
       menuDisplay && (
-        <div className='absolute bg-white bottom-0 top-11 h-fit p-2 shadow-lg rounded'>
+        <div className='absolute bg-white bottom-0 w-44 top-11 h-fit p-2 shadow-lg rounded' ref={menuRef}>
         <nav>
             {
                 user?.role === ROLE.ADMIN && (
@@ -234,7 +282,7 @@ if(value){
                 <Link to={"/developer-panel"} className='whitespace-nowrap hidden md:block hover:bg-slate-100 p-2' onClick={()=>setMenuDisplay(preve => !preve)}>Developer Panel</Link>
             )
         }
-            <Link to={'/order'} className='whitespace-nowrap hidden md:block hover:bg-slate-100 p-2' onClick={()=>setMenuDisplay(preve => !preve)}>Order</Link>  
+            <Link to={'/order'} className='whitespace-nowrap hidden md:block hover:bg-slate-100 p-2' onClick={()=>setMenuDisplay(preve => !preve)}>Settings</Link>  
             {/* Add Wallet Balance in Menu too */}
             <div className='p-2 hover:bg-slate-100 flex items-center gap-2'>
                 <IoWalletOutline />
@@ -275,9 +323,13 @@ if(value){
 
        <nav className="border-t py-3">
             <ul className="flex justify-between overflow-x-auto scrollbar-none">
-              <li><a href="/start-new-project" className="text-gray-800 font-medium whitespace-nowrap hover:text-blue-600 px-3">All Services</a></li>
+              <li><a href="/dashboard" className="text-gray-800 font-medium whitespace-nowrap hover:text-blue-600 px-3">My Dashboard</a></li>
+              <li><a href="/order" className="text-gray-800 font-medium whitespace-nowrap hover:text-blue-600 px-3">My Orders</a></li>
+              <li><Link to={getProjectLink()} className="text-gray-800 font-medium whitespace-nowrap hover:text-blue-600 px-3">My Projects</Link></li>
+              <li><a href="/wallet" className="text-gray-800 font-medium whitespace-nowrap hover:text-blue-600 px-3">My Wallet</a></li>
+              <li><a href="/support" className="text-gray-800 font-medium whitespace-nowrap hover:text-blue-600 px-3">Contact Support</a></li>
              {/* Dynamically render service types from CategoryList */}
-             {serviceTypes.map((service, index) => (
+             {/* {serviceTypes.map((service, index) => (
                 <li key={index}>
                   <Link 
                     to={`/product-category?${buildCategoryQueryString(service.queryCategoryValues)}`} 
@@ -286,7 +338,7 @@ if(value){
                     {service.serviceType}
                   </Link>
                 </li>
-              ))}
+              ))} */}
             </ul>
           </nav>
           

@@ -92,8 +92,14 @@ const Dashboard = () => {
             }
             return false;
           });
+          console.log("Setting active project in Dashboard:", activeProj);
           setActiveProject(activeProj || null);
 
+         // Make sure your context has the updateActiveProject method
+          if (activeProj) {
+  console.log("Dashboard updating active project in context");
+  context.updateActiveProject(activeProj);
+}
           
           // Find completed projects including expired update plans
           const completedAndRejected = websiteProjects.filter(project => {
