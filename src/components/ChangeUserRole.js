@@ -78,4 +78,4 @@ const ChangeUserRole = ({
   )
 }
 
-export default ChangeUserRole
+export default ChangeUserRole;

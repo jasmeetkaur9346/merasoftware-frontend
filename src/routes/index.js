@@ -51,20 +51,22 @@ import AdminTicketsDashboard from "../pages/AdminTicketsDashboard";
 import TicketDetail from "../pages/TicketDetail";
 import ModernBusinessLandingPage from "../pages/ModernBusinessLandingPage";
 import LandingPageLayout from "../pages/LandingPageLayout";
+import AdminManagement from "../components/AdminManagement";
+import DeveloperManagement from "../components/DeveloperManagement";
+import PartnerManagement from "../components/PartnerManagement";
+import CustomerManagement from "../components/CustomerManagement";
 
 
 // Create a conditional home route
-const HomeRoute = () => {
-    const user = useSelector(state => state?.user?.user);
+// const HomeRoute = () => {
+//     const user = useSelector(state => state?.user?.user);
     
-    // If user is logged in, redirect to dashboard
-    if (user?._id) {
-      return <Navigate to="dashboard" />;
-    }
+//     if (user?._id) {
+//       return <Navigate to="dashboard" />;
+//     }
     
-    // Otherwise, show the normal home page
-    return <Home />;
-  };
+//     return <Home />;
+//   };
 
 const router = createBrowserRouter([
     {
@@ -72,12 +74,8 @@ const router = createBrowserRouter([
         element: <App />,
         children:[
             {
-                path:"start-new-project",
-                element: <Home />
-            },
-            {
                 path:"",
-                element: <HomeRoute />
+                element: <Home />
             },
             {
                 path: "login",
@@ -200,8 +198,20 @@ const router = createBrowserRouter([
                         element : <AllUsers/>
                     },
                     {
-                        path: "sign-up",
-                        element : <SignUp/>
+                        path: "admins",
+                        element : <AdminManagement/>
+                    },
+                    {
+                        path: "developers",
+                        element : <DeveloperManagement/>
+                    },
+                    {
+                        path: "partners",
+                        element : <PartnerManagement/>
+                    },
+                    {
+                        path: "customers",
+                        element : <CustomerManagement/>
                     },
                     {
                         path: "admin-settings",

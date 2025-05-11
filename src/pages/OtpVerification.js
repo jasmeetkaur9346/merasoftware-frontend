@@ -142,7 +142,7 @@ const OtpVerification = ({ userData, onBackToLogin}) => {
         }
         
         toast.success(data.message);
-        navigate("/dashboard");
+        navigate("/");
       } else {
         toast.error(data.message);
       }

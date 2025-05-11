@@ -72,7 +72,7 @@ const Login = () => {
             await fetchUserAddToCart();
   
             toast.success(dataApi.message);
-            navigate("/dashboard");
+            navigate("/");
           }
         } else if (dataApi.error) {
           toast.error(dataApi.message);

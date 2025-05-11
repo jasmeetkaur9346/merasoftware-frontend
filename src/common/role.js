@@ -4,4 +4,4 @@ const ROLE = {
     DEVELOPER: "DEVELOPER"
 }
 
-export default ROLE
+export default ROLE;
