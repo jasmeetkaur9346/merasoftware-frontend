@@ -45,7 +45,7 @@ const AppConvertingBanner = () => {
       const category = order.productId?.category?.toLowerCase();
       return (
         category === 'website_updates' ||
-        ['standard_websites', 'dynamic_websites', 'web_applications', 'mobile_apps'].includes(category)
+        ['standard_websites', 'dynamic_websites', 'cloud_software_development', 'app_development'].includes(category)
       );
     });
   
