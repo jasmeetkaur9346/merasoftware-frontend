@@ -55,7 +55,9 @@ import AdminManagement from "../components/AdminManagement";
 import DeveloperManagement from "../components/DeveloperManagement";
 import PartnerManagement from "../components/PartnerManagement";
 import CustomerManagement from "../components/CustomerManagement";
+import getSubdomain from "../utils/getSubdomain";
 
+const subdomain = getSubdomain();
 
 // Create a conditional home route
 // const HomeRoute = () => {

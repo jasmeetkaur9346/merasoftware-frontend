@@ -308,4 +308,4 @@ useEffect(() => {
   )
 }
 
-export default AppContent
+export default AppContent;

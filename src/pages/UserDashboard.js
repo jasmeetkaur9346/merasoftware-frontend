@@ -137,7 +137,9 @@ const Dashboard = () => {
             order.productId?.category === 'website_updates' && 
             order.isActive &&
             order.updatesUsed < order.productId?.updateCount &&
-            calculateRemainingDays(order) > 0
+            calculateRemainingDays(order) > 0 &&
+            order.orderVisibility !== 'pending-approval' && 
+            order.orderVisibility !== 'payment-rejected'
           );
           setActiveUpdatePlan(updatePlan || null);
           
@@ -167,11 +169,11 @@ const Dashboard = () => {
   }, [user, context.walletBalance, context.cartProductCount]);
 
   const handleStartProject = () => {
-    navigate('/start-new-project');
+    navigate('/');
   };
   
   const handleExplore = () => {
-    navigate('/start-new-project');
+    navigate('/');
   };
 
   const handleViewAllOrders = () => {
@@ -957,7 +959,9 @@ const Dashboard = () => {
               order.productId?.category === 'website_updates' && 
               order.isActive &&
               order.updatesUsed < order.productId?.updateCount &&
-              calculateRemainingDays(order) > 0
+              calculateRemainingDays(order) > 0 &&
+              order.orderVisibility !== 'pending-approval' && 
+              order.orderVisibility !== 'payment-rejected'
             );
             
             // Set active update plan (could be null if all updates used)

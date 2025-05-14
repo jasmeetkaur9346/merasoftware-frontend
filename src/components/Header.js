@@ -16,6 +16,7 @@ import CookieManager from '../utils/cookieManager';
 import StorageService from '../utils/storageService';
 import displayCurrency from "../helpers/displayCurrency" 
 import NotificationBell from './NotificationBell';
+import LoginPopup from '../components/LoginPopup';
 
 const Header = () => {
   const user = useSelector(state => state?.user?.user)
@@ -33,6 +34,12 @@ const Header = () => {
   const [search,setSearch] = useState(searchQuery)
   const [serviceTypes, setServiceTypes] = useState([])
   const [loading, setLoading] = useState(true);
+  const [showLoginPopup, setShowLoginPopup] = useState(false);
+
+  // Get user authentication status
+  const userDetails = useSelector((state) => state.user.user);
+  const isAuthenticated = !!userDetails?._id;
+  const isInitialized = useSelector((state) => state.user.initialized);
 
   console.log("Header using context.activeProject:", activeProject);
 
@@ -67,6 +74,22 @@ const Header = () => {
     if (!categoryValues || categoryValues.length === 0) return '';
     return categoryValues.map(val => `category=${val}`).join('&&');
   };
+
+
+   // Handle protected navigation
+  const handleProtectedNavigation = (e) => {
+    e.preventDefault();
+    
+    // Check if user is authenticated
+    if (isInitialized && !userDetails) {
+      // Show login popup
+      setShowLoginPopup(true);
+    } else {
+      // User is authenticated, navigate to the path
+      window.location.href = e.currentTarget.href;
+    }
+  };
+
 
   // Fetch service types for navigation
   useEffect(() => {
@@ -323,11 +346,21 @@ if(value){
 
        <nav className="border-t py-3">
             <ul className="flex justify-between overflow-x-auto scrollbar-none">
-              <li><a href="/dashboard" className="text-gray-800 font-medium whitespace-nowrap hover:text-blue-600 px-3">My Dashboard</a></li>
-              <li><a href="/order" className="text-gray-800 font-medium whitespace-nowrap hover:text-blue-600 px-3">My Orders</a></li>
-              <li><Link to={getProjectLink()} className="text-gray-800 font-medium whitespace-nowrap hover:text-blue-600 px-3">My Projects</Link></li>
-              <li><a href="/wallet" className="text-gray-800 font-medium whitespace-nowrap hover:text-blue-600 px-3">My Wallet</a></li>
-              <li><a href="/support" className="text-gray-800 font-medium whitespace-nowrap hover:text-blue-600 px-3">Contact Support</a></li>
+              <li><a href="/dashboard"
+              onClick={handleProtectedNavigation}
+               className="text-gray-800 font-medium whitespace-nowrap hover:text-blue-600 px-3">My Dashboard</a></li>
+              <li><a href="/order" 
+              onClick={handleProtectedNavigation}
+              className="text-gray-800 font-medium whitespace-nowrap hover:text-blue-600 px-3">My Orders</a></li>
+              <li><Link to={getProjectLink()} 
+              onClick={handleProtectedNavigation}
+              className="text-gray-800 font-medium whitespace-nowrap hover:text-blue-600 px-3">My Projects</Link></li>
+              <li><a href="/wallet" 
+              onClick={handleProtectedNavigation}
+              className="text-gray-800 font-medium whitespace-nowrap hover:text-blue-600 px-3">My Wallet</a></li>
+              <li><a href="/support" 
+              onClick={handleProtectedNavigation}
+              className="text-gray-800 font-medium whitespace-nowrap hover:text-blue-600 px-3">Contact Support</a></li>
              {/* Dynamically render service types from CategoryList */}
              {/* {serviceTypes.map((service, index) => (
                 <li key={index}>
@@ -401,6 +434,11 @@ if(value){
         </div>
       </header>
 
+    {/* Login Popup */}
+      <LoginPopup 
+        isOpen={showLoginPopup}
+        onClose={() => setShowLoginPopup(false)}
+      />
       </>
   )
 }
