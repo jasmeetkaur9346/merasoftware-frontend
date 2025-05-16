@@ -329,7 +329,7 @@ const Dashboard = () => {
           </div>
           
           {/* Explore More card */}
-          <Link to={"/start-new-project"} className='hidden md:block'>
+          <Link to={"/"} className='hidden md:block'>
           <div className="bg-gradient-to-r from-pink-50 to-pink-100 rounded-xl p-6 flex-1 shadow-sm border border-pink-200 cursor-pointer group hover:shadow-md transition-all">
             <div className="flex items-center mb-3">
               <div className="w-10 h-10 bg-pink-500 text-white rounded-full flex items-center justify-center mr-3 group-hover:bg-pink-600 transition-all">
