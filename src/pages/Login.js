@@ -188,7 +188,7 @@ const Login = () => {
 
           {!isStaffLogin && (
             <>
-              <div>
+              {/* <div>
                 <label>Role: </label>
                 <div className="bg-slate-200 p-2">
                   <input
@@ -199,7 +199,7 @@ const Login = () => {
                     className="w-full h-full outline-none bg-transparent cursor-not-allowed"
                   />
                 </div>
-              </div>
+              </div> */}
 
               <button 
                 type="submit" 
