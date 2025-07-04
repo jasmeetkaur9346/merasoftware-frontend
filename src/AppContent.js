@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { useOnlineStatus } from './App';
 import { setUserDetails, updateWalletBalance, logout } from './store/userSlice';
@@ -23,10 +23,28 @@ const STORAGE_KEYS = {
 const AppContent = () => {
   const dispatch = useDispatch();
   const user = useSelector(state => state?.user?.user);
+  const navigate = useNavigate();
+  const location = useLocation();
   const { isOnline, isInitialized } = useOnlineStatus(); 
   const [cartProductCount, setCartProductCount] = useState(0);
   const [walletBalance, setWalletBalance] = useState(0);
   const [activeProject, setActiveProject] = useState(null);
+
+useEffect(() => {
+        // Agar user logged in hai aur home page par hai to role-based redirect karo
+        if (user?._id && location.pathname === '/') {
+            switch(user.role) {
+                case 'admin':
+                    navigate('/admin-panel/all-products');
+                    break;
+                case 'developer':
+                    navigate('/developer-panel/developer-update-requests');
+                    break;
+                default:
+                    navigate('/home');
+            }
+        }
+    }, [user, location.pathname, navigate]);
 
   const handleLogout = async () => {
     try {
@@ -198,6 +216,7 @@ const AppContent = () => {
         // Try to get user data from localStorage first
         const cachedUser = StorageService.getUserDetails();
         if (cachedUser) {
+          console.log("🧾 Cached user from localStorage:", cachedUser);
           dispatch(setUserDetails(cachedUser));
           await fetchUserAddToCart();
           return;

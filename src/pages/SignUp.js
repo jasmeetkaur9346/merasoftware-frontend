@@ -7,7 +7,7 @@ import imageTobase64 from '../helpers/imageTobase64';
 import SummaryApi from '../common';
 import { toast } from 'react-toastify';
 
-const SignUp = () => {
+const SignUp = ({ onClose, callFunc }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [generalUsers, setGeneralUsers] = useState([]);
@@ -19,10 +19,9 @@ const SignUp = () => {
     name: "",
     confirmPassword: "",
     profilePic: "",
-    referredBy: "" // Add this new field
+    referredBy: "", // Add this new field
+    role: "customer" // default role
   })
-  
-  const navigate = useNavigate()
   
   // Fetch all general users when component mounts
   useEffect(() => {
@@ -87,7 +86,8 @@ const SignUp = () => {
 
       if(dataApi.success){
         toast.success(dataApi.message)
-        navigate("/login")
+        if(callFunc) callFunc()
+        if(onClose) onClose()
       }
 
       if(dataApi.error){
@@ -191,6 +191,25 @@ const SignUp = () => {
                     {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
                   </span>
                 </div>
+              </div>
+            </div>
+
+            <div className="grid mb-2">
+              <label>Role: </label>
+              <div className="bg-slate-200 p-2">
+                <select 
+                  className='w-full bg-transparent outline-none'
+                  name="role"
+                  value={data.role}
+                  onChange={handleOnChange}
+                  required
+                >
+                  <option value="">--Select Role--</option>
+                  <option value="admin">Admin</option>
+                  <option value="partner">Partner</option>
+                  <option value="customer">Customer</option>
+                  <option value="developer">Developer</option>
+                </select>
               </div>
             </div>
 

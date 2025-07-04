@@ -55,9 +55,8 @@ import AdminManagement from "../components/AdminManagement";
 import DeveloperManagement from "../components/DeveloperManagement";
 import PartnerManagement from "../components/PartnerManagement";
 import CustomerManagement from "../components/CustomerManagement";
-import getSubdomain from "../utils/getSubdomain";
-
-const subdomain = getSubdomain();
+import ProtectedRoute from "../components/ProtectedRoute";
+import RoleBasedHome from "../components/RoleBasedHome";
 
 // Create a conditional home route
 // const HomeRoute = () => {
@@ -77,11 +76,19 @@ const router = createBrowserRouter([
         children:[
             {
                 path:"",
+                element: <RoleBasedHome />
+            },
+            {
+                path:"home",
                 element: <Home />
             },
             {
                 path: "login",
                 element: <Login/>
+            },
+            {
+                path: "unauthorized",
+                element: <div>Unauthorized Access</div>
             },
             {
                 path: "forgot-password",
@@ -193,28 +200,40 @@ const router = createBrowserRouter([
             },
             {
                 path: "admin-panel",
-                element : <AdminPanel/>,
+                element: (
+                    <ProtectedRoute allowedRoles={['admin']}>
+                        <AdminPanel/>
+                    </ProtectedRoute>
+                ),
                 children :[
+                    {
+                        path: "",
+                        element: <Navigate to="all-products" replace />
+                    },
+                    {
+                        path: "all-products",
+                        element : <AllProducts/>
+                    },
                     {
                         path: "all-users",
                         element : <AllUsers/>
                     },
-                    {
-                        path: "admins",
-                        element : <AdminManagement/>
-                    },
-                    {
-                        path: "developers",
-                        element : <DeveloperManagement/>
-                    },
-                    {
-                        path: "partners",
-                        element : <PartnerManagement/>
-                    },
-                    {
-                        path: "customers",
-                        element : <CustomerManagement/>
-                    },
+                    // {
+                    //     path: "admins",
+                    //     element : <AdminManagement/>
+                    // },
+                    // {
+                    //     path: "developers",
+                    //     element : <DeveloperManagement/>
+                    // },
+                    // {
+                    //     path: "partners",
+                    //     element : <PartnerManagement/>
+                    // },
+                    // {
+                    //     path: "customers",
+                    //     element : <CustomerManagement/>
+                    // },
                     {
                         path: "admin-settings",
                         element: <AdminFileSettings/>
@@ -262,10 +281,6 @@ const router = createBrowserRouter([
                     {
                         path: "all-categories",
                         element : <AllCategory/>
-                    },
-                    {
-                        path: "all-products",
-                        element : <AllProducts/>
                     },
                     {
                         path: "all-orders",

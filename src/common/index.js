@@ -405,6 +405,10 @@ const SummaryApi = {
          url: `${backendDomain}/api/general-users`,
          method: "get"
       },
+      addRoleToUser: {
+        url: `${backendDomain}/api/addRole`,
+         method: "post"
+      },
     wallet : {
         balance :{
             url : `${backendDomain}/api/wallet/balance`,

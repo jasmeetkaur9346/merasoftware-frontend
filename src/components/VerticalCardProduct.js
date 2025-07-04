@@ -178,11 +178,11 @@ const VerticalCardProduct = ({category, heading}) => {
                                     className="flex-none w-full md:max-w-[320px] md:min-w-[280px] max-w-[240px] min-w-[220px] rounded-lg overflow-hidden shadow-md bg-white border border-gray-300" 
                                 >
                                     {/* Service Name Header - No background color, just colored text */}
-                                    <div className="px-4 font-bold whitespace-nowrap overflow-hidden text-ellipsis py-2.5 text-sm md:text-[17px]" style={{ color: style.textSecondary }}>
+                                    <div className="px-4 mb-2 font-bold whitespace-nowrap overflow-hidden text-ellipsis py-2.5 text-sm md:text-[17px]" style={{ color: style.textSecondary }}>
                                     {product?.serviceName.toUpperCase()}
                                 </div>
                                     
-                                    {/* Website Preview Image */}
+                                    {/* Website Preview Image */} 
                                     <Link to={`product/${product?._id}`}>
                                         <div className="overflow-hidden md:px-4 px-3">
                                             <img 
@@ -216,15 +216,16 @@ const VerticalCardProduct = ({category, heading}) => {
                                         </ul>
                                         
                                         {/* Customize button with color matching the category */}
-                                         <Link to={"/product/"+product?._id}>
+                                         {/* <Link to={"/product/"+product?._id}>
                                         <button 
                                             className="w-full py-2 rounded text-sm md:font-medium text-white text-center transition-colors"
                                             style={{ backgroundColor: style.headingColor }}
                                         >
                                             Customize Plan
                                         </button>
-                                        </Link>
+                                        </Link> */}
                                     </div>
+                                    <div className="h-[6px]" style={{ backgroundColor: style.headingColor }}></div>
                                 </div>
                             );
                         })

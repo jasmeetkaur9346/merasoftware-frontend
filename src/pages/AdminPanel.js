@@ -34,11 +34,11 @@ const AdminPanel = () => {
                 {/**navigation*/}
               <div>
                   <nav className='grid p-4'>
-                    {/* <Link to={"all-users"} className='px-2 py-1 hover:bg-slate-100'>All Users</Link> */}
-                    <Link to={"admins"} className='px-2 py-1 hover:bg-slate-100'>Admins</Link>
+                    <Link to={"all-users"} className='px-2 py-1 hover:bg-slate-100'>All Users</Link>
+                    {/* <Link to={"admins"} className='px-2 py-1 hover:bg-slate-100'>Admins</Link>
                     <Link to={"developers"} className='px-2 py-1 hover:bg-slate-100'>Developers</Link>
                     <Link to={"partners"} className='px-2 py-1 hover:bg-slate-100'>Partners</Link>
-                    <Link to={"customers"} className='px-2 py-1 hover:bg-slate-100'>Customers</Link>
+                    <Link to={"customers"} className='px-2 py-1 hover:bg-slate-100'>Customers</Link> */}
                     <Link to={"admin-settings"} className='px-2 py-1 hover:bg-slate-100'>Admin Settings</Link>
                     <Link to={"order-approval"} className='px-2 py-1 hover:bg-slate-100'>Admin Order Approve</Link>
                     <Link to={"admin-tickets"} className='px-2 py-1 hover:bg-slate-100'>Admin Pending Tickets</Link>

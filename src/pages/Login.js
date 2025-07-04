@@ -14,11 +14,13 @@ const Login = () => {
    const [showPassword, setShowPassword] = useState(false);
     const [data, setData] = useState({
        email: "",
-       password: ""
+       password: "",
+       role: "customer"
      })
      const [requireOtp, setRequireOtp] = useState(false);
      const [userData, setUserData] = useState(null);
      const [loading, setLoading] = useState(false);
+     const [isStaffLogin, setIsStaffLogin] = useState(false);
      const navigate = useNavigate();
      const { fetchUserDetails, fetchUserAddToCart } = useContext(Context);
      const dispatch = useDispatch();
@@ -35,6 +37,8 @@ const Login = () => {
     }
     const handleSubmit = async (e) =>{
       e.preventDefault ()
+
+      console.log("🚀 Payload being sent to backend:", data);
 
       try {
         const dataResponse = await fetch(SummaryApi.signIn.url, {
@@ -72,7 +76,12 @@ const Login = () => {
             await fetchUserAddToCart();
   
             toast.success(dataApi.message);
-            navigate("/");
+           // ✅ Role-based redirect
+          if (userData.role === "admin") {
+            navigate("/admin-panel/all-products"); // 🟢 Admin redirect
+          } else {
+            navigate("/"); // 🟢 Non-admin redirect
+          }
           }
         } else if (dataApi.error) {
           toast.error(dataApi.message);
@@ -89,6 +98,24 @@ const Login = () => {
       setRequireOtp(false);
       setUserData(null);
     };
+
+    const switchToStaffLogin = () => {
+      setIsStaffLogin(true);
+      setData({
+        email: "",
+        password: "",
+        role: "admin"
+      });
+    };
+
+    const switchToCustomerLogin = () => {
+      setIsStaffLogin(false);
+      setData({
+        email: "",
+        password: "",
+        role: "customer"
+      });
+    };
   
     // Render OTP verification component if required
     if (requireOtp && userData) {
@@ -96,7 +123,6 @@ const Login = () => {
         <OtpVerification 
           userData={userData} 
           onBackToLogin={handleBackToLogin}
-          // Context और dispatch पास करें
           contextData={{ fetchUserDetails, fetchUserAddToCart }} 
           dispatch={dispatch}
         />
@@ -111,7 +137,6 @@ const Login = () => {
         <div className="w-20 h-20 mx-auto">
             <img src={loginIcons} alt="login icon" />
               </div>
-
 
               <form className="pt-6 flex flex-col gap-2" onSubmit={handleSubmit}>
               <div className="grid">
@@ -152,25 +177,89 @@ const Login = () => {
                   </span>
                 </div>
               </div>
-              <Link
+              {/*<Link
                 to={"/forgot-password"}
                 className="block w-fit ml-auto hover:underline hover:text-red-600"
               >
                 Forgot password ?
               </Link>
+              */}
           </div>
 
-          <button 
-              type="submit" 
-              disabled={loading}
-              className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 w-full max-w-[150px] rounded-full hover:scale-110 transition-all mx-auto block mt-6 disabled:opacity-50"
-            >
-              {loading ? "Please wait..." : "Login"}
-            </button>
+          {!isStaffLogin && (
+            <>
+              <div>
+                <label>Role: </label>
+                <div className="bg-slate-200 p-2">
+                  <input
+                    type="text"
+                    name="role"
+                    value="customer"
+                    readOnly
+                    className="w-full h-full outline-none bg-transparent cursor-not-allowed"
+                  />
+                </div>
+              </div>
+
+              <button 
+                type="submit" 
+                disabled={loading}
+                className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 w-full max-w-[150px] rounded-full hover:scale-110 transition-all mx-auto block mt-6 disabled:opacity-50"
+              >
+                {loading ? "Please wait..." : "Login"}
+              </button>
+
+              <p className="text-center mt-4">
+                Are you a staff member?{" "}
+                <button
+                  type="button"
+                  onClick={switchToStaffLogin}
+                  className="text-blue-600 hover:underline"
+                >
+                  Staff login
+                </button>
+              </p>
+            </>
+          )}
+
+          {isStaffLogin && (
+            <>
+              <div>
+                <label>Role: </label>
+                <div className="bg-slate-200 p-2">
+                  <select
+                    name="role"
+                    value={data.role}
+                    onChange={handleOnChange}
+                    className="w-full h-full outline-none bg-transparent"
+                  >
+                    <option value="admin">Admin</option>
+                    <option value="developer">Developer</option>
+                    <option value="partner">Partner</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex justify-between mt-4">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-full hover:scale-110 transition-all disabled:opacity-50"
+                >
+                  {loading ? "Please wait..." : "Login"}
+                </button>
+                <button
+                  type="button"
+                  onClick={switchToCustomerLogin}
+                  className="bg-gray-300 hover:bg-gray-400 text-gray-700 px-6 py-2 rounded-full hover:scale-110 transition-all"
+                >
+                  Back to customer login
+                </button>
+              </div>
+            </>
+          )}
           
               </form>
-
-          {/* <p className='my-5'>Don't have account ? <Link to={"/sign-up"} className=' text-red-600 hover:text-red-700 hover:underline'>Sign up</Link></p> */}
 
         </div>
       </div>
