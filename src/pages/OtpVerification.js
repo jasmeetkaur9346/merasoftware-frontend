@@ -19,7 +19,7 @@ const OtpVerification = ({ userData, onBackToLogin }) => {
   const context = useContext(Context);
 
   useEffect(() => {
-    setTimeLeft(30); // Reset timer on timerKey change
+    setTimeLeft(120); // Reset timer on timerKey change
     const timer = setInterval(() => {
       setTimeLeft((prevTime) => {
         if (prevTime <= 1) {

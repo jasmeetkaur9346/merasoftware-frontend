@@ -8,7 +8,7 @@ const RoleBasedHome = () => {
   
   // Agar user logged in nahi hai to login page par bhej do
   if (!user?._id) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/home" replace />;
   }
   
   // Role ke according redirect karo
