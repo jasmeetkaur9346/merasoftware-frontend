@@ -218,22 +218,22 @@ const router = createBrowserRouter([
                         path: "all-users",
                         element : <AllUsers/>
                     },
-                    // {
-                    //     path: "admins",
-                    //     element : <AdminManagement/>
-                    // },
-                    // {
-                    //     path: "developers",
-                    //     element : <DeveloperManagement/>
-                    // },
-                    // {
-                    //     path: "partners",
-                    //     element : <PartnerManagement/>
-                    // },
-                    // {
-                    //     path: "customers",
-                    //     element : <CustomerManagement/>
-                    // },
+                    {
+                        path: "admins",
+                        element : <AdminManagement/>
+                    },
+                    {
+                        path: "developers",
+                        element : <DeveloperManagement/>
+                    },
+                    {
+                        path: "partners",
+                        element : <PartnerManagement/>
+                    },
+                    {
+                        path: "customers",
+                        element : <CustomerManagement/>
+                    },
                     {
                         path: "admin-settings",
                         element: <AdminFileSettings/>

@@ -2,34 +2,36 @@ import React, { useState, useEffect } from 'react';
 import SummaryApi from '../common';
 import { toast } from 'react-toastify';
 
-const AddRoleToUserModal = ({ onClose, callFunc }) => {
+const AddRoleToUserModal = ({ onClose, callFunc, userId }) => {
   const [users, setUsers] = useState([]);
-  const [selectedUserId, setSelectedUserId] = useState('');
+  const [selectedUserId, setSelectedUserId] = useState(userId || '');
   const [selectedRole, setSelectedRole] = useState('');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch(SummaryApi.allUser.url, {
-          method: SummaryApi.allUser.method,
-          credentials: 'include',
-        });
-        const data = await response.json();
-        if (data.success) {
-          setUsers(data.data);
-        } else {
-          toast.error('Failed to load users');
+    if (!userId) {
+      const fetchUsers = async () => {
+        try {
+          setLoading(true);
+          const response = await fetch(SummaryApi.allUser.url, {
+            method: SummaryApi.allUser.method,
+            credentials: 'include',
+          });
+          const data = await response.json();
+          if (data.success) {
+            setUsers(data.data);
+          } else {
+            toast.error('Failed to load users');
+          }
+        } catch (error) {
+          toast.error('Error loading users');
+        } finally {
+          setLoading(false);
         }
-      } catch (error) {
-        toast.error('Error loading users');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchUsers();
-  }, []);
+      };
+      fetchUsers();
+    }
+  }, [userId]);
 
   const handleAddRole = async () => {
     if (!selectedUserId) {
@@ -74,25 +76,27 @@ const AddRoleToUserModal = ({ onClose, callFunc }) => {
           &times;
         </button>
         <h2 className="text-xl font-semibold mb-4">Add New Role to Existing User</h2>
-        <div className="mb-4">
-          <label className="block mb-1">Select User:</label>
-          <select
-            className="w-full p-2 border border-gray-300 rounded"
-            value={selectedUserId}
-            onChange={(e) => setSelectedUserId(e.target.value)}
-          >
-            <option value="">--Select User--</option>
-            {loading ? (
-              <option disabled>Loading users...</option>
-            ) : (
-              users.map((user) => (
-                <option key={user._id} value={user._id}>
-                  {user.name} ({user.email})
-                </option>
-              ))
-            )}
-          </select>
-        </div>
+        {!userId && (
+          <div className="mb-4">
+            <label className="block mb-1">Select User:</label>
+            <select
+              className="w-full p-2 border border-gray-300 rounded"
+              value={selectedUserId}
+              onChange={(e) => setSelectedUserId(e.target.value)}
+            >
+              <option value="">--Select User--</option>
+              {loading ? (
+                <option disabled>Loading users...</option>
+              ) : (
+                users.map((user) => (
+                  <option key={user._id} value={user._id}>
+                    {user.name} ({user.email})
+                  </option>
+                ))
+              )}
+            </select>
+          </div>
+        )}
         <div className="mb-4">
           <label className="block mb-1">Select Role:</label>
           <select
