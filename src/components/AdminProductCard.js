@@ -16,7 +16,7 @@ const AdminProductCard = ({
   const [editProduct, setEditProduct] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
-  const [expanded, setExpanded] = useState(false)
+  const [expanded, setExpanded] = useState(null)
 
   const handleHide = async () => {
     setIsProcessing(true)
@@ -72,10 +72,11 @@ const AdminProductCard = ({
     <>
       <tr
         className="hover:bg-gray-100 cursor-pointer"
-        onClick={() => setExpanded(!expanded)}
+        onClick={() => setExpanded(expanded === index ? null : index)}
       >
         <td className="px-6 py-4 whitespace-nowrap border-b">
           <div className={`w-8 h-8 rounded-full flex items-center justify-center font-semibold ${
+  isHiddenSection ? 'bg-red-400 text-red-800' :
   (data?.serviceCategoryName || data?.serviceType)?.includes('Websites') || 
   (data?.serviceCategoryName || data?.serviceType) === 'Websites Development' ? 'bg-yellow-400 text-yellow-800' :
   (data?.serviceCategoryName || data?.serviceType)?.includes('Mobile') || 
@@ -92,6 +93,7 @@ const AdminProductCard = ({
         <td className="px-6 py-4 whitespace-nowrap border-b text-sm text-gray-900">{data?.serviceName}</td>
         <td className="px-6 py-4 whitespace-nowrap border-b border-gray-300 w-56 max-w-56">
           <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap ${
+  isHiddenSection ? 'bg-red-50 text-red-800' :
   (data?.serviceCategoryName || data?.serviceType)?.includes('Websites') || 
   (data?.serviceCategoryName || data?.serviceType) === 'Websites Development' ? 'bg-yellow-50 text-yellow-800' :
   (data?.serviceCategoryName || data?.serviceType)?.includes('Mobile') || 
@@ -102,50 +104,52 @@ const AdminProductCard = ({
   (data?.serviceCategoryName || data?.serviceType) === 'Feature Upgrades' ? 'bg-green-50 text-green-800' :
   'bg-gray-100 text-gray-800'
 } `}>
-  {data?.serviceCategoryName || data?.serviceType}
+  {isHiddenSection ? '-' : (data?.serviceCategoryName || data?.serviceType)}
 </span>
         </td>
         <td className="px-6 py-4 whitespace-nowrap text-sm border-b border-gray-300">{displayINRCurrency(data?.sellingPrice)}</td>
       </tr>
-      {expanded && (
+      {expanded === index && (
         <tr className="bg-gray-50">
           <td colSpan="4" className="py-2 px-4 border-b border-gray-300">
             <div className="flex space-x-4">
-              <button
-                className="inline-flex items-center px-4 py-1.5 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setEditProduct(true)
-                }}
-              >
-                Edit Product
-              </button>
-              {userRole === 'admin' && (
-              <button
-                className="inline-flex items-center px-4 py-1.5 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 rounded hover:bg-red-700"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setShowDeleteModal(true)
-                }}
-              >
-                Delete Product
-              </button>
-              )}
               {!isHiddenSection && (
-                <button
-                  className="inline-flex items-center px-4 py-1.5 border border-transparent rounded-md shadow-sm text-sm font-medium bg-yellow-400 text-black rounded hover:bg-yellow-500"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handleHide()
-                  }}
-                  disabled={isProcessing}
-                >
-                  Hide Product
-                </button>
+                <>
+                  <button
+                    className="inline-flex items-center px-4 py-1.5 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setEditProduct(true)
+                    }}
+                  >
+                    Edit Product
+                  </button>
+                  {userRole === 'admin' && (
+                    <button
+                      className="inline-flex items-center px-4 py-1.5 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 rounded hover:bg-red-700"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setShowDeleteModal(true)
+                      }}
+                    >
+                      Delete Product
+                    </button>
+                  )}
+                  <button
+                    className="inline-flex items-center px-4 py-1.5 border border-transparent rounded-md shadow-sm text-sm font-medium bg-yellow-400 text-black rounded hover:bg-yellow-500"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleHide()
+                    }}
+                    disabled={isProcessing}
+                  >
+                    Hide Product
+                  </button>
+                </>
               )}
               {isHiddenSection && (
                 <button
-                  className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                  className="px-2 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700"
                   onClick={(e) => {
                     e.stopPropagation()
                     handleUnhide()
@@ -159,7 +163,6 @@ const AdminProductCard = ({
           </td>
         </tr>
       )}
-
       {editProduct && (
         <AdminEditProduct productData={data} onClose={() => setEditProduct(false)} fetchdata={fetchdata} />
       )}

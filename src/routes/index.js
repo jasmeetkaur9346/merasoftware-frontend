@@ -60,6 +60,7 @@ import RoleBasedHome from "../components/RoleBasedHome";
 import ManagerManagement from "../components/ManagerManagement";
 import ManagerPanel from "../pages/ManagerPanel";
 import HiddenProducts from "../pages/HiddenProducts";
+import ManagerDashboard from "../pages/ManagerDashboard";
 
 // Create a conditional home route
 // const HomeRoute = () => {
@@ -309,7 +310,11 @@ const router = createBrowserRouter([
                 children :[
                     {
                         path: "",
-                        element: <Navigate to="all-products" replace />
+                        element: <Navigate to="dashboard" replace />
+                    },
+                    {
+                        path: "dashboard",
+                        element : <ManagerDashboard/>
                     },
                     {
                         path: "all-products",

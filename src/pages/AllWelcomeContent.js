@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react'
 import GuestSlidesForm from '../components/GuestSlidesForm'
 import UserWelcomeForm from '../components/UserWelcomeForm'
 import SummaryApi from '../common'
-import AdminWelcomeCard from '../components/AdminWelcomeCard'
-import { useSelector } from 'react-redux';
+import { useSelector } from 'react-redux'
+import GuestSlidesTableRow from '../components/GuestSlidesTableRow'
+import UserWelcomeTableRow from '../components/UserWelcomeTableRow'
 
 const AllWelcomeContent = () => {
   const [openGuestSlidesForm, setOpenGuestSlidesForm] = useState(false)
@@ -12,39 +13,32 @@ const AllWelcomeContent = () => {
   const [userWelcome, setUserWelcome] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
 
-  const userRole = useSelector(state => state?.user?.user?.role);
+  const userRole = useSelector(state => state?.user?.user?.role)
 
-  const fetchGuestSlides = async() => {
+  const fetchGuestSlides = async () => {
     try {
       const response = await fetch(SummaryApi.guestSlides.url)
       const dataResponse = await response.json()
-      console.log('Guest Slides Response:', dataResponse) // Add this
-     
       if (dataResponse?.success) {
         setGuestSlides(dataResponse.data || [])
       } else {
-        console.error('Error fetching guest slides:', dataResponse)
         setGuestSlides([])
       }
     } catch (error) {
-      console.error('Error fetching guest slides:', error)
       setGuestSlides([])
     }
   }
 
-  const fetchUserWelcome = async() => {
+  const fetchUserWelcome = async () => {
     try {
       const response = await fetch(SummaryApi.userWelcome.url)
       const dataResponse = await response.json()
-     
       if (dataResponse?.success) {
         setUserWelcome(dataResponse.data)
       } else {
-        console.error('Error fetching user welcome:', dataResponse)
         setUserWelcome(null)
       }
     } catch (error) {
-      console.error('Error fetching user welcome:', error)
       setUserWelcome(null)
     }
   }
@@ -62,7 +56,7 @@ const AllWelcomeContent = () => {
   if (isLoading) {
     return (
       <div className="bg-white px-2 py-2">
-        <h2 className='font-bold text-lg'>Welcome Content Management</h2>
+        <h2 className="font-bold text-lg">Welcome Content Management</h2>
         <div className="mt-4">Loading...</div>
       </div>
     )
@@ -70,17 +64,17 @@ const AllWelcomeContent = () => {
 
   return (
     <div>
-      <div className='bg-white px-2 py-2 flex justify-between items-center'>
-        <h2 className='font-bold text-lg'>Welcome Content Management</h2>
-        <div className='flex gap-3'>
+      <div className="bg-white px-2 py-2 flex justify-between items-center">
+        <h2 className="font-bold text-lg">Welcome Content Management</h2>
+        <div className="flex gap-3">
           <button
-            className='border-2 border-red-600 text-red-500 hover:bg-red-600 hover:text-white transition-all py-1 px-3 rounded-full'
+            className="border-2 border-red-600 text-red-500 hover:bg-red-600 hover:text-white transition-all py-1 px-3 rounded-full"
             onClick={() => setOpenGuestSlidesForm(true)}
           >
             Add Guest Slide
           </button>
           <button
-            className='border-2 border-blue-600 text-blue-500 hover:bg-blue-600 hover:text-white transition-all py-1 px-3 rounded-full'
+            className="border-2 border-blue-600 text-blue-500 hover:bg-blue-600 hover:text-white transition-all py-1 px-3 rounded-full"
             onClick={() => setOpenUserWelcomeForm(true)}
           >
             Add User Welcome
@@ -88,21 +82,34 @@ const AllWelcomeContent = () => {
         </div>
       </div>
 
-      <div className='grid grid-cols-2 gap-5 py-4 h-[calc(100vh-190px)] overflow-y-scroll'>
+      <div className="py-4 overflow-y-scroll max-h-[calc(100vh-190px)]">
         {/* Guest Slides Section */}
-        <div>
-          <h3 className='font-semibold text-lg mb-3'>Guest Slides</h3>
+        <div className="mb-8">
+          <h3 className="font-semibold text-lg mb-3">Guest Slides</h3>
           {guestSlides.length > 0 ? (
-            <div className='space-y-4'>
-              {guestSlides.map((slide) => (
-                <AdminWelcomeCard
-                  key={slide._id}
-                  data={slide}
-                  type="guestSlide"
-                  fetchData={fetchGuestSlides}
-                  userRole={userRole}
-                />
-              ))}
+            <div className="overflow-x-auto">
+              <table className="min-w-full bg-white">
+                <thead className="bg-gray-100 sticky top-0">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-sm uppercase font-medium text-gray-500">S.NO</th>
+                    <th className="px-6 py-3 text-left text-sm uppercase font-medium text-gray-500">Title</th>
+                    <th className="px-6 py-3 text-left text-sm uppercase font-medium text-gray-500">Description</th>
+                    <th className="px-6 py-3 text-left text-sm uppercase font-medium text-gray-500">Button Text</th>
+                    <th className="px-6 py-3 text-left text-sm uppercase font-medium text-gray-500">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {guestSlides.map((slide, index) => (
+                    <GuestSlidesTableRow
+                      key={slide._id}
+                      data={slide}
+                      index={index}
+                      fetchData={fetchGuestSlides}
+                      userRole={userRole}
+                    />
+                  ))}
+                </tbody>
+              </table>
             </div>
           ) : (
             <div className="text-center py-4 text-gray-500 bg-white rounded">
@@ -113,14 +120,29 @@ const AllWelcomeContent = () => {
 
         {/* User Welcome Section */}
         <div>
-          <h3 className='font-semibold text-lg mb-3'>User Welcome</h3>
+          <h3 className="font-semibold text-lg mb-3">User Welcome</h3>
           {userWelcome ? (
-            <AdminWelcomeCard
-              data={userWelcome}
-              type="userWelcome"
-              fetchData={fetchUserWelcome}
-              userRole={userRole}
-            />
+            <div className="overflow-x-auto">
+              <table className="min-w-full bg-white">
+                <thead className="bg-gray-100 sticky top-0">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-sm uppercase font-medium text-gray-500">S.NO</th>
+                    <th className="px-6 py-3 text-left text-sm uppercase font-medium text-gray-500">Title</th>
+                    <th className="px-6 py-3 text-left text-sm uppercase font-medium text-gray-500">Description</th>
+                    <th className="px-6 py-3 text-left text-sm uppercase font-medium text-gray-500">Button Text</th>
+                    <th className="px-6 py-3 text-left text-sm uppercase font-medium text-gray-500">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <UserWelcomeTableRow
+                    data={userWelcome}
+                    index={0}
+                    fetchData={fetchUserWelcome}
+                    userRole={userRole}
+                  />
+                </tbody>
+              </table>
+            </div>
           ) : (
             <div className="text-center py-4 text-gray-500 bg-white rounded">
               No user welcome message found

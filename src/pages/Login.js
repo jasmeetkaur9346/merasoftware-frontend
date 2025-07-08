@@ -80,7 +80,7 @@ const Login = () => {
           if (userData.role === "admin") {
             navigate("/admin-panel/all-products"); // 🟢 Admin redirect
           } else if (userData.role === "manager") {
-            navigate("/manager-panel/all-products");
+            navigate("/manager-panel/dashboard");
           } else {
             navigate("/"); // 🟢 Non-admin redirect
           }

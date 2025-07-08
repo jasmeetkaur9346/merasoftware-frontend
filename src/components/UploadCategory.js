@@ -89,7 +89,7 @@ const UploadCategory = ({
         <div className='fixed w-full h-full bg-slate-200 bg-opacity-40 top-0 left-0 right-0 bottom-0 flex justify-center items-center'>
             <div className='bg-white p-4 rounded w-full max-w-2xl h-full max-h-[75%] overflow-hidden'>
                 <div className='flex justify-between items-center pb-3'>
-                    <h2 className='font-bold text-lg'>Upload Category</h2>
+                    <h2 className='font-bold text-lg'>Upload New Service</h2>
                     <div className='text-2xl hover:text-red-600 cursor-pointer' onClick={onClose}>
                         <CgClose />
                     </div>
@@ -145,7 +145,7 @@ const UploadCategory = ({
                         <option value="Websites Development">Websites Development</option>
                         <option value="Mobile Apps">Mobile Apps </option>
                         <option value="Cloud Softwares">Cloud Softwares </option>
-                        <option value="Feature Upgrades">Features Upgrades</option>
+                        <option value="Feature Upgrades">Feature Upgrades</option>
                     </select>
                     
                     <label htmlFor='description' className='mt-3'>Description:</label>
