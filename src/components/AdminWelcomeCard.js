@@ -7,7 +7,8 @@ import UserWelcomeForm from './UserWelcomeForm';
 const AdminWelcomeCard = ({
     data,
     type,
-    fetchData
+    fetchData,
+    userRole
 }) => {
     const [editContent, setEditContent] = useState(false)
     const [showDeleteModal, setShowDeleteModal] = useState(false)
@@ -58,12 +59,14 @@ const AdminWelcomeCard = ({
                 </div>
                 {/* Action Buttons */}
                 <div className='flex justify-end gap-2'>
-                    <div
-                        className='w-fit p-2 bg-red-100 hover:bg-red-600 rounded-full hover:text-white cursor-pointer'
-                        onClick={() => setShowDeleteModal(true)}
-                    >
-                        <MdDelete />
-                    </div>
+                    {userRole === 'admin' && (
+                        <div
+                            className='w-fit p-2 bg-red-100 hover:bg-red-600 rounded-full hover:text-white cursor-pointer'
+                            onClick={() => setShowDeleteModal(true)}
+                        >
+                            <MdDelete />
+                        </div>
+                    )}
                     <div
                         className='w-fit p-2 bg-green-100 hover:bg-green-600 rounded-full hover:text-white cursor-pointer'
                         onClick={() => setEditContent(true)}
@@ -103,4 +106,4 @@ const AdminWelcomeCard = ({
     )
 }
 
-export default AdminWelcomeCard
+export default AdminWelcomeCard;

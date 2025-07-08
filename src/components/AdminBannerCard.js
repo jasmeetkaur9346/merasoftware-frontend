@@ -5,7 +5,7 @@ import { BsListOl } from "react-icons/bs";
 import AdminEditBanner from './AdminEditBanner';
 import AdminDeleteBanner from './AdminDeleteBanner';
 
-const AdminBannerCard = ({ data, fetchData }) => {
+const AdminBannerCard = ({ data, fetchData, userRole }) => {
     const [editBanner, setEditBanner] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
 
@@ -68,13 +68,15 @@ const AdminBannerCard = ({ data, fetchData }) => {
                         <MdModeEditOutline />
                         <span className='text-sm'>Edit</span>
                     </button>
-                    <button
-                        onClick={() => setShowDeleteModal(true)}
-                        className='flex items-center gap-1 px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded transition-colors'
-                    >
-                        <MdDelete />
-                        <span className='text-sm'>Delete</span>
-                    </button>
+                    {userRole === 'admin' && (
+                        <button
+                            onClick={() => setShowDeleteModal(true)}
+                            className='flex items-center gap-1 px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded transition-colors'
+                        >
+                            <MdDelete />
+                            <span className='text-sm'>Delete</span>
+                        </button>
+                    )}
                 </div>
             </div>
 

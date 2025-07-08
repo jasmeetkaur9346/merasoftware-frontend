@@ -107,6 +107,27 @@ const AdminPanel = () => {
                                     >
                                         Wallet & Payments
                                     </Link>
+                                    <Link 
+                                        to={"update-requests"} 
+                                        className='block px-3 py-2.5 text-sm text-gray-400 hover:bg-slate-700 hover:text-white rounded-md transition-colors'
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
+                                        Website Update Requests
+                                    </Link>
+                                    <Link 
+                                        to={"projects"} 
+                                        className='block px-3 py-2.5 text-sm text-gray-400 hover:bg-slate-700 hover:text-white rounded-md transition-colors'
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
+                                        Website Projects
+                                    </Link>
+                                    <Link 
+                                        to={"website-updates"} 
+                                        className='block px-3 py-2.5 text-sm text-gray-400 hover:bg-slate-700 hover:text-white rounded-md transition-colors'
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
+                                        Website Update Plan
+                                    </Link>
                                 </div>
                             )}
                         </div>
@@ -174,6 +195,13 @@ const AdminPanel = () => {
                                         Admins
                                     </Link>
                                     <Link 
+                                        to={"managers"} 
+                                        className='block px-3 py-2.5 text-sm text-gray-400 hover:bg-slate-700 hover:text-white rounded-md transition-colors'
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
+                                        Managers
+                                    </Link>
+                                    <Link 
                                         to={"customers"} 
                                         className='block px-3 py-2.5 text-sm text-gray-400 hover:bg-slate-700 hover:text-white rounded-md transition-colors'
                                         onClick={(e) => e.stopPropagation()}
@@ -219,27 +247,6 @@ const AdminPanel = () => {
                                         onClick={(e) => e.stopPropagation()}
                                     >
                                         Welcome Content
-                                    </Link>
-                                    <Link 
-                                        to={"update-requests"} 
-                                        className='block px-3 py-2.5 text-sm text-gray-400 hover:bg-slate-700 hover:text-white rounded-md transition-colors'
-                                        onClick={(e) => e.stopPropagation()}
-                                    >
-                                        Website Update Requests
-                                    </Link>
-                                    <Link 
-                                        to={"projects"} 
-                                        className='block px-3 py-2.5 text-sm text-gray-400 hover:bg-slate-700 hover:text-white rounded-md transition-colors'
-                                        onClick={(e) => e.stopPropagation()}
-                                    >
-                                        Website Projects
-                                    </Link>
-                                    <Link 
-                                        to={"website-updates"} 
-                                        className='block px-3 py-2.5 text-sm text-gray-400 hover:bg-slate-700 hover:text-white rounded-md transition-colors'
-                                        onClick={(e) => e.stopPropagation()}
-                                    >
-                                        Website Update Plan
                                     </Link>
                                     <Link 
                                         to={"all-ads"} 

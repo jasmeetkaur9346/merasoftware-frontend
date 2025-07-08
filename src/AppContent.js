@@ -37,6 +37,9 @@ useEffect(() => {
                 case 'admin':
                     navigate('/admin-panel/all-products');
                     break;
+                    case 'manager':
+                    navigate('/manager-panel/all-products');
+                    break;
                 case 'developer':
                     navigate('/developer-panel/developer-update-requests');
                     break;

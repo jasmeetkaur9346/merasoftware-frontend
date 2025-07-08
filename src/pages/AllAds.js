@@ -2,10 +2,13 @@ import React, { useEffect, useState } from 'react'
 import UploadBanner from '../components/UploadBanner'
 import SummaryApi from '../common'
 import AdminBannerCard from '../components/AdminBannerCard'
+import { useSelector } from 'react-redux';
 
 const AllAds = () => {
   const [openUploadBanner, setOpenUploadBanner] = useState(false)
   const [allBanners, setAllBanners] = useState([])
+
+  const userRole = useSelector(state => state?.user?.user?.role);
 
   const fetchAllBanners = async() => {
     const response = await fetch(SummaryApi.allBanner.url)
@@ -38,6 +41,7 @@ const AllAds = () => {
                 data={banner} 
                 key={index + "allBanners"} 
                 fetchData={fetchAllBanners} 
+                userRole={userRole}
               />
             )
           })

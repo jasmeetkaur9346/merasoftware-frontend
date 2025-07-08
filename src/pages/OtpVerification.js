@@ -112,10 +112,12 @@ const OtpVerification = ({ userData, onBackToLogin }) => {
         if (context.fetchUserAddToCart) await context.fetchUserAddToCart();
         toast.success(data.message);
         if (userData.role === "admin") {
-          navigate("/admin-panel/all-products");
-        } else {
-          navigate("/");
-        }
+            navigate("/admin-panel/all-products"); // 🟢 Admin redirect
+          } else if (userData.role === "manager") {
+            navigate("/manager-panel/all-products");
+          } else {
+            navigate("/"); // 🟢 Non-admin redirect
+          }
       } else {
         toast.error(data.message);
       }

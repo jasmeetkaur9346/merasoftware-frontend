@@ -7,7 +7,8 @@ import { Monitor, Smartphone, Cloud, Plus } from 'lucide-react';
 
 const AdminCategoryCard = ({
     data,
-    fetchData
+    fetchData,
+    userRole // new prop for user role
 }) => {
     const [editCategory, setEditCategory] = useState(false)
     const [showDeleteModal, setShowDeleteModal] = useState(false)
@@ -67,12 +68,14 @@ const AdminCategoryCard = ({
                 <h1 className='text-ellipsis line-clamp-2 font-medium mt-2'>{data?.categoryName}</h1>
                 <div className='mt-2'>
                     <div className='flex justify-end space-x-2'>
-                        <div 
-                            className='p-2 bg-red-100 hover:bg-red-600 rounded-full hover:text-white cursor-pointer transition-colors' 
-                            onClick={() => setShowDeleteModal(true)}
-                        >
-                            <MdDelete />
-                        </div>
+                        {userRole === 'admin' && (
+                            <div 
+                                className='p-2 bg-red-100 hover:bg-red-600 rounded-full hover:text-white cursor-pointer transition-colors' 
+                                onClick={() => setShowDeleteModal(true)}
+                            >
+                                <MdDelete />
+                            </div>
+                        )}
                         <div 
                             className='p-2 bg-green-100 hover:bg-green-600 rounded-full hover:text-white cursor-pointer transition-colors' 
                             onClick={() => setEditCategory(true)}

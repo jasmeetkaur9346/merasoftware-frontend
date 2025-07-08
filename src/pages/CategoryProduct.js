@@ -121,8 +121,11 @@ useEffect(() => {
           });
     
           const dataResponse = await response.json();
-          if (isSubscribed) {
-            const responseData = dataResponse?.data || [];
+            if (isSubscribed) {
+            let responseData = dataResponse?.data || [];
+            
+            // Filter out hidden products
+            responseData = responseData.filter(product => !product.isHidden);
             
             // Apply sort if needed
             if(sortBy === 'asc') {

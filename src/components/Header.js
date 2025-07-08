@@ -301,6 +301,11 @@ if(value){
                 )
             } 
             {
+                user?.role === ROLE.MANAGER && (
+                    <Link to={"/manager-panel/all-products"} className='whitespace-nowrap hidden md:block hover:bg-slate-100 p-2' onClick={()=>setMenuDisplay(preve => !preve)}>Manager Panel</Link>
+                )
+            } 
+            {
             user?.role === ROLE.DEVELOPER && (
                 <Link to={"/developer-panel"} className='whitespace-nowrap hidden md:block hover:bg-slate-100 p-2' onClick={()=>setMenuDisplay(preve => !preve)}>Developer Panel</Link>
             )

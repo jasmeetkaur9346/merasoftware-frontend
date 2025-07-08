@@ -4,56 +4,170 @@ import AdminEditProduct from './AdminEditProduct';
 import displayINRCurrency from '../helpers/displayCurrency';
 import AdminDeleteProduct from './AdminDeleteProduct';
 import { MdDelete } from "react-icons/md";
+import SummaryApi from '../common';
 
 const AdminProductCard = ({
-    data,
-    fetchdata
+  data,
+  index,
+  fetchdata,
+  isHiddenSection = false,
+  userRole
 }) => {
-    const [editProduct,setEditProduct] = useState(false)
-    const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [editProduct, setEditProduct] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [isProcessing, setIsProcessing] = useState(false)
+  const [expanded, setExpanded] = useState(false)
+
+  const handleHide = async () => {
+    setIsProcessing(true)
+    try {
+      const response = await fetch(SummaryApi.hideProduct.url, {
+        method: SummaryApi.hideProduct.method,
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ _id: data._id })
+      })
+      const result = await response.json()
+      if (result.success) {
+        localStorage.removeItem('categories');
+        localStorage.removeItem(data.category);
+        fetchdata()
+      } else {
+        alert(result.message || 'Failed to hide product')
+      }
+    } catch (error) {
+      alert('Error hiding product')
+    }
+    setIsProcessing(false)
+  }
+
+  const handleUnhide = async () => {
+    setIsProcessing(true)
+    try {
+      const response = await fetch(SummaryApi.UnhideProduct.url, {
+        method: SummaryApi.UnhideProduct.method,
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ _id: data._id })
+      })
+      const result = await response.json()
+      if (result.success) {
+        localStorage.removeItem('categories');
+        localStorage.removeItem(data.category);
+        fetchdata()
+      } else {
+        alert(result.message || 'Failed to unhide product')
+      }
+    } catch (error) {
+      alert('Error unhiding product')
+    }
+    setIsProcessing(false)
+  }
 
   return (
-    <div className='bg-white p-4 rounded'>
-    <div className='w-40'>
-      <div className='w-32 h-32 flex justify-center items-center'>
-      <img src={data?.serviceImage[0]} className='mx-auto object-fill h-full' />
-      </div>
-    <h1 className='text-ellipis line-clamp-2'>{data?.serviceName}</h1>
+    <>
+      <tr
+        className="hover:bg-gray-100 cursor-pointer"
+        onClick={() => setExpanded(!expanded)}
+      >
+        <td className="px-6 py-4 whitespace-nowrap border-b">
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center font-semibold ${
+  (data?.serviceCategoryName || data?.serviceType)?.includes('Websites') || 
+  (data?.serviceCategoryName || data?.serviceType) === 'Websites Development' ? 'bg-yellow-400 text-yellow-800' :
+  (data?.serviceCategoryName || data?.serviceType)?.includes('Mobile') || 
+  (data?.serviceCategoryName || data?.serviceType) === 'Mobile Apps' ? 'bg-blue-400 text-blue-800' :
+  (data?.serviceCategoryName || data?.serviceType)?.includes('Cloud') || 
+  (data?.serviceCategoryName || data?.serviceType) === 'Cloud Softwares' ? 'bg-pink-400 text-pink-800' :
+  (data?.serviceCategoryName || data?.serviceType)?.includes('Website') ||
+  (data?.serviceCategoryName || data?.serviceType) === 'Feature Upgrades' ? 'bg-green-400 text-green-800' :
+  'bg-gray-100 text-gray-800'
+}`}>
+  {index + 1}
+</div>
+        </td>
+        <td className="px-6 py-4 whitespace-nowrap border-b text-sm text-gray-900">{data?.serviceName}</td>
+        <td className="px-6 py-4 whitespace-nowrap border-b border-gray-300 w-56 max-w-56">
+          <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap ${
+  (data?.serviceCategoryName || data?.serviceType)?.includes('Websites') || 
+  (data?.serviceCategoryName || data?.serviceType) === 'Websites Development' ? 'bg-yellow-50 text-yellow-800' :
+  (data?.serviceCategoryName || data?.serviceType)?.includes('Mobile') || 
+  (data?.serviceCategoryName || data?.serviceType) === 'Mobile Apps' ? 'bg-blue-50 text-blue-800' :
+  (data?.serviceCategoryName || data?.serviceType)?.includes('Cloud') || 
+  (data?.serviceCategoryName || data?.serviceType) === 'Cloud Softwares' ? 'bg-pink-50 text-pink-800' :
+  (data?.serviceCategoryName || data?.serviceType)?.includes('Website') ||
+  (data?.serviceCategoryName || data?.serviceType) === 'Feature Upgrades' ? 'bg-green-50 text-green-800' :
+  'bg-gray-100 text-gray-800'
+} `}>
+  {data?.serviceCategoryName || data?.serviceType}
+</span>
+        </td>
+        <td className="px-6 py-4 whitespace-nowrap text-sm border-b border-gray-300">{displayINRCurrency(data?.sellingPrice)}</td>
+      </tr>
+      {expanded && (
+        <tr className="bg-gray-50">
+          <td colSpan="4" className="py-2 px-4 border-b border-gray-300">
+            <div className="flex space-x-4">
+              <button
+                className="inline-flex items-center px-4 py-1.5 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setEditProduct(true)
+                }}
+              >
+                Edit Product
+              </button>
+              {userRole === 'admin' && (
+              <button
+                className="inline-flex items-center px-4 py-1.5 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 rounded hover:bg-red-700"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setShowDeleteModal(true)
+                }}
+              >
+                Delete Product
+              </button>
+              )}
+              {!isHiddenSection && (
+                <button
+                  className="inline-flex items-center px-4 py-1.5 border border-transparent rounded-md shadow-sm text-sm font-medium bg-yellow-400 text-black rounded hover:bg-yellow-500"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleHide()
+                  }}
+                  disabled={isProcessing}
+                >
+                  Hide Product
+                </button>
+              )}
+              {isHiddenSection && (
+                <button
+                  className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleUnhide()
+                  }}
+                  disabled={isProcessing}
+                >
+                  Unhide Product
+                </button>
+              )}
+            </div>
+          </td>
+        </tr>
+      )}
 
-    <div>
-
-    <p className='font-semibold'>
-      {
-        displayINRCurrency(data?.sellingPrice)
-      }
-    </p>
-
-
-    <div className='w-fit ml-auto p-2 mb-2 bg-green-100 hover:bg-red-600 rounded-full hover:text-white cursor-pointer' onClick={()=>setShowDeleteModal(true)}>
-        <MdDelete />
-    </div>
-
-    <div className='w-fit ml-auto p-2 bg-green-100 hover:bg-green-600 rounded-full hover:text-white cursor-pointer' onClick={()=>setEditProduct(true)}>
-        <MdModeEditOutline />
-    </div>
-
-    </div>
-
-      </div>
-
-    {
-      editProduct && (
-        <AdminEditProduct productData={data} onClose={()=>setEditProduct(false)} fetchdata={fetchdata}/>
-      )
-    }
-    {
-      showDeleteModal && (
-        <AdminDeleteProduct productId={data._id} onClose={() => setShowDeleteModal(false)} fetchdata={fetchdata}/>
-       )
-     }
-    
-  </div>
+      {editProduct && (
+        <AdminEditProduct productData={data} onClose={() => setEditProduct(false)} fetchdata={fetchdata} />
+      )}
+      {showDeleteModal && (
+        <AdminDeleteProduct productId={data._id} onClose={() => setShowDeleteModal(false)} fetchdata={fetchdata} />
+      )}
+    </>
   )
 }
 
-export default AdminProductCard
+export default AdminProductCard;

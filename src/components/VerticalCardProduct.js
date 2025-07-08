@@ -95,7 +95,9 @@ const VerticalCardProduct = ({category, heading}) => {
             try {
               const response = await fetchCategoryWiseProduct(category);
               if (response?.data) {
-                const sortedData = response.data.sort((a, b) => 
+                // Filter out hidden products
+                const visibleProducts = response.data.filter(product => !product.isHidden);
+                const sortedData = visibleProducts.sort((a, b) => 
                   a.serviceName.localeCompare(b.serviceName)
                 );
                 StorageService.setProductsData(category, sortedData);

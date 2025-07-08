@@ -57,6 +57,9 @@ import PartnerManagement from "../components/PartnerManagement";
 import CustomerManagement from "../components/CustomerManagement";
 import ProtectedRoute from "../components/ProtectedRoute";
 import RoleBasedHome from "../components/RoleBasedHome";
+import ManagerManagement from "../components/ManagerManagement";
+import ManagerPanel from "../pages/ManagerPanel";
+import HiddenProducts from "../pages/HiddenProducts";
 
 // Create a conditional home route
 // const HomeRoute = () => {
@@ -223,6 +226,10 @@ const router = createBrowserRouter([
                         element : <AdminManagement/>
                     },
                     {
+                        path: "managers",
+                        element : <ManagerManagement/>
+                    },
+                    {
                         path: "developers",
                         element : <DeveloperManagement/>
                     },
@@ -290,6 +297,40 @@ const router = createBrowserRouter([
                         path : "wallet-management",
                         element : <WalletManagement/>
                     }
+                ]
+            },
+             {
+                path: "manager-panel",
+                element: (
+                    <ProtectedRoute allowedRoles={['manager']}>
+                        <ManagerPanel/>
+                    </ProtectedRoute>
+                ),
+                children :[
+                    {
+                        path: "",
+                        element: <Navigate to="all-products" replace />
+                    },
+                    {
+                        path: "all-products",
+                        element : <AllProducts/>
+                    },  
+                    {
+                        path : "all-ads",
+                        element : <AllAds/>
+                    },
+                    {
+                        path: "all-categories",
+                        element : <AllCategory/>
+                    },
+                    {
+                        path: "welcome-content",
+                        element : <AllWelcomeContent/>
+                    },
+                    {
+                        path: "hidden-products",
+                        element : <HiddenProducts/>
+                    },
                 ]
             },
             {

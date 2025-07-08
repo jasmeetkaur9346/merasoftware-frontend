@@ -2,10 +2,13 @@ import React, { useEffect, useState } from 'react'
 import UploadCategory from '../components/UploadCategory'
 import SummaryApi from '../common'
 import AdminCategoryCard from '../components/AdminCategoryCard'
+import { useSelector } from 'react-redux';
 
 const AllCategory = () => {
   const [openUploadProduct, setOpenUploadProduct] = useState(false)
   const [allCategory,setAllCategory] = useState([])
+
+  const userRole = useSelector(state => state?.user?.user?.role);
 
   const fetchAllCategory = async() => {
     const response = await fetch(SummaryApi.allCategory.url)
@@ -32,7 +35,7 @@ const AllCategory = () => {
       {
         allCategory.map((product,index)=>{
           return(
-           <AdminCategoryCard data={product} key={index+"allCategory"} fetchData={fetchAllCategory} />
+           <AdminCategoryCard data={product} key={index+"allCategory"} fetchData={fetchAllCategory} userRole={userRole} />
           )
         })
       }
@@ -48,4 +51,4 @@ const AllCategory = () => {
   )
 }
 
-export default AllCategory
+export default AllCategory;

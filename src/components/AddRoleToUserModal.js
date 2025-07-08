@@ -106,6 +106,7 @@ const AddRoleToUserModal = ({ onClose, callFunc, userId }) => {
           >
             <option value="">--Select Role--</option>
             <option value="admin">Admin</option>
+            <option value="manager">Manager</option>
             <option value="partner">Partner</option>
             <option value="customer">Customer</option>
             <option value="developer">Developer</option>

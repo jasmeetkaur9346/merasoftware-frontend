@@ -79,14 +79,16 @@ const VerticalCard = ({ loading: initialLoading, data: initialData = [], current
                     const response = await fetch(`${apiUrl}?${queryString}`);
                     const responseData = await response.json();
                     
-                    if (responseData.success && responseData.data) {
-                        StorageService.setProductsData(firstCategory, responseData.data);
-                        setData(responseData.data);
-                        setIsDataFromCache(false);
-                    } else {
-                        // Handle API success: false response
-                        setError(responseData.message || 'Failed to fetch products from server');
-                    }
+            if (responseData.success && responseData.data) {
+                // Filter out hidden products
+                const visibleProducts = responseData.data.filter(product => !product.isHidden);
+                StorageService.setProductsData(firstCategory, visibleProducts);
+                setData(visibleProducts);
+                setIsDataFromCache(false);
+            } else {
+                // Handle API success: false response
+                setError(responseData.message || 'Failed to fetch products from server');
+            }
                 } catch (error) {
                     console.error("Error fetching products:", error);
                     setError('Failed to fetch products. Please try refreshing the page.');

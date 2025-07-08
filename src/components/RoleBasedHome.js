@@ -15,6 +15,8 @@ const RoleBasedHome = () => {
   switch(user.role) {
     case 'admin':
       return <Navigate to="/admin-panel/all-products" replace />;
+      case 'manager':
+      return <Navigate to="/manager-panel/all-products" replace />;
     case 'developer':
       return <Navigate to="/developer-panel/developer-update-requests" replace />;
     case 'partner':

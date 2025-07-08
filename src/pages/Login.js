@@ -79,6 +79,8 @@ const Login = () => {
            // ✅ Role-based redirect
           if (userData.role === "admin") {
             navigate("/admin-panel/all-products"); // 🟢 Admin redirect
+          } else if (userData.role === "manager") {
+            navigate("/manager-panel/all-products");
           } else {
             navigate("/"); // 🟢 Non-admin redirect
           }
@@ -234,6 +236,7 @@ const Login = () => {
                     className="w-full h-full outline-none bg-transparent"
                   >
                     <option value="admin">Admin</option>
+                    <option value="manager">Manager</option>
                     <option value="developer">Developer</option>
                     <option value="partner">Partner</option>
                   </select>

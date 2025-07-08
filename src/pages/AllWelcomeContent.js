@@ -3,6 +3,7 @@ import GuestSlidesForm from '../components/GuestSlidesForm'
 import UserWelcomeForm from '../components/UserWelcomeForm'
 import SummaryApi from '../common'
 import AdminWelcomeCard from '../components/AdminWelcomeCard'
+import { useSelector } from 'react-redux';
 
 const AllWelcomeContent = () => {
   const [openGuestSlidesForm, setOpenGuestSlidesForm] = useState(false)
@@ -10,6 +11,8 @@ const AllWelcomeContent = () => {
   const [guestSlides, setGuestSlides] = useState([])
   const [userWelcome, setUserWelcome] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
+
+  const userRole = useSelector(state => state?.user?.user?.role);
 
   const fetchGuestSlides = async() => {
     try {
@@ -97,6 +100,7 @@ const AllWelcomeContent = () => {
                   data={slide}
                   type="guestSlide"
                   fetchData={fetchGuestSlides}
+                  userRole={userRole}
                 />
               ))}
             </div>
@@ -115,6 +119,7 @@ const AllWelcomeContent = () => {
               data={userWelcome}
               type="userWelcome"
               fetchData={fetchUserWelcome}
+              userRole={userRole}
             />
           ) : (
             <div className="text-center py-4 text-gray-500 bg-white rounded">

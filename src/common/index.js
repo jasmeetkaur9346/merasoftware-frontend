@@ -407,7 +407,19 @@ const SummaryApi = {
       },
       addRoleToUser: {
         url: `${backendDomain}/api/addRole`,
-         method: "post"
+        method: "post"
+      },
+      hideProduct: {
+        url: `${backendDomain}/api/hide-product`,
+        method: "post"
+      },
+      UnhideProduct: {
+        url: `${backendDomain}/api/unhide-product`,
+        method: "post"
+      },
+      getHiddenProducts: {
+        url: `${backendDomain}/api/get-hidden-products`,
+        method: "get"
       },
     wallet : {
         balance :{
