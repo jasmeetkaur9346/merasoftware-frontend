@@ -115,6 +115,8 @@ const OtpVerification = ({ userData, onBackToLogin }) => {
             navigate("/admin-panel/all-products"); // 🟢 Admin redirect
           } else if (userData.role === "manager") {
             navigate("/manager-panel/dashboard");
+          } else if (userData.role === "partner") {
+            navigate("/partner-panel/dashboard");
           } else {
             navigate("/"); // 🟢 Non-admin redirect
           }

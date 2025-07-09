@@ -20,7 +20,7 @@ const RoleBasedHome = () => {
     case 'developer':
       return <Navigate to="/developer-panel/developer-update-requests" replace />;
     case 'partner':
-      return <Navigate to="/dashboard" replace />;
+      return <Navigate to="/partner-panel/dashboard" replace />;
     case 'customer':
     case 'USER':
       return <Navigate to="/dashboard" replace />;

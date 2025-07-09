@@ -40,6 +40,9 @@ useEffect(() => {
                     case 'manager':
                     navigate('/manager-panel/dashboard');
                     break;
+                    case 'partner':
+                    navigate('/partner-panel/dashboard');
+                    break;
                 case 'developer':
                     navigate('/developer-panel/developer-update-requests');
                     break;

@@ -61,6 +61,8 @@ import ManagerManagement from "../components/ManagerManagement";
 import ManagerPanel from "../pages/ManagerPanel";
 import HiddenProducts from "../pages/HiddenProducts";
 import ManagerDashboard from "../pages/ManagerDashboard";
+import PartnerPanel from "../pages/PartnerPanel";
+import PartnerDashboard from "../pages/PartnerDashboard";
 
 // Create a conditional home route
 // const HomeRoute = () => {
@@ -300,7 +302,7 @@ const router = createBrowserRouter([
                     }
                 ]
             },
-             {
+            {
                 path: "manager-panel",
                 element: (
                     <ProtectedRoute allowedRoles={['manager']}>
@@ -335,6 +337,28 @@ const router = createBrowserRouter([
                     {
                         path: "hidden-products",
                         element : <HiddenProducts/>
+                    },
+                ]
+            },
+            {
+                path: "partner-panel",
+                element: (
+                    <ProtectedRoute allowedRoles={['partner']}>
+                        <PartnerPanel/>
+                    </ProtectedRoute>
+                ),
+                children :[
+                    {
+                        path: "",
+                        element: <Navigate to="dashboard" replace />
+                    },
+                    {
+                        path: "dashboard",
+                        element : <PartnerDashboard/>
+                    },
+                    {
+                        path: "customers",
+                        element : <CustomerManagement/>
                     },
                 ]
             },

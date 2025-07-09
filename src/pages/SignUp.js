@@ -23,16 +23,24 @@ const SignUp = ({ onClose, callFunc }) => {
     role: "customer" // default role
   })
   
-  // Fetch all general users when component mounts
+  // Fetch all partner users when component mounts
   useEffect(() => {
-    const fetchGeneralUsers = async () => {
+    const fetchPartnerUsers = async () => {
       try {
         setLoading(true);
-        const response = await fetch(SummaryApi.getGeneralUsers.url);
+        const response = await fetch(SummaryApi.allUser.url, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include'
+        });
         const result = await response.json();
         
         if (result.success) {
-          setGeneralUsers(result.data);
+          // Filter users with partner role
+          const partnerUsers = result.data.filter(user => user.roles && user.roles.includes('partner'));
+          setGeneralUsers(partnerUsers);
         } else {
           toast.error("Failed to load referral users");
         }
@@ -44,7 +52,7 @@ const SignUp = ({ onClose, callFunc }) => {
       }
     };
     
-    fetchGeneralUsers();
+    fetchPartnerUsers();
   }, []);
   
   const handleOnChange = (e) => {
