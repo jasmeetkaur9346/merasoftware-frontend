@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
 import { MdModeEditOutline, MdDelete } from "react-icons/md";
-import { IoLocationOutline } from "react-icons/io5";
-import { BsListOl } from "react-icons/bs";
 import AdminEditBanner from './AdminEditBanner';
 import AdminDeleteBanner from './AdminDeleteBanner';
 
-const AdminBannerCard = ({ data, fetchData, userRole }) => {
+const AdminBannerCard = ({ data, index, fetchData, userRole }) => {
     const [editBanner, setEditBanner] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [expanded, setExpanded] = useState(false);
 
     const formatPosition = (position) => {
         return position?.split('_').map(word =>
@@ -15,72 +14,71 @@ const AdminBannerCard = ({ data, fetchData, userRole }) => {
         ).join(' ');
     };
 
-    const getOrderDisplay = (order) => {
-        if (order === 0) return "Top Banner";
-        return `After ${order} ${order === 1 ? 'Card' : 'Cards'}`;
-    };
-
     return (
-        <div className='bg-white p-4 rounded shadow-sm hover:shadow-md transition-shadow'>
-            {/* Image Container with fixed height */}
-            <div className='h-48 mb-4 rounded-lg overflow-hidden bg-slate-100'>
-                <img
-                    src={data?.images[0]}
-                    className='w-full h-full object-cover'
-                    alt={`Banner for ${data?.serviceName}`}
-                />
-            </div>
-
-            {/* Info Section - Compact Layout */}
-            <div className='space-y-2'>
-                <h3 className='font-semibold text-gray-800 truncate'>
-                    {data?.serviceName || 'Unnamed Service'}
-                </h3>
-                
-                <div className='flex flex-col gap-1.5'>
-                    <div className='flex items-center gap-2 text-sm text-gray-600'>
-                        <IoLocationOutline className="text-blue-500 flex-shrink-0" />
-                        <span className='truncate'>{formatPosition(data?.position)}</span>
+        <>
+            <tr
+                className={`cursor-pointer hover:bg-gray-100 ${expanded ? 'bg-blue-100' : ''}`}
+                onClick={() => setExpanded(!expanded)}
+            >
+                <td className="py-2 px-3 border-b border-gray-300">
+                    <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-semibold">
+                    {index + 1}
                     </div>
-                    
-                    <div className='flex items-center gap-2 text-sm text-gray-600'>
-                        <BsListOl className="text-green-500 flex-shrink-0" />
-                        <span>{getOrderDisplay(data?.displayOrder)}</span>
-                    </div>
-
+                    </td>
+                <td className="py-2 px-3 border-b border-gray-300">{formatPosition(data.position)}</td>
+                <td className="py-2 px-3 border-b border-gray-300">
+                    {data?.images && data.images.length > 0 ? (
+                        <img
+                            src={data.images[0]}
+                            alt={`Banner ${index + 1}`}
+                            className="w-20 h-12 object-cover rounded"
+                        />
+                    ) : (
+                        <span className="text-gray-400">No Image</span>
+                    )}
+                </td>
+                <td className="py-2 px-3 border-b border-gray-300">
                     <span
                         className={`inline-block px-2 py-0.5 text-xs rounded-full w-fit ${
-                            data?.isActive
+                            data.isActive
                                 ? 'bg-green-100 text-green-700'
                                 : 'bg-red-100 text-red-700'
                         }`}
                     >
-                        {data?.isActive ? 'Active' : 'Inactive'}
+                        {data.isActive ? 'Active' : 'Inactive'}
                     </span>
-                </div>
-
-                {/* Action Buttons */}
-                <div className='flex justify-end gap-2 pt-2'>
-                    <button
-                        onClick={() => setEditBanner(true)}
-                        className='flex items-center gap-1 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded transition-colors'
-                    >
-                        <MdModeEditOutline />
-                        <span className='text-sm'>Edit</span>
-                    </button>
-                    {userRole === 'admin' && (
-                        <button
-                            onClick={() => setShowDeleteModal(true)}
-                            className='flex items-center gap-1 px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded transition-colors'
-                        >
-                            <MdDelete />
-                            <span className='text-sm'>Delete</span>
-                        </button>
-                    )}
-                </div>
-            </div>
-
-            {/* Modals */}
+                </td>
+            </tr>
+            {expanded && (
+                <tr className="bg-gray-50">
+                    <td colSpan="4" className="py-2 px-4 border-b border-gray-300">
+                        <div className="flex space-x-4">
+                            <button
+                                className="inline-flex items-center px-4 py-1.5 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setEditBanner(true);
+                                }}
+                            >
+                                <MdModeEditOutline className="mr-1" />
+                                Edit
+                            </button>
+                            {userRole === 'admin' && (
+                                <button
+                                    className="inline-flex items-center px-4 py-1.5 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 rounded hover:bg-red-700"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setShowDeleteModal(true);
+                                    }}
+                                >
+                                    <MdDelete className="mr-1" />
+                                    Delete
+                                </button>
+                            )}
+                        </div>
+                    </td>
+                </tr>
+            )}
             {editBanner && (
                 <AdminEditBanner
                     bannerData={data}
@@ -95,7 +93,7 @@ const AdminBannerCard = ({ data, fetchData, userRole }) => {
                     fetchData={fetchData}
                 />
             )}
-        </div>
+        </>
     );
 };
 
