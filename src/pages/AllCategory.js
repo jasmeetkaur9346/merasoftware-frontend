@@ -82,7 +82,9 @@ const AllCategory = () => {
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500">S.NO</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category Name</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Service Type</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
             </tr>
           </thead>
           <tbody>
@@ -119,4 +121,4 @@ const AllCategory = () => {
   )
 }
 
-export default AllCategory
+export default AllCategory;

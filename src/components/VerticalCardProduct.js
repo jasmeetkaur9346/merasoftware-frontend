@@ -175,7 +175,8 @@ const VerticalCardProduct = ({category, heading}) => {
                             const style = getColorStyle(product?.category);
                             
                             return (
-                                <div 
+                                // <Link to={"/product/"+product?._id} className='cursor-pointer'>
+                                <Link to={"/product/"+product?._id}
                                     key={product?._id} 
                                     className="flex-none w-full md:max-w-[320px] md:min-w-[280px] max-w-[240px] min-w-[220px] rounded-lg overflow-hidden shadow-md bg-white border border-gray-300" 
                                 >
@@ -185,7 +186,7 @@ const VerticalCardProduct = ({category, heading}) => {
                                 </div>
                                     
                                     {/* Website Preview Image */} 
-                                    <Link to={`product/${product?._id}`}>
+                                    <Link to={"/product/"+product?._id}>
                                         <div className="overflow-hidden md:px-4 px-3">
                                             <img 
                                                 src={product?.serviceImage[0]} 
@@ -228,7 +229,7 @@ const VerticalCardProduct = ({category, heading}) => {
                                         </Link> */}
                                     </div>
                                     <div className="h-[6px]" style={{ backgroundColor: style.headingColor }}></div>
-                                </div>
+                                </Link>
                             );
                         })
                     )}
