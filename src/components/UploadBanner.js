@@ -164,8 +164,32 @@ const UploadBanner = ({ onClose, fetchData }) => {
         }
     };
 
+    // Close popup on Esc key press
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (e.key === 'Escape') {
+                onClose();
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [onClose]);
+
+    // Close popup on background click
+    const handleBackgroundClick = (e) => {
+        if (e.target.id === 'popup-background') {
+            onClose();
+        }
+    };
+
     return (
-        <div className="fixed w-full h-full bg-slate-200 bg-opacity-40 top-0 left-0 flex justify-center items-center">
+        <div 
+         id="popup-background"
+        className="fixed w-full h-full z-50 bg-slate-200 bg-opacity-40 top-0 left-0 flex justify-center items-center"
+        onClick={handleBackgroundClick}
+        >
             <div className="bg-white p-4 rounded w-full max-w-2xl h-full max-h-[75%] overflow-hidden">
                 <div className="flex justify-between items-center pb-3">
                     <h2 className="font-bold text-lg">Upload Banner</h2>

@@ -95,8 +95,31 @@ const UserWelcomeForm = ({ onClose, fetchData, data = null, isEditing = false })
         }
     };
 
+     // Close popup on Esc key press
+        useEffect(() => {
+            const handleKeyDown = (e) => {
+                if (e.key === 'Escape') {
+                    onClose();
+                }
+            };
+            window.addEventListener('keydown', handleKeyDown);
+            return () => {
+                window.removeEventListener('keydown', handleKeyDown);
+            };
+        }, [onClose]);
+    
+        // Close popup on background click
+        const handleBackgroundClick = (e) => {
+            if (e.target.id === 'popup-background') {
+                onClose();
+            }
+        };
+
     return (
-        <div className='fixed w-full h-full bg-slate-200 bg-opacity-40 top-0 left-0 right-0 bottom-0 flex justify-center items-center z-50'>
+        <div 
+         id="popup-background"
+        className='fixed w-full h-full bg-slate-200 bg-opacity-40 top-0 left-0 right-0 bottom-0 flex justify-center items-center z-50'
+        onClick={handleBackgroundClick}>
             <div className='bg-white p-4 rounded w-full max-w-2xl h-full max-h-[75%] overflow-hidden'>
                 <div className='flex justify-between items-center pb-3'>
                     <h2 className='font-bold text-lg'>

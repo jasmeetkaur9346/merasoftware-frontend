@@ -103,11 +103,34 @@ const AdminEditCategory = ({
       }
   };
 
+  // Close popup on Esc key press
+      useEffect(() => {
+          const handleKeyDown = (e) => {
+              if (e.key === 'Escape') {
+                  onClose();
+              }
+          };
+          window.addEventListener('keydown', handleKeyDown);
+          return () => {
+              window.removeEventListener('keydown', handleKeyDown);
+          };
+      }, [onClose]);
+  
+      // Close popup on background click
+      const handleBackgroundClick = (e) => {
+          if (e.target.id === 'popup-background') {
+              onClose();
+          }
+      };
+
     return (
-        <div className='fixed w-full h-full bg-slate-200 bg-opacity-40 top-0 left-0 right-0 bottom-0 flex justify-center items-center'>
+        <div 
+        id="popup-background"
+        className='fixed w-full z-50 h-full bg-slate-200 bg-opacity-40 top-0 left-0 right-0 bottom-0 flex justify-center items-center'
+        onClick={handleBackgroundClick}>
             <div className='bg-white p-4 rounded w-full max-w-2xl h-full max-h-[75%] overflow-hidden'>
                 <div className='flex justify-between items-center pb-3'>
-                    <h2 className='font-bold text-lg'>Edit Category</h2>
+                    <h2 className='font-bold text-lg'>Edit Service</h2>
                     <div className='text-2xl hover:text-red-600 cursor-pointer' onClick={onClose}>
                         <CgClose />
                     </div>
@@ -199,12 +222,12 @@ const AdminEditCategory = ({
                         </label>
                     </div>
 
-                    <label htmlFor='imageUrl' className='mt-3'>Category Image:</label>
+                    <label htmlFor='imageUrl' className='mt-3'>Service Image:</label>
                     <label htmlFor='uploadImageInput'>
                         <div className='p-2 bg-slate-100 border rounded h-32 w-full flex justify-center items-center cursor-pointer'>
                             <div className='text-slate-500 flex justify-center items-center flex-col gap-2'>
                                 <span className='text-4xl'><FaCloudUploadAlt /></span>
-                                <p className='text-sm'>Upload Category Image</p>
+                                <p className='text-sm'>Upload Service Image</p>
                                 <input type='file' id='uploadImageInput' className='hidden' onChange={handleUploadImage} />
                             </div>
                         </div>
@@ -229,12 +252,12 @@ const AdminEditCategory = ({
                                 </div>
                             </div>
                         ) : (
-                            <p className='text-red-600 text-xs'>* Please Upload Category Image</p>
+                            <p className='text-red-600 text-xs'>* Please Upload Service Image</p>
                         )}
                     </div>
 
                     <button className='px-3 py-2 bg-red-600 text-white mt-4 mb-10 hover:bg-red-700'>
-                        Update Category
+                        Update Service
                     </button>
                 </form>
             </div>
