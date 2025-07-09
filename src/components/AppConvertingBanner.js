@@ -808,9 +808,12 @@ const AppConvertingBanner = () => {
   }
 
   // If we have guest slides, show them immediately (even if other data is still loading)
-  if (!user?._id && guestSlides?.length > 0) {
-    console.log("Rendering slides:", guestSlides.length);
-  console.log("Current slide index:", currentSlide);
+  // Filter guestSlides to only active ones
+  const activeGuestSlides = guestSlides ? guestSlides.filter(slide => slide.isActive) : [];
+
+  if (!user?._id && activeGuestSlides.length > 0) {
+    console.log("Rendering active slides:", activeGuestSlides.length);
+    console.log("Current slide index:", currentSlide);
 
     return (
       <div className="relative"> {/* Add this wrapper div with relative positioning */}
@@ -823,15 +826,15 @@ const AppConvertingBanner = () => {
           onTouchEnd={onTouchEnd}
         >
           {isMobile ? (
-            <GuestSlidesMobile slide={guestSlides[currentSlide]} />
+            <GuestSlidesMobile slide={activeGuestSlides[currentSlide]} />
           ) : (
-            <GuestSlidesDesktop slide={guestSlides[currentSlide]} />
+            <GuestSlidesDesktop slide={activeGuestSlides[currentSlide]} />
           )}
         </div>
         </div>
         
-        {/* Navigation Arrows - Only show on desktop */}
-        {!isMobile && guestSlides.length > 1 && (
+        {/* Navigation Arrows - Only show on desktop */} 
+        {!isMobile && activeGuestSlides.length > 1 && (
           <>
             <button 
               onClick={() => currentSlide > 0 && setCurrentSlide(prev => prev - 1)}
@@ -840,7 +843,7 @@ const AppConvertingBanner = () => {
               <ChevronLeft className="w-6 h-6 text-gray-600" />
             </button>
             <button 
-              onClick={() => currentSlide < guestSlides.length - 1 && setCurrentSlide(prev => prev + 1)}
+              onClick={() => currentSlide < activeGuestSlides.length - 1 && setCurrentSlide(prev => prev + 1)}
               className="absolute right-4 top-1/2 -translate-y-1/2 bg-white p-3 rounded-full shadow-lg hover:bg-gray-50 transition-colors"
             >
               <ChevronRight className="w-6 h-6 text-gray-600" />
@@ -849,9 +852,9 @@ const AppConvertingBanner = () => {
         )}
     
         {/* Slide Indicators */}
-        {guestSlides.length > 1 && (
+        {activeGuestSlides.length > 1 && (
           <div className="flex justify-center mt-3 gap-2">
-            {guestSlides.map((_, index) => (
+            {activeGuestSlides.map((_, index) => (
               <button
                 key={index}
                 className={`w-2 h-2 rounded-full transition-all duration-300 ${
@@ -897,7 +900,8 @@ const AppConvertingBanner = () => {
   }
 
   // User Welcome View - Show when user is logged in but has no orders
-  if (user?._id && dataInitialized && orders?.length === 0 && userWelcome) {
+  // Check if userWelcome is active before rendering
+  if (user?._id && dataInitialized && orders?.length === 0 && userWelcome && userWelcome.isActive) {
     return (
       <div className="container mx-auto md:px-14 px-4">
         {isMobile ? (

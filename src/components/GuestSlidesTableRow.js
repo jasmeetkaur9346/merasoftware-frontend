@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import GuestSlidesForm from './GuestSlidesForm';
 import AdminDeleteWelcomeContent from './AdminDeleteWelcomeContent';
+import SummaryApi from '../common';
+import { toast } from 'react-toastify';
 
 const truncateText = (text, maxWords = 4) => {
   if (!text) return '';
@@ -13,6 +15,42 @@ const GuestSlidesTableRow = ({ data, index, fetchData, userRole }) => {
   const [expanded, setExpanded] = useState(false);
   const [editContent, setEditContent] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  const toggleIsActive = async (e) => {
+    e.stopPropagation();
+    if (isUpdating) return;
+
+    setIsUpdating(true);
+    try {
+      const updatedData = { ...data, isActive: !data.isActive };
+      const url = `${SummaryApi.updateGuestSlides.url}/${data._id}`;
+      const method = SummaryApi.updateGuestSlides.method;
+
+      const response = await fetch(url, {
+        method: method,
+        credentials: 'include',
+        headers: {
+          "content-type": "application/json"
+        },
+        body: JSON.stringify({ isActive: updatedData.isActive })
+      });
+
+      const responseData = await response.json();
+
+      if (responseData.success) {
+        toast.success(`Slide marked as ${updatedData.isActive ? 'Active' : 'Inactive'}`);
+        fetchData();
+      } else {
+        toast.error(responseData.message || 'Failed to update status');
+      }
+    } catch (error) {
+      console.error('Error updating slide status:', error);
+      toast.error('Error updating slide status');
+    } finally {
+      setIsUpdating(false);
+    }
+  };
 
   return (
     <>
@@ -29,9 +67,18 @@ const GuestSlidesTableRow = ({ data, index, fetchData, userRole }) => {
         <td className="px-6 py-4 whitespace-nowrap border-b max-w-xs truncate">{truncateText(data.description)}</td>
         <td className="px-6 py-4 whitespace-nowrap border-b">{data.ctaButtons?.[0]?.text || ''}</td>
         <td className="px-6 py-4 whitespace-nowrap border-b">
-          <span className={data.isActive ? 'text-green-600' : 'text-red-600'}>
-            {data.isActive ? 'Active' : 'Inactive'}
-          </span>
+          <label className="relative inline-flex items-center cursor-pointer" onClick={toggleIsActive}>
+            <input
+              type="checkbox"
+              className="sr-only peer"
+              checked={data.isActive}
+              readOnly
+              disabled={isUpdating}
+            />
+            <div className="w-11 h-6 bg-red-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 rounded-full peer peer-checked:bg-green-600 transition-colors duration-300"></div>
+            <div className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full shadow-md transform transition-transform duration-300 ${data.isActive ? 'translate-x-5' : 'translate-x-0'}`}></div>
+          </label>
+          {isUpdating && <span className="ml-2 text-gray-500 text-sm">Updating...</span>}
         </td>
       </tr>
       {expanded && (

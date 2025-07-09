@@ -66,7 +66,7 @@ const AllWelcomeContent = () => {
     <div>
       <div className="bg-white px-2 py-2 flex justify-between items-center">
         <h2 className="font-bold text-lg">Welcome Content Management</h2>
-        <div className="flex gap-3">
+        {/* <div className="flex gap-3">
           <button
             className="border-2 border-red-600 text-red-500 hover:bg-red-600 hover:text-white transition-all py-1 px-3 rounded-full"
             onClick={() => setOpenGuestSlidesForm(true)}
@@ -79,13 +79,21 @@ const AllWelcomeContent = () => {
           >
             Add User Welcome
           </button>
-        </div>
+        </div> */}
       </div>
 
       <div className="py-4 overflow-y-scroll max-h-[calc(100vh-190px)]">
         {/* Guest Slides Section */}
         <div className="mb-8">
-          <h3 className="font-semibold text-lg mb-3">Guest Slides</h3>
+          <div className='flex justify-between'>
+          <h3 className="font-semibold text-lg mb-3 mt-2">Guest Slides</h3>
+           <button
+            className="border-2 mb-3 border-red-600 text-red-500 hover:bg-red-600 hover:text-white transition-all py-1 px-3 rounded-full"
+            onClick={() => setOpenGuestSlidesForm(true)}
+          >
+            Add Guest Slide
+          </button>
+          </div>
           {guestSlides.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="min-w-full bg-white">
@@ -120,7 +128,15 @@ const AllWelcomeContent = () => {
 
         {/* User Welcome Section */}
         <div>
-          <h3 className="font-semibold text-lg mb-3">User Welcome</h3>
+          <div className='flex justify-between'>
+          <h3 className="font-semibold text-lg mb-3 mt-2">User Welcome</h3>
+           <button
+            className="border-2 mb-3 border-blue-600 text-blue-500 hover:bg-blue-600 hover:text-white transition-all py-1 px-3 rounded-full"
+            onClick={() => setOpenUserWelcomeForm(true)}
+          >
+            Add User Welcome
+          </button>
+          </div>
           {userWelcome ? (
             <div className="overflow-x-auto">
               <table className="min-w-full bg-white">
