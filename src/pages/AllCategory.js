@@ -16,6 +16,7 @@ const AllCategory = () => {
   const [allCategory, setAllCategory] = useState([])
   const [filteredCategory, setFilteredCategory] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
+  const [expandedIndex, setExpandedIndex] = useState(null)
 
   const userRole = useSelector(state => state?.user?.user?.role)
 
@@ -48,6 +49,10 @@ const AllCategory = () => {
 
     setFilteredCategory(filtered)
   }, [allCategory, searchTerm])
+
+   const handleRowClick = (index) => {
+    setExpandedIndex(expandedIndex === index ? null : index) // Toggle the expanded index
+  }
 
   return (
     <div>
@@ -95,6 +100,8 @@ const AllCategory = () => {
                   index={index}
                   fetchData={fetchAllCategory}
                   userRole={userRole}
+                  isExpanded={expandedIndex === index} // Pass the expanded state
+                  onRowClick={() => handleRowClick(index)} // Pass the click handler
                 />
               ))
             )}

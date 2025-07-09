@@ -34,7 +34,8 @@ const AllProducts = () => {
   const [selectedServiceType, setSelectedServiceType] = useState('All')
   const [sortBy, setSortBy] = useState('az')
   const [searchTerm, setSearchTerm] = useState('')
-
+  const [expandedIndex, setExpandedIndex] = useState(null)
+  
   const userRole = useSelector(state => state?.user?.user?.role)
 
   const fetchAllProduct = async () => {
@@ -113,6 +114,10 @@ const AllProducts = () => {
 
     setFilteredProducts(filtered)
   }, [allProduct, categories, selectedServiceType, sortBy, searchTerm])
+
+   const handleRowClick = (index) => {
+    setExpandedIndex(expandedIndex === index ? null : index) // Toggle the expanded index
+  }
 
   return (
     <div>
@@ -208,6 +213,8 @@ const AllProducts = () => {
                   index={index}
                   fetchdata={fetchAllProduct}
                   userRole={userRole}
+                  isExpanded={expandedIndex === index} // Pass the expanded state
+                  onRowClick={() => handleRowClick(index)} // Pass the click handler
                 />
               ))
             )}

@@ -11,12 +11,14 @@ const AdminProductCard = ({
   index,
   fetchdata,
   isHiddenSection = false,
-  userRole
+  userRole,
+  isExpanded, // New prop
+  onRowClick // New prop
 }) => {
   const [editProduct, setEditProduct] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
-  const [expanded, setExpanded] = useState(null)
+  // const [expanded, setExpanded] = useState(null)
 
   const handleHide = async () => {
     setIsProcessing(true)
@@ -72,7 +74,7 @@ const AdminProductCard = ({
     <>
       <tr
         className="hover:bg-gray-100 cursor-pointer"
-        onClick={() => setExpanded(expanded === index ? null : index)}
+        onClick={onRowClick}
       >
         <td className="px-6 py-4 whitespace-nowrap border-b">
           <div className={`w-8 h-8 rounded-full flex items-center justify-center font-semibold ${
@@ -109,7 +111,7 @@ const AdminProductCard = ({
         </td>
         <td className="px-6 py-4 whitespace-nowrap text-sm border-b border-gray-300">{displayINRCurrency(data?.sellingPrice)}</td>
       </tr>
-      {expanded === index && (
+      {isExpanded && (
         <tr className="bg-gray-50">
           <td colSpan="4" className="py-2 px-4 border-b border-gray-300">
             <div className="flex space-x-4">

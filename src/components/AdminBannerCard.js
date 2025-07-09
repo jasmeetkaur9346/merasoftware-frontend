@@ -3,10 +3,10 @@ import { MdModeEditOutline, MdDelete } from "react-icons/md";
 import AdminEditBanner from './AdminEditBanner';
 import AdminDeleteBanner from './AdminDeleteBanner';
 
-const AdminBannerCard = ({ data, index, fetchData, userRole }) => {
+const AdminBannerCard = ({ data, index, fetchData, userRole, isExpanded, onRowClick }) => {
     const [editBanner, setEditBanner] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
-    const [expanded, setExpanded] = useState(false);
+    // const [expanded, setExpanded] = useState(false);
 
     const formatPosition = (position) => {
         return position?.split('_').map(word =>
@@ -17,8 +17,8 @@ const AdminBannerCard = ({ data, index, fetchData, userRole }) => {
     return (
         <>
             <tr
-                className={`cursor-pointer hover:bg-gray-100 ${expanded ? 'bg-blue-100' : ''}`}
-                onClick={() => setExpanded(!expanded)}
+                className={`cursor-pointer hover:bg-gray-100 ${isExpanded ? 'bg-blue-100' : ''}`}
+                 onClick={onRowClick}
             >
                 <td className="py-2 px-3 border-b border-gray-300">
                     <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-semibold">
@@ -49,7 +49,7 @@ const AdminBannerCard = ({ data, index, fetchData, userRole }) => {
                     </span>
                 </td>
             </tr>
-            {expanded && (
+            {isExpanded && (
                 <tr className="bg-gray-50">
                     <td colSpan="4" className="py-2 px-4 border-b border-gray-300">
                         <div className="flex space-x-4">

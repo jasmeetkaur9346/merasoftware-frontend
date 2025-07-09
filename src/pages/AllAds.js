@@ -8,6 +8,7 @@ const AllAds = () => {
   const [openUploadBanner, setOpenUploadBanner] = useState(false)
   const [allBanners, setAllBanners] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
+  const [expandedIndex, setExpandedIndex] = useState(null)
 
   const userRole = useSelector(state => state?.user?.user?.role);
 
@@ -25,6 +26,10 @@ const AllAds = () => {
   const filteredBanners = allBanners.filter(banner =>
     banner.position?.toLowerCase().includes(searchTerm.toLowerCase())
   )
+
+   const handleRowClick = (index) => {
+    setExpandedIndex(expandedIndex === index ? null : index) // Toggle the expanded index
+  }
 
   return (
     <div>
@@ -73,6 +78,8 @@ const AllAds = () => {
                   index={index}
                   fetchData={fetchAllBanners}
                   userRole={userRole}
+                  isExpanded={expandedIndex === index} // Pass the expanded state
+                  onRowClick={() => handleRowClick(index)} // Pass the click handler
                 />
               ))
             )}

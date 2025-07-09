@@ -23,11 +23,13 @@ const AdminCategoryCard = ({
   data,
   index,
   fetchData,
-  userRole
+  userRole,
+  isExpanded, // New prop
+  onRowClick // New prop
 }) => {
   const [editCategory, setEditCategory] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
-  const [expanded, setExpanded] = useState(false)
+  // const [expanded, setExpanded] = useState(false)
 
   const getServiceTypeColor = (serviceType) => {
     return serviceTypeColors[serviceType] || serviceTypeColors['default']
@@ -53,7 +55,7 @@ const AdminCategoryCard = ({
     <>
       <tr
         className="hover:bg-gray-100 cursor-pointer"
-        onClick={() => setExpanded(!expanded)}
+        onClick={onRowClick}
       >
         <td className="px-6 py-4 whitespace-nowrap border-b">
           <div className={`w-8 h-8 rounded-full flex items-center justify-center font-semibold  ${getServiceTypeColor(data?.serviceType)}`}>
@@ -67,7 +69,7 @@ const AdminCategoryCard = ({
           </span>
         </td>
       </tr>
-      {expanded && (
+      {isExpanded && (
         <tr className="bg-gray-50">
           <td colSpan="3" className="py-2 px-4 border-b border-gray-300">
             <div className="flex space-x-4">
