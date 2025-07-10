@@ -24,7 +24,7 @@ const AdminUpdateRequests = () => {
       
       const data = await response.json();
       if (data.success) {
-        console.log("Update requests data:", data.data);  // Log the data to inspect
+        // console.log("Update requests data:", data.data); 
         setUpdateRequests(data.data || []);
       } else {
         toast.error(data.message || 'Failed to fetch update requests');

@@ -29,12 +29,12 @@ const AdminTransactionHistory = () => {
       const data = await response.json();
       
       if (data.success) {
-        console.log("Received transactions:", data.data);
+        // console.log("Received transactions:", data.data);
         // Check if there are any installment payments
         const installmentPayments = data.data.filter(t => 
           t.isInstallmentPayment === true || t.type === 'payment'
         );
-        console.log("Installment payments:", installmentPayments);
+        // console.log("Installment payments:", installmentPayments);
         
         setTransactions(data.data);
       } else {

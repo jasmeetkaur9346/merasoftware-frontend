@@ -217,7 +217,7 @@ const AdminTicketsDashboard = () => {
   // Effect to load tickets on component mount and when dependencies change
   useEffect(() => {
     if (isInitialized && userDetails?._id) {
-      console.log("Fetching admin tickets for user:", userDetails._id);
+      // console.log("Fetching admin tickets for user:", userDetails._id);
       fetchTickets();
     }
   }, [currentPage, statusFilter, categoryFilter, searchTerm, userDetails, isInitialized]);

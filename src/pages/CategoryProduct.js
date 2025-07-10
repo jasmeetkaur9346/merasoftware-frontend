@@ -46,7 +46,7 @@ const CategoryProduct = () => {
         
         // Only update if data is different
         if (JSON.stringify(freshData) !== JSON.stringify(data) && freshData.length > 0) {
-          console.log('Updating data from background fetch');
+          // console.log('Updating data from background fetch');
           
           // Apply current sort if any
           if(sortBy === 'asc') {
@@ -85,7 +85,7 @@ useEffect(() => {
           const cachedData = StorageService.getProductsData(categoryKey);
           
           if (cachedData && cachedData.length > 0) {
-            console.log('Using cached product data');
+            // console.log('Using cached product data');
             
             // Apply current sort
             let sortedData = [...cachedData];

@@ -20,7 +20,7 @@ const AdminWebsiteUpdates = () => {
       });
       const data = await response.json();
       
-      console.log("अपडेट प्लान API रिस्पॉन्स:", data);
+      // console.log("अपडेट प्लान API रिस्पॉन्स:", data);
       if(data.success) {
         setUpdatePlans(data.data);
       } else {

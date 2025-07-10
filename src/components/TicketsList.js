@@ -23,7 +23,7 @@ const TicketsList = () => {
   // Fetch tickets from API
   const fetchTickets = async () => {
     if (!userDetails?._id) {
-      console.log("No user ID available, skipping fetch");
+      // console.log("No user ID available, skipping fetch");
       return;
     }
     
@@ -34,7 +34,7 @@ const TicketsList = () => {
         url += `&status=${statusFilter}`;
       }
       
-      console.log("Fetching tickets with URL:", url);
+      // console.log("Fetching tickets with URL:", url);
 
       const response = await fetch(url, {
         method: SummaryApi.getUserTickets.method,
@@ -43,10 +43,10 @@ const TicketsList = () => {
       });
       
       const result = await response.json();
-      console.log("API Response:", result);
+      // console.log("API Response:", result);
       
       if (result.success) {
-        console.log("Setting tickets:", result.data.tickets);
+        // console.log("Setting tickets:", result.data.tickets);
         setTickets(result.data.tickets);
         setTotalPages(result.data.pagination.pages);
       } else {
@@ -183,7 +183,7 @@ const TicketsList = () => {
   // Effect to load tickets on component mount and when dependencies change
   useEffect(() => {
     if (isInitialized && userDetails?._id) {
-      console.log("Fetching tickets for user:", userDetails._id);
+      // console.log("Fetching tickets for user:", userDetails._id);
       fetchTickets();
     }
   }, [currentPage, statusFilter, userDetails, isInitialized]);

@@ -111,11 +111,11 @@ const AppConvertingBanner = () => {
     try {
       // Try to get from localStorage first
       const cachedSlides = StorageService.getGuestSlides();
-      console.log("Cached slides:", cachedSlides); // Add this
+      // console.log("Cached slides:", cachedSlides); 
       
       if (cachedSlides) {
         setGuestSlides(cachedSlides);
-        console.log("Setting slides from cache:", cachedSlides.length); 
+        // console.log("Setting slides from cache:", cachedSlides.length); 
         setDataInitialized(true);
         setIsLoading(false);
         
@@ -146,11 +146,11 @@ const AppConvertingBanner = () => {
     try {
       const response = await fetch(SummaryApi.guestSlides.url);
       const data = await response.json();
-      console.log("API response:", data); 
+      // console.log("API response:", data); 
       
       if (data.success && Array.isArray(data.data)) {
-        console.log("Fetched slides count:", data.data.length); // Add this
-      console.log("Fetched slides:", data.data)
+        // console.log("Fetched slides count:", data.data.length); 
+      // console.log("Fetched slides:", data.data)
         setGuestSlides(data.data);
         setDataInitialized(true);
         

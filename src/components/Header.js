@@ -41,7 +41,7 @@ const Header = () => {
   const isAuthenticated = !!userDetails?._id;
   const isInitialized = useSelector((state) => state.user.initialized);
 
-  console.log("Header using context.activeProject:", activeProject);
+  // console.log("Header using context.activeProject:", activeProject);
 
   const location = useLocation();
   // const showBackButton = location.pathname !== '/';
@@ -54,18 +54,18 @@ const Header = () => {
    const getProjectLink = () => {
     // If activeProject is available in context
     if (activeProject && activeProject._id) {
-      console.log("Using activeProject from context:", activeProject._id);
+      // console.log("Using activeProject from context:", activeProject._id);
       return `/project-details/${activeProject._id}`;
     }
     // If user is already on a project details page
     const currentPath = window.location.pathname;
     if (currentPath.startsWith('/project-details/')) {
-      console.log("Using current path:", currentPath);
+      // console.log("Using current path:", currentPath);
       return currentPath;
     }
     
     // Fallback
-    console.log("Falling back to /order");
+    // console.log("Falling back to /order");
     return '/order';
   };
 
@@ -356,21 +356,21 @@ if(value){
 
        <nav className="border-t py-3">
             <ul className="flex justify-between overflow-x-auto scrollbar-none">
-              <li><a href="/dashboard"
+              <li><Link to="/dashboard"
               onClick={handleProtectedNavigation}
-               className="text-gray-800 font-medium whitespace-nowrap hover:text-blue-600 px-3">My Dashboard</a></li>
-              <li><a href="/order" 
+               className="text-gray-800 font-medium whitespace-nowrap hover:text-blue-600 px-3">My Dashboard</Link></li>
+              <li><Link to="/order" 
               onClick={handleProtectedNavigation}
-              className="text-gray-800 font-medium whitespace-nowrap hover:text-blue-600 px-3">My Orders</a></li>
+              className="text-gray-800 font-medium whitespace-nowrap hover:text-blue-600 px-3">My Orders</Link></li>
               <li><Link to={getProjectLink()} 
               onClick={handleProtectedNavigation}
               className="text-gray-800 font-medium whitespace-nowrap hover:text-blue-600 px-3">My Projects</Link></li>
-              <li><a href="/wallet" 
+              <li><Link to="/wallet" 
               onClick={handleProtectedNavigation}
-              className="text-gray-800 font-medium whitespace-nowrap hover:text-blue-600 px-3">My Wallet</a></li>
-              <li><a href="/support" 
+              className="text-gray-800 font-medium whitespace-nowrap hover:text-blue-600 px-3">My Wallet</Link></li>
+              <li><Link to="/support" 
               onClick={handleProtectedNavigation}
-              className="text-gray-800 font-medium whitespace-nowrap hover:text-blue-600 px-3">Contact Support</a></li>
+              className="text-gray-800 font-medium whitespace-nowrap hover:text-blue-600 px-3">Contact Support</Link></li>
              {/* Dynamically render service types from CategoryList */}
              {/* {serviceTypes.map((service, index) => (
                 <li key={index}>

@@ -59,7 +59,7 @@ const VerticalCard = ({ loading: initialLoading, data: initialData = [], current
                 const cachedProducts = StorageService.getProductsData(firstCategory);
                 
                 if (cachedProducts && cachedProducts.length > 0) {
-                    console.log('Using cached product data for:', firstCategory);
+                    // console.log('Using cached product data for:', firstCategory);
                     setData(cachedProducts);
                     setIsDataFromCache(true);
                     setLoading(false);
@@ -75,7 +75,7 @@ const VerticalCard = ({ loading: initialLoading, data: initialData = [], current
                     // Format the query parameters
                     const queryString = categoriesFromURL.map(cat => `category=${cat}`).join('&');
                     
-                    console.log('Fetching products from:', `${apiUrl}?${queryString}`);
+                    // console.log('Fetching products from:', `${apiUrl}?${queryString}`);
                     const response = await fetch(`${apiUrl}?${queryString}`);
                     const responseData = await response.json();
                     
@@ -107,7 +107,7 @@ const VerticalCard = ({ loading: initialLoading, data: initialData = [], current
                 const cachedBanners = StorageService.getProductBanners(currentUrlCategory);
                 
                 if (cachedBanners) {
-                    console.log('Using cached banners data');
+                    // console.log('Using cached banners data');
                     setBanners(cachedBanners);
                     return;
                 }
@@ -167,7 +167,7 @@ const VerticalCard = ({ loading: initialLoading, data: initialData = [], current
                 const cachedProducts = StorageService.getProductsData(firstCategory);
                 
                 if (cachedProducts && cachedProducts.length > 0) {
-                    console.log('Using cached products data');
+                    // console.log('Using cached products data');
                     setData(cachedProducts);
                     setIsDataFromCache(true);
                     setLoading(false);

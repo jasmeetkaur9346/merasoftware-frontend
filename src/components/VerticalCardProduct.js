@@ -186,7 +186,6 @@ const VerticalCardProduct = ({category, heading}) => {
                                 </div>
                                     
                                     {/* Website Preview Image */} 
-                                    <Link to={"/product/"+product?._id}>
                                         <div className="overflow-hidden md:px-4 px-3">
                                             <img 
                                                 src={product?.serviceImage[0]} 
@@ -194,7 +193,6 @@ const VerticalCardProduct = ({category, heading}) => {
                                                 className="w-full md:h-28 h-24 object-cover object-top hover:scale-105 transition-transform"
                                             />
                                         </div>
-                                    </Link>
                                     
                                     {/* Service Name (without colored text since it's already in the header) */}
                                     <div className="p-3 md:p-4">

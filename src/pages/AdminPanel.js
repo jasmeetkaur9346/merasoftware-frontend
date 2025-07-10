@@ -121,13 +121,13 @@ const AdminPanel = () => {
                                     >
                                         Website Projects
                                     </Link>
-                                    <Link 
+                                    {/* <Link 
                                         to={"website-updates"} 
                                         className='block px-3 py-2.5 text-sm text-gray-400 hover:bg-slate-700 hover:text-white rounded-md transition-colors'
                                         onClick={(e) => e.stopPropagation()}
                                     >
                                         Website Update Plan
-                                    </Link>
+                                    </Link> */}
                                 </div>
                             )}
                         </div>
@@ -161,13 +161,13 @@ const AdminPanel = () => {
                                     >
                                         All Products
                                     </Link>
-                                    <Link 
+                                    {/* <Link 
                                         to={"all-orders"} 
                                         className='block px-3 py-2.5 text-sm text-gray-400 hover:bg-slate-700 hover:text-white rounded-md transition-colors'
                                         onClick={(e) => e.stopPropagation()}
                                     >
                                         All Orders
-                                    </Link>
+                                    </Link> */}
                                 </div>
                             )}
                         </div>

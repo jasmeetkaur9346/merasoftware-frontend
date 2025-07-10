@@ -201,7 +201,7 @@ useEffect(() => {
 
    // Add a function to update active project that can be called from child components
  const updateActiveProject = (project) => {
-  console.log("AppContent: updating activeProject:", project);
+  // console.log("AppContent: updating activeProject:", project);
   setActiveProject(project);
 };
 
@@ -222,7 +222,7 @@ useEffect(() => {
         // Try to get user data from localStorage first
         const cachedUser = StorageService.getUserDetails();
         if (cachedUser) {
-          console.log("🧾 Cached user from localStorage:", cachedUser);
+          // console.log("🧾 Cached user from localStorage:", cachedUser);
           dispatch(setUserDetails(cachedUser));
           await fetchUserAddToCart();
           return;
@@ -288,7 +288,7 @@ useEffect(() => {
           return false;
         });
         
-        console.log("Setting active project at AppContent level:", activeProj);
+        // console.log("Setting active project at AppContent level:", activeProj);
         setActiveProject(activeProj || null);
       }
     } catch (error) {
@@ -318,7 +318,7 @@ useEffect(() => {
          activeProject,
       updateActiveProject 
       }}>
-        {console.log("Rendering Header with activeProject:", activeProject)}
+        {/* {console.log("Rendering Header with activeProject:", activeProject)} */}
          <ScrollToTop />
         <ToastContainer
          position='top-center' 

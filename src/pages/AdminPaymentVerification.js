@@ -139,7 +139,7 @@ const AdminPaymentVerification = () => {
             const transactionDetails = getTransactionDisplay(transaction);
             
             // First approve the transaction
-            console.log("Approving transaction:", transaction._id);
+            // console.log("Approving transaction:", transaction._id);
             
             const response = await fetch(SummaryApi.wallet.approveTransaction.url, {
                 method: SummaryApi.wallet.approveTransaction.method,
@@ -157,7 +157,7 @@ const AdminPaymentVerification = () => {
             const data = await response.json();
             
             if (data.success) {
-                console.log("Transaction approved successfully:", data);
+                // console.log("Transaction approved successfully:", data);
                 
                 // Show appropriate success message
                 toast.success(transactionDetails.isWalletCredit ? 
