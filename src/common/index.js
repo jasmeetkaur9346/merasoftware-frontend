@@ -425,6 +425,10 @@ const SummaryApi = {
         url: `${backendDomain}/api/get-hidden-products`,
         method: "get"
       },
+      userRoleSwitch: {
+        url: `${backendDomain}/api/role-switch`,
+        method: "post"
+      },
     wallet : {
         balance :{
             url : `${backendDomain}/api/wallet/balance`,

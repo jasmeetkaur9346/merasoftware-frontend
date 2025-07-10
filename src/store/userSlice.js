@@ -27,9 +27,14 @@ export const userSlice = createSlice({
     // Add this new reducer
     initializeState: (state) => {
       state.initialized = true
+    },
+    updateUserRole: (state, action) => {
+      if(state.user){
+        state.user.role = action.payload
+      }
     }
   }
 })
 
-export const { setUserDetails, updateWalletBalance, logout, initializeState   } = userSlice.actions
+export const { setUserDetails, updateWalletBalance, logout, initializeState, updateUserRole } = userSlice.actions
 export default userSlice.reducer;

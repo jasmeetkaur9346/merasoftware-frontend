@@ -7,7 +7,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import SummaryApi from '../common'; 
 import { toast } from 'react-toastify';
-import { setUserDetails, logout  } from '../store/userSlice';
+import { setUserDetails, logout, updateUserRole } from '../store/userSlice';
 import ROLE from '../common/role';
 import Context from '../context';
 import { useOnlineStatus } from '../App'; 
@@ -35,6 +35,7 @@ const Header = () => {
   const [serviceTypes, setServiceTypes] = useState([])
   const [loading, setLoading] = useState(true);
   const [showLoginPopup, setShowLoginPopup] = useState(false);
+  const [roleDropdownOpen, setRoleDropdownOpen] = useState(false);
 
   // Get user authentication status
   const userDetails = useSelector((state) => state.user.user);
@@ -130,11 +131,15 @@ const Header = () => {
       if (menuRef.current && !menuRef.current.contains(event.target) && menuDisplay) {
         setMenuDisplay(false);
       }
+      if (roleDropdownOpen && !event.target.closest('.role-dropdown')) {
+        setRoleDropdownOpen(false);
+      }
     };
     
     const handleEscKey = (event) => {
-      if (event.key === 'Escape' && menuDisplay) {
-        setMenuDisplay(false);
+      if (event.key === 'Escape') {
+        if (menuDisplay) setMenuDisplay(false);
+        if (roleDropdownOpen) setRoleDropdownOpen(false);
       }
     };
     
@@ -145,7 +150,7 @@ const Header = () => {
       document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('keydown', handleEscKey);
     };
-  }, [menuDisplay]);
+  }, [menuDisplay, roleDropdownOpen]);
 
   // Process categories to extract service types
   const processCategories = (data) => {
@@ -234,12 +239,65 @@ if(value){
     navigate("/search")
   }
 }
+const handleRoleChange = async (newRole) => {
+  if(newRole === user.role) {
+    setRoleDropdownOpen(false);
+    return;
+  }
+  try {
+    const response = await fetch(SummaryApi.userRoleSwitch.url, {
+      method: SummaryApi.userRoleSwitch.method,
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ newRole })
+    });
+    const data = await response.json();
+    if(data.success) {
+      // Update Redux state with new role
+      dispatch(updateUserRole(newRole));
+      // Optionally update user details in localStorage
+      const updatedUser = { ...user, role: newRole };
+      StorageService.setUserDetails(updatedUser);
+      dispatch(setUserDetails(updatedUser));
+      toast.success("Role switched to " + newRole);
+      setRoleDropdownOpen(false);
+      // Update user-details cookie to keep in sync
+      CookieManager.setUserDetails({ ...user, role: newRole });
+      // Redirect based on new role
+      switch(newRole) {
+        case ROLE.ADMIN:
+          navigate('/admin-panel/all-products');
+          break;
+        case ROLE.MANAGER:
+          navigate('/manager-panel/dashboard');
+          break;
+        case ROLE.PARTNER:
+          navigate('/partner-panel/dashboard');
+          break;
+        case ROLE.DEVELOPER:
+          navigate('/developer-panel');
+          break;
+        default:
+          navigate('/home');
+      }
+    } else {
+      toast.error(data.message || "Failed to switch role");
+    }
+  } catch (error) {
+    console.error("Error switching role:", error);
+    toast.error("Error switching role");
+  }
+  setRoleDropdownOpen(false);
+};
 
 // useEffect(() => {
 //   if (user?._id) {
 //     context.fetchWalletBalance();
 //   }
 // }, []); 
+
   return (
     <>
 
@@ -255,6 +313,33 @@ if(value){
               <span className="font-bold text-xl text-gray-800">MeraSoftware</span>
             </div>
         </Link>
+
+         {/* Role Switch Dropdown */}
+        {user?.roles && user.roles.length > 1 && (
+          <div className="relative role-dropdown">
+            <button
+              onClick={() => setRoleDropdownOpen(!roleDropdownOpen)}
+              className="ml-4 px-3 py-1 border border-gray-300 rounded-md bg-white text-gray-700 hover:bg-gray-100 focus:outline-none"
+            >
+              {user.role.toUpperCase()} ▼
+            </button>
+            {roleDropdownOpen && (
+              <ul className="absolute right-0 mt-1 w-40 bg-white border border-gray-300 rounded-md shadow-lg z-50">
+                {user.roles.map((roleItem) => (
+                  <li
+                    key={roleItem}
+                    className={`cursor-pointer px-4 py-2 hover:bg-blue-600 hover:text-white ${
+                      roleItem === user.role ? 'font-bold bg-blue-100' : ''
+                    }`}
+                    onClick={() => handleRoleChange(roleItem)}
+                  >
+                    {roleItem.toUpperCase()}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
 
 
        <div className='hidden md:flex flex-1 max-w-xl mx-8'>
@@ -356,21 +441,21 @@ if(value){
 
        <nav className="border-t py-3">
             <ul className="flex justify-between overflow-x-auto scrollbar-none">
-              <li><Link to="/dashboard"
+              <li><a href="/dashboard"
               onClick={handleProtectedNavigation}
-               className="text-gray-800 font-medium whitespace-nowrap hover:text-blue-600 px-3">My Dashboard</Link></li>
-              <li><Link to="/order" 
+               className="text-gray-800 font-medium whitespace-nowrap hover:text-blue-600 px-3">My Dashboard</a></li>
+              <li><a href="/order" 
               onClick={handleProtectedNavigation}
-              className="text-gray-800 font-medium whitespace-nowrap hover:text-blue-600 px-3">My Orders</Link></li>
+              className="text-gray-800 font-medium whitespace-nowrap hover:text-blue-600 px-3">My Orders</a></li>
               <li><Link to={getProjectLink()} 
               onClick={handleProtectedNavigation}
               className="text-gray-800 font-medium whitespace-nowrap hover:text-blue-600 px-3">My Projects</Link></li>
-              <li><Link to="/wallet" 
+              <li><a href="/wallet" 
               onClick={handleProtectedNavigation}
-              className="text-gray-800 font-medium whitespace-nowrap hover:text-blue-600 px-3">My Wallet</Link></li>
-              <li><Link to="/support" 
+              className="text-gray-800 font-medium whitespace-nowrap hover:text-blue-600 px-3">My Wallet</a></li>
+              <li><a href="/support" 
               onClick={handleProtectedNavigation}
-              className="text-gray-800 font-medium whitespace-nowrap hover:text-blue-600 px-3">Contact Support</Link></li>
+              className="text-gray-800 font-medium whitespace-nowrap hover:text-blue-600 px-3">Contact Support</a></li>
              {/* Dynamically render service types from CategoryList */}
              {/* {serviceTypes.map((service, index) => (
                 <li key={index}>
@@ -453,4 +538,4 @@ if(value){
   )
 }
 
-export default Header
+export default Header;
