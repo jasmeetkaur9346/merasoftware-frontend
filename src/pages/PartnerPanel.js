@@ -81,7 +81,7 @@ const PartnerPanel = () => {
               {openSection === "userManagement" && (
                 <div className="ml-6 mt-2 border-l-2 border-blue-500 pl-4 space-y-1">
                   <Link
-                    to={"customers"}
+                    to={"partner-customers"}
                     className="block px-3 py-2.5 text-sm text-gray-400 hover:bg-slate-700 hover:text-white rounded-md transition-colors"
                     onClick={(e) => e.stopPropagation()}
                   >

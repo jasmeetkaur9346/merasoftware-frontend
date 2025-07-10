@@ -63,6 +63,7 @@ import HiddenProducts from "../pages/HiddenProducts";
 import ManagerDashboard from "../pages/ManagerDashboard";
 import PartnerPanel from "../pages/PartnerPanel";
 import PartnerDashboard from "../pages/PartnerDashboard";
+import PartnerCustomers from "../pages/PartnerCustomers";
 
 // Create a conditional home route
 // const HomeRoute = () => {
@@ -357,8 +358,8 @@ const router = createBrowserRouter([
                         element : <PartnerDashboard/>
                     },
                     {
-                        path: "customers",
-                        element : <CustomerManagement/>
+                    path: "partner-customers",
+                    element : <PartnerCustomers/>
                     },
                 ]
             },
