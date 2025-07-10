@@ -275,19 +275,22 @@ const isInitialized = useSelector((state) => state.user.initialized);
     
     if (paymentOption === 'partial') {
       // For partial payment: Calculate 30% of total
-      currentPaymentAmount = Math.round(totalPrice * 0.3);
+      const firstInstallment = Math.round(totalPrice * 0.3);
+      const secondInstallment = Math.round(totalPrice * 0.3);
+      const thirdInstallment = totalPrice - (firstInstallment + secondInstallment);
+      currentPaymentAmount = firstInstallment;
       
       // Calculate remaining installments
       remainingPayments = [
         {
           installmentNumber: 2,
           percentage: 30,
-          amount: Math.round(totalPrice * 0.3)
+          amount: secondInstallment
         },
         {
           installmentNumber: 3,
           percentage: 40,
-          amount: Math.round(totalPrice * 0.4)
+          amount: thirdInstallment
         }
       ];
     }
@@ -967,18 +970,32 @@ const isInitialized = useSelector((state) => state.user.initialized);
                   <div className="bg-gray-50 p-3 rounded-lg mt-4 mb-4">
                     <h4 className="text-sm font-medium mb-2">Payment Schedule:</h4>
                     <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span>First Payment (30%):</span>
-                        <span className="font-medium">₹{Math.round(calculateTotalPrice() * 0.3).toLocaleString()}</span>
-                      </div>
-                      <div className="flex justify-between text-sm">
-                        <span>Second Payment (30%):</span>
-                        <span className="font-medium">₹{Math.round(calculateTotalPrice() * 0.3).toLocaleString()}</span>
-                      </div>
-                      <div className="flex justify-between text-sm">
-                        <span>Final Payment (40%):</span>
-                        <span className="font-medium">₹{Math.round(calculateTotalPrice() * 0.4).toLocaleString()}</span>
-                      </div>
+                <div className="flex justify-between text-sm">
+                  <span>First Payment (30%):</span>
+                  <span className="font-medium">₹{(() => {
+                    const total = calculateTotalPrice();
+                    const first = Math.round(total * 0.3);
+                    return first.toLocaleString();
+                  })()}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span>Second Payment (30%):</span>
+                  <span className="font-medium">₹{(() => {
+                    const total = calculateTotalPrice();
+                    const second = Math.round(total * 0.3);
+                    return second.toLocaleString();
+                  })()}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span>Final Payment (40%):</span>
+                  <span className="font-medium">₹{(() => {
+                    const total = calculateTotalPrice();
+                    const first = Math.round(total * 0.3);
+                    const second = Math.round(total * 0.3);
+                    const third = total - (first + second);
+                    return third.toLocaleString();
+                  })()}</span>
+                </div>
                     </div>
                   </div>
                 )}
