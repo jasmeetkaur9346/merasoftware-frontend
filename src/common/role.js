@@ -1,6 +1,6 @@
 const ROLE = {
     ADMIN : "admin",
-    GENERAL : "customer",
+    CUSTOMER : "customer",
     DEVELOPER: "developer",
     MANAGER: "manager",
     PARTNER: "partner"

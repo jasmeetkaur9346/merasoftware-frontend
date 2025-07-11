@@ -22,10 +22,7 @@ const RoleBasedHome = () => {
     case 'partner':
       return <Navigate to="/partner-panel/dashboard" replace />;
     case 'customer':
-    case 'USER':
-      return <Navigate to="/dashboard" replace />;
-    default:
-      return <Navigate to="/dashboard" replace />;
+      return <Navigate to="/home" replace />;
   }
 };
 

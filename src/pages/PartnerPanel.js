@@ -18,11 +18,12 @@ const PartnerPanel = () => {
   // State for collapsible sections - only one can be open at a time
   const [openSection, setOpenSection] = useState(null);
 
-  useEffect(() => {
-    if (user?.role !== ROLE.PARTNER) {
-      navigate("/");
-    }
-  }, [user]);
+ useEffect(() => {
+            // Assuming user.roles is an array of strings
+            if (!user?.roles?.includes(ROLE.PARTNER)) { 
+                navigate("/");
+            }
+        }, [user, navigate]);
 
   const toggleSection = (section) => {
     // If clicking on already open section, close it. Otherwise open the new section

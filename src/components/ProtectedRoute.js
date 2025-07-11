@@ -5,6 +5,8 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   const user = useSelector(state => state?.user?.user);
   const initialized = useSelector(state => state?.user?.initialized);
 
+  // console.log("ProtectedRoute render - user.role:", user?.role, "allowedRoles:", allowedRoles);
+
   if (!initialized) {
     // Optionally, show a loading spinner or null while initializing
     return null;

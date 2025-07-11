@@ -266,22 +266,29 @@ const handleRoleChange = async (newRole) => {
       // Update user-details cookie to keep in sync
       CookieManager.setUserDetails({ ...user, role: newRole });
       // Redirect based on new role
-      switch(newRole) {
-        case ROLE.ADMIN:
-          navigate('/admin-panel/all-products');
-          break;
-        case ROLE.MANAGER:
-          navigate('/manager-panel/dashboard');
-          break;
-        case ROLE.PARTNER:
-          navigate('/partner-panel/dashboard');
-          break;
-        case ROLE.DEVELOPER:
-          navigate('/developer-panel');
-          break;
-        default:
-          navigate('/home');
-      }
+       let redirectPath = "/";
+    switch(newRole) {
+      case ROLE.ADMIN:
+        redirectPath = '/admin-panel/all-products';
+        break;
+      case ROLE.MANAGER:
+        redirectPath = '/manager-panel/dashboard';
+        break;
+      case ROLE.PARTNER:
+        redirectPath = '/partner-panel/dashboard';
+        break;
+      case ROLE.DEVELOPER:
+        redirectPath = '/developer-panel';
+        break;
+      case ROLE.CUSTOMER:
+        redirectPath = '/home';
+        break;
+    }
+    // console.log("Redirecting to path:", redirectPath);
+    // Add small delay to allow Redux state update to propagate
+    setTimeout(() => {
+      navigate(redirectPath);
+    }, 100);
     } else {
       toast.error(data.message || "Failed to switch role");
     }
