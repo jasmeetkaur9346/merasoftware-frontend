@@ -429,6 +429,14 @@ const SummaryApi = {
         url: `${backendDomain}/api/role-switch`,
         method: "post"
       },
+      businessCreatedToPartner: {
+        url: `${backendDomain}/api/business-created`,
+        method: "get"
+      },
+      businessCreatedFirstPurchase: {
+        url: `${backendDomain}/api/first-purchase-list`,
+        method: "get"
+      },
     wallet : {
         balance :{
             url : `${backendDomain}/api/wallet/balance`,

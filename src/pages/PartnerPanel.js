@@ -6,6 +6,7 @@ import {
   MdShoppingCart,
   MdPeople,
   MdWeb,
+  MdBusiness,
 } from "react-icons/md";
 import { useSelector } from "react-redux";
 import { Link, Outlet, useNavigate } from "react-router-dom";
@@ -62,36 +63,30 @@ const PartnerPanel = () => {
               Dashboard
             </Link>
 
-            {/* User Management Section */}
-            <div className="mt-4">
-              <button
-                onClick={() => toggleSection("userManagement")}
-                className="flex items-center justify-between w-full px-4 py-3 text-sm text-gray-300 hover:bg-slate-700 rounded-md transition-colors"
-              >
-                <div className="flex items-center">
-                  <MdPeople className="mr-3 text-lg" />
-                  User Management
-                </div>
-                {openSection === "userManagement" ? (
-                  <FaChevronUp className="text-xs" />
-                ) : (
-                  <FaChevronDown className="text-xs" />
-                )}
-              </button>
+            <Link
+              to={"partner-customers"}
+              className="flex items-center px-3 py-2 text-sm text-gray-300 hover:bg-slate-700 hover:text-white rounded-md transition-colors"
+            >
+              <MdPeople className="mr-3 text-lg" />
+              My Customers
+            </Link>
 
-              {openSection === "userManagement" && (
-                <div className="ml-6 mt-2 border-l-2 border-blue-500 pl-4 space-y-1">
-                  <Link
-                    to={"partner-customers"}
-                    className="block px-3 py-2.5 text-sm text-gray-400 hover:bg-slate-700 hover:text-white rounded-md transition-colors"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    Customers
-                  </Link>
-                  
-                </div>
-              )}
-            </div>
+            <Link
+              to={"business-created"}
+              className="flex items-center px-3 py-2 text-sm text-gray-300 hover:bg-slate-700 hover:text-white rounded-md transition-colors"
+            >
+              <MdBusiness className="mr-3 text-lg" />
+              Business Created
+            </Link>
+
+            <Link
+              to={"first-purchase-list"}
+              className="flex items-center px-3 py-2 text-sm text-gray-300 hover:bg-slate-700 hover:text-white rounded-md transition-colors"
+            >
+              {/* You can choose an icon here, using MdShoppingCart as example */}
+              <MdShoppingCart className="mr-3 text-lg" />
+              First Purchase
+            </Link>
 
           </nav>
         </div>

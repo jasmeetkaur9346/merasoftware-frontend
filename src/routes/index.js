@@ -64,6 +64,8 @@ import ManagerDashboard from "../pages/ManagerDashboard";
 import PartnerPanel from "../pages/PartnerPanel";
 import PartnerDashboard from "../pages/PartnerDashboard";
 import PartnerCustomers from "../pages/PartnerCustomers";
+import BusinessCreated from "../pages/BusinessCreated";
+import FirstPurchaseList from "../pages/FirstPurchaseList";
 
 // Create a conditional home route
 // const HomeRoute = () => {
@@ -360,6 +362,14 @@ const router = createBrowserRouter([
                     {
                     path: "partner-customers",
                     element : <PartnerCustomers/>
+                    },
+                    {
+                    path: "business-created",
+                    element : <BusinessCreated/>
+                    },
+                    {
+                    path: "first-purchase-list",
+                    element : <FirstPurchaseList/>
                     },
                 ]
             },
