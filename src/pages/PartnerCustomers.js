@@ -6,6 +6,7 @@ import SummaryApi from '../common';
 const PartnerCustomers = () => {
   const user = useSelector(state => state?.user?.user);
   const [customers, setCustomers] = useState([]);
+  const [firstPurchaseList, setFirstPurchaseList] = useState([]);
   const [loading, setLoading] = useState(false);
   const [openAddCustomerModal, setOpenAddCustomerModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -20,6 +21,7 @@ const PartnerCustomers = () => {
   useEffect(() => {
     if (user && user._id) {
       fetchCustomers();
+      fetchFirstPurchaseList();
     }
   }, [user]);
 
@@ -45,6 +47,44 @@ const PartnerCustomers = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchFirstPurchaseList = async () => {
+    try {
+      const response = await fetch(SummaryApi.onlyFirstPurchase.url, {
+        method: SummaryApi.onlyFirstPurchase.method,
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      const result = await response.json();
+      if (result.success) {
+        setFirstPurchaseList(result.data);
+      } else {
+        toast.error(result.message || 'Failed to load first purchase summary');
+      }
+    } catch (error) {
+      console.error('Error fetching first purchase summary:', error);
+      toast.error('Something went wrong while loading first purchase summary');
+    }
+  };
+
+  // Helper to get purchase details for a customer
+  const getPurchaseDetailsForCustomer = (customerId) => {
+    const purchase = firstPurchaseList.find(p => p.customerId.toString() === customerId.toString());
+    if (purchase) {
+      return {
+        productName: purchase.productName,
+        finalPrice: purchase.finalPrice,
+        paymentType: purchase.paymentType
+      };
+    }
+    return {
+      productName: 'Pending',
+      finalPrice: 'Pending',
+      paymentType: 'Pending'
+    };
   };
 
   const handleChange = (e) => {
@@ -108,7 +148,7 @@ const PartnerCustomers = () => {
   return (
     <div className="container mx-auto p-6 bg-white rounded-md shadow-md">
       <div className="flex justify-between items-center mb-4">
-        <h1 className="text-3xl font-semibold text-gray-800">My Customers</h1>
+        <h1 className="text-3xl font-semibold text-gray-800">My Customer</h1>
         <button
           onClick={() => setOpenAddCustomerModal(true)}
           className="bg-purple-700 hover:bg-purple-800 font-semibold text-white px-4 py-2 rounded-md"
@@ -122,7 +162,7 @@ const PartnerCustomers = () => {
         placeholder="Search customers..."
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
-        className="mb-4 p-2 border rounded w-full max-w-md"
+        className="mb-4 p-2 border rounded w-full"
       />
 
       {openAddCustomerModal && (
@@ -199,31 +239,32 @@ const PartnerCustomers = () => {
         <table className="min-w-full bg-white border rounded-md shadow-sm text-left">
           <thead className="bg-purple-50 text-purple-700">
             <tr>
-              <th className="py-3 px-6 border-b">Name</th>
-              <th className="py-3 px-6 border-b">Email</th>
-              <th className="py-3 px-6 border-b">Profile Picture</th>
+              <th className="py-3 px-6 border-b">S.No</th>
+              <th className="py-3 px-6 border-b">Customer Name</th>
+              <th className="py-3 px-6 border-b">Phone No</th>
+              <th className="py-3 px-6 border-b">Product</th>
+              <th className="py-3 px-6 border-b">Final price</th>
+              <th className="py-3 px-6 border-b">Payment Type</th>
             </tr>
           </thead>
           <tbody>
-            {filteredCustomers.map(user => (
-              <tr key={user._id} className="cursor-pointer hover:bg-purple-100">
-                <td className="py-3 px-6 border-b">{user.name}</td>
-                <td className="py-3 px-6 border-b">{user.email.split('_')[0]}</td>
-                <td className="py-3 px-6 border-b">
-                  {user.profilePic ? (
-                    <img
-                      src={user.profilePic}
-                      alt={user.name}
-                      className="w-12 h-12 rounded-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center text-gray-600">
-                      {user.name?.charAt(0).toUpperCase() || 'C'}
+            {filteredCustomers.map((user, index) => {
+              const purchaseDetails = getPurchaseDetailsForCustomer(user._id);
+              return (
+                <tr key={user._id} className="cursor-pointer hover:bg-purple-100">
+                  <td className="py-3 px-6 border-b">
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center font-semibold bg-purple-700 text-white">
+                      {index + 1}
                     </div>
-                  )}
-                </td>
-              </tr>
-            ))}
+                  </td>
+                  <td className="py-3 px-6 border-b">{user.name}</td>
+                  <td className="py-3 px-6 border-b">{user?.phone || 'Not set'}</td>
+                  <td className="py-3 px-6 border-b">{purchaseDetails.productName}</td>
+                  <td className="py-3 px-6 border-b">{purchaseDetails.finalPrice}</td>
+                  <td className="py-3 px-6 border-b">{purchaseDetails.paymentType}</td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       )}

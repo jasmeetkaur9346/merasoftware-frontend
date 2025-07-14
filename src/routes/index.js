@@ -347,7 +347,7 @@ const router = createBrowserRouter([
                 path: "partner-panel",
                 element: (
                     <ProtectedRoute allowedRoles={['partner']}>
-                        <PartnerPanel/>
+                        <PartnerDashboard/>
                     </ProtectedRoute>
                 ),
                 children :[

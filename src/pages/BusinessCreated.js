@@ -45,10 +45,9 @@ const BusinessCreated = () => {
             <thead>
               <tr className="bg-gray-100">
                 <th className="border border-gray-300 px-4 py-2 text-left">S.No</th>
-                <th className="border border-gray-300 px-4 py-2 text-left">Customer</th>
-                <th className="border border-gray-300 px-4 py-2 text-left">Product</th>
-                <th className="border border-gray-300 px-4 py-2 text-left">Final Price</th>
-                <th className="border border-gray-300 px-4 py-2 text-left">Payment Flow</th>
+                <th className="border border-gray-300 px-4 py-2 text-left">Revenue Amount (%)</th>
+                <th className="border border-gray-300 px-4 py-2 text-left">Paid Amount</th>
+                <th className="border border-gray-300 px-4 py-2 text-left">Payment Type</th>
                 <th className="border border-gray-300 px-4 py-2 text-left">Date</th>
               </tr>
             </thead>
@@ -56,10 +55,9 @@ const BusinessCreated = () => {
               {businessData.map((item) => (
                 <tr key={item.serialNo}>
                   <td className="border border-gray-300 px-4 py-2">{item.serialNo}</td>
-                  <td className="border border-gray-300 px-4 py-2">{item.customerName}</td>
-                  <td className="border border-gray-300 px-4 py-2">{item.productName}</td>
-                  <td className="border border-gray-300 px-4 py-2">₹{item.finalPrice.toLocaleString()}</td>
-                  <td className="border border-gray-300 px-4 py-2">{item.paymentFlow}</td>
+                  <td className="border border-gray-300 px-4 py-2">{item.revenueAmount}</td>
+                  <td className="border border-gray-300 px-4 py-2">₹{item.paidAmount.toLocaleString()}</td>
+                  <td className="border border-gray-300 px-4 py-2">{item.paymentType}</td>
                   <td className="border border-gray-300 px-4 py-2">{new Date(item.date).toLocaleDateString()}</td>
                 </tr>
               ))}

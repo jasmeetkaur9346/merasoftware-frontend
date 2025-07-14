@@ -437,6 +437,14 @@ const SummaryApi = {
         url: `${backendDomain}/api/first-purchase-list`,
         method: "get"
       },
+      onlyFirstPurchase: {
+        url: `${backendDomain}/api/only-first-order`,
+        method: "get"
+      },
+      partnerCustomers : {
+        url: `${backendDomain}/api/partner-customers`,
+        method: "get"
+      },
     wallet : {
         balance :{
             url : `${backendDomain}/api/wallet/balance`,

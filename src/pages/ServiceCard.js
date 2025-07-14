@@ -1,325 +1,518 @@
 import React, { useState } from 'react';
+import { User, DollarSign, TrendingUp, Wallet, CreditCard, Filter, Download, Eye, EyeOff, ArrowUpCircle } from 'lucide-react';
 
-function CRMApp() {
-  const [activeTab, setActiveTab] = useState('customers');
-  const [customers] = useState([
-    {
-      id: 1,
-      name: 'Rajesh Gupta',
-      email: 'rajesh.g@example.com',
-      phone: '9876543210',
-      company: 'Gupta Enterprises'
-    },
-    {
-      id: 2,
-      name: 'Priya Sharma',
-      email: 'priya.s@example.com',
-      phone: '8765432109',
-      company: 'Sharma Solutions'
-    },
-    {
-      id: 3,
-      name: 'Amit Patel',
-      email: 'amit.p@example.com',
-      phone: '7654321098',
-      company: 'Patel Traders'
-    },
-    {
-      id: 4,
-      name: 'Neha Singh',
-      email: 'neha.s@example.com',
-      phone: '6543210987',
-      company: 'Singh & Co.'
-    }
+const MarketingPanel = () => {
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [transferAmount, setTransferAmount] = useState('');
+  const [showBalance, setShowBalance] = useState(true);
+  const [selectedFilter, setSelectedFilter] = useState('all');
+  const [revenueTransferAmount, setRevenueTransferAmount] = useState('');
+
+  // Dummy data
+  const walletBalance = 25450.75;
+  const totalEarnings = 45670.25;
+  const totalCustomers = 127;
+  const activeCustomers = 89;
+
+  const customers = [
+    { id: 1, name: 'Rahul Sharma', email: 'rahul.sharma@email.com', phone: '+91 9876543210', joinDate: '2024-01-15', totalPurchases: 3, totalSpent: 12500 },
+    { id: 2, name: 'Priya Patel', email: 'priya.patel@email.com', phone: '+91 8765432109', joinDate: '2024-01-20', totalPurchases: 2, totalSpent: 8900 },
+    { id: 3, name: 'Amit Kumar', email: 'amit.kumar@email.com', phone: '+91 7654321098', joinDate: '2024-02-01', totalPurchases: 5, totalSpent: 15600 },
+    { id: 4, name: 'Sneha Gupta', email: 'sneha.gupta@email.com', phone: '+91 6543210987', joinDate: '2024-02-05', totalPurchases: 1, totalSpent: 3200 },
+    { id: 5, name: 'Vikash Singh', email: 'vikash.singh@email.com', phone: '+91 5432109876', joinDate: '2024-02-10', totalPurchases: 4, totalSpent: 11200 }
+  ];
+
+  const [transactionHistory, setTransactionHistory] = useState([
+    { id: 1, type: 'commission', customerName: 'Rahul Sharma', orderAmount: 2500, commissionRate: 10, commission: 250, date: '2024-07-10', orderType: 'First Purchase', status: 'Credited' },
+    { id: 2, type: 'commission', customerName: 'Priya Patel', orderAmount: 1800, commissionRate: 10, commission: 180, date: '2024-07-09', orderType: 'First Purchase', status: 'Credited' },
+    { id: 3, type: 'commission', customerName: 'Rahul Sharma', orderAmount: 3200, commissionRate: 5, commission: 160, date: '2024-07-08', orderType: 'Repeat Purchase', status: 'Credited' },
+    { id: 4, type: 'commission', customerName: 'Amit Kumar', orderAmount: 4500, commissionRate: 10, commission: 450, date: '2024-07-07', orderType: 'First Purchase', status: 'Credited' },
+    { id: 5, type: 'commission', customerName: 'Sneha Gupta', orderAmount: 3200, commissionRate: 10, commission: 320, date: '2024-07-06', orderType: 'First Purchase', status: 'Credited' },
+    { id: 6, type: 'commission', customerName: 'Vikash Singh', orderAmount: 2800, commissionRate: 10, commission: 280, date: '2024-07-05', orderType: 'First Purchase', status: 'Credited' },
+    { id: 7, type: 'commission', customerName: 'Priya Patel', orderAmount: 2100, commissionRate: 5, commission: 105, date: '2024-07-04', orderType: 'Repeat Purchase', status: 'Credited' },
+    { id: 8, type: 'commission', customerName: 'Amit Kumar', orderAmount: 1900, commissionRate: 5, commission: 95, date: '2024-07-03', orderType: 'Repeat Purchase', status: 'Pending' },
+    { id: 9, type: 'transfer', customerName: 'Transfer Request', orderAmount: 5000, commissionRate: 0, commission: -5000, date: '2024-07-02', orderType: 'Bank Transfer', status: 'Pending' },
+    { id: 10, type: 'transfer', customerName: 'Transfer Request', orderAmount: 3000, commissionRate: 0, commission: -3000, date: '2024-07-01', orderType: 'Bank Transfer', status: 'Debited' }
   ]);
 
-  const [businessCreated] = useState([
-    {
-      id: 101,
-      customerId: 1,
-      customerName: 'Rajesh Gupta',
-      productName: 'Premium Software Suite',
-      price: 4999,
-      purchaseDate: '2023-05-15',
-      review: 'Excellent product, very satisfied with the performance.'
-    },
-    {
-      id: 102,
-      customerId: 2,
-      customerName: 'Priya Sharma',
-      productName: 'Business Analytics Tool',
-      price: 8999,
-      purchaseDate: '2023-06-20',
-      review: 'Great insights, helped improve our decision making.'
-    },
-    {
-      id: 103,
-      customerId: 3,
-      customerName: 'Amit Patel',
-      productName: 'E-commerce Platform',
-      price: 14999,
-      purchaseDate: '2023-07-10',
-      review: 'Solid platform with reliable performance.'
-    },
-    {
-      id: 104,
-      customerId: 1,
-      customerName: 'Rajesh Gupta',
-      productName: 'Advanced Analytics Suite',
-      price: 15999,
-      purchaseDate: '2023-08-15',
-      review: 'Excellent product, very satisfied with the performance.'
-    },
-    {
-      id: 105,
-      customerId: 2,
-      customerName: 'Priya Sharma',
-      productName: 'CRM Integration Tool',
-      price: 12999,
-      purchaseDate: '2023-09-10',
-      review: 'Great addition to our business tools.'
-    },
-    {
-      id: 106,
-      customerId: 1,
-      customerName: 'Rajesh Gupta',
-      productName: 'Security Package',
-      price: 8999,
-      purchaseDate: '2023-10-05',
-      review: 'Very secure and reliable.'
-    }
-  ]);
+  const filteredTransactions = transactionHistory.filter(item => {
+    if (selectedFilter === 'all') return true;
+    if (selectedFilter === 'first') return item.orderType === 'First Purchase';
+    if (selectedFilter === 'repeat') return item.orderType === 'Repeat Purchase';
+    if (selectedFilter === 'transfer') return item.type === 'transfer';
+    return true;
+  });
 
-  const [walletTransactions] = useState([
-    {
-      id: 1001,
-      transactionDate: '2023-05-16',
-      amount: 499.9,
-      customerId: 1,
-      customerName: 'Rajesh Gupta',
-      productName: 'Premium Software Suite',
-      status: 'Completed'
-    },
-    {
-      id: 1002,
-      transactionDate: '2023-06-21',
-      amount: 899.9,
-      customerId: 2,
-      customerName: 'Priya Sharma',
-      productName: 'Business Analytics Tool',
-      status: 'Completed'
-    },
-    {
-      id: 1003,
-      transactionDate: '2023-07-11',
-      amount: 1499.9,
-      customerId: 3,
-      customerName: 'Amit Patel',
-      productName: 'E-commerce Platform',
-      status: 'Pending'
+  const handleTransfer = () => {
+    if (transferAmount && parseFloat(transferAmount) <= walletBalance) {
+      alert(`Transfer request for ₹${transferAmount} has been submitted successfully. Amount will be credited to your account within 2-3 business days.`);
+      setTransferAmount('');
+    } else {
+      alert('Invalid amount or insufficient balance');
     }
-  ]);
+  };
 
-  // Function to get purchase count for each customer
-  const getBusinessWithPurchaseCount = () => {
-    const customerPurchaseCount = {};
-    
-    // Sort by date to ensure correct order
-    const sortedBusiness = [...businessCreated].sort((a, b) => new Date(a.purchaseDate) - new Date(b.purchaseDate));
-    
-    return sortedBusiness.map(business => {
-      const customerId = business.customerId;
-      
-      if (!customerPurchaseCount[customerId]) {
-        customerPurchaseCount[customerId] = 0;
-      }
-      
-      customerPurchaseCount[customerId]++;
-      
-      return {
-        ...business,
-        purchaseCount: customerPurchaseCount[customerId]
+  const handleRevenueTransfer = () => {
+    if (revenueTransferAmount && parseFloat(revenueTransferAmount) <= walletBalance) {
+      const newTransfer = {
+        id: transactionHistory.length + 1,
+        type: 'transfer',
+        customerName: 'Transfer Request',
+        orderAmount: parseFloat(revenueTransferAmount),
+        commissionRate: 0,
+        commission: -parseFloat(revenueTransferAmount),
+        date: new Date().toISOString().split('T')[0],
+        orderType: 'Bank Transfer',
+        status: 'Pending'
       };
-    });
+      
+      setTransactionHistory([newTransfer, ...transactionHistory]);
+      alert(`Transfer request for ₹${revenueTransferAmount} has been submitted successfully. Amount will be credited to your account within 2-3 business days.`);
+      setRevenueTransferAmount('');
+    } else {
+      alert('Invalid amount or insufficient balance');
+    }
   };
 
-  // Function to get ordinal suffix (1st, 2nd, 3rd, etc.)
-  const getOrdinalSuffix = (num) => {
-    const j = num % 10;
-    const k = num % 100;
-    if (j === 1 && k !== 11) {
-      return num + "st";
-    }
-    if (j === 2 && k !== 12) {
-      return num + "nd";
-    }
-    if (j === 3 && k !== 13) {
-      return num + "rd";
-    }
-    return num + "th";
-  };
-
-  return (
-    <div className={`flex h-screen bg-gray-100`}>
-      {/* Left Panel */}
-      <div className={`w-1/4 bg-indigo-800 text-white p-4 flex flex-col`}>
-        <div className={`flex items-center justify-center mb-8`}>
-          <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/52d252d8-529a-41f3-b7e7-5accadabd82c.png" alt="CRM System Logo in dark blue with white text and modern sans-serif font" className={`h-12`} />
+  const StatCard = ({ title, value, icon: Icon, color = 'blue' }) => (
+    <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm font-medium text-gray-600">{title}</p>
+          <p className="text-2xl font-bold text-gray-900">{value}</p>
         </div>
-
-        <nav className={`flex flex-col space-y-2`}>
-          <button
-            onClick={() => setActiveTab('customers')}
-            className={`flex items-center p-3 rounded-lg transition-all ${activeTab === 'customers' ? 'bg-indigo-900' : 'hover:bg-indigo-700'}`}
-          >
-            <span className={`w-8 h-8 flex items-center justify-center mr-3 bg-white text-indigo-800 rounded-full`}>
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
-              </svg>
-            </span>
-            <span>My Customers</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('businessCreated')}
-            className={`flex items-center p-3 rounded-lg transition-all ${activeTab === 'businessCreated' ? 'bg-indigo-900' : 'hover:bg-indigo-700'}`}
-          >
-            <span className={`w-8 h-8 flex items-center justify-center mr-3 bg-white text-indigo-800 rounded-full`}>
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M10 2a4 4 0 00-4 4v1H5a1 1 0 00-.994.89l-1 9A1 1 0 004 18h12a1 1 0 00.994-1.11l-1-9A1 1 0 0015 7h-1V6a4 4 0 00-4-4zm2 5V6a2 2 0 10-4 0v1h4zm-6 3a1 1 0 112 0 1 1 0 01-2 0zm7-1a1 1 0 100 2 1 1 0 000-2z" clipRule="evenodd" />
-              </svg>
-            </span>
-            <span>Business Created</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('walletManagement')}
-            className={`flex items-center p-3 rounded-lg transition-all ${activeTab === 'walletManagement' ? 'bg-indigo-900' : 'hover:bg-indigo-700'}`}
-          >
-            <span className={`w-8 h-8 flex items-center justify-center mr-3 bg-white text-indigo-800 rounded-full`}>
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z" />
-                <path fillRule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clipRule="evenodd" />
-              </svg>
-            </span>
-            <span>Wallet Management</span>
-          </button>
-        </nav>
-      </div>
-
-      {/* Right Panel */}
-      <div className={`w-3/4 p-6 bg-white`}>
-        <div className={`mb-6`}>
-          <h1 className={`text-2xl font-bold text-gray-800`}>
-            {activeTab === 'customers' && 'Customers List'}
-            {activeTab === 'businessCreated' && 'Business Created'}
-            {activeTab === 'walletManagement' && 'Wallet Management'}
-          </h1>
-          <div className={`mt-2 w-20 h-1 bg-indigo-600`}></div>
-        </div>
-
-        {/* Customer List */}
-        {activeTab === 'customers' && (
-          <div className={`bg-white rounded-lg shadow-md overflow-hidden`}>
-            <div className={`grid grid-cols-12 gap-4 bg-gray-100 p-4 font-semibold text-gray-700`}>
-              <div className={`col-span-1`}>ID</div>
-              <div className={`col-span-3`}>Name</div>
-              <div className={`col-span-4`}>Email</div>
-              <div className={`col-span-2`}>Phone</div>
-              <div className={`col-span-2`}>Company</div>
-            </div>
-
-            {customers.map((customer) => (
-              <div key={customer.id} className={`grid grid-cols-12 gap-4 p-4 border-b border-gray-200 hover:bg-gray-50`}>
-                <div className={`col-span-1 text-gray-600`}>#{customer.id}</div>
-                <div className={`col-span-3 font-medium text-gray-800`}>{customer.name}</div>
-                <div className={`col-span-4 text-gray-600 truncate`}>{customer.email}</div>
-                <div className={`col-span-2 text-gray-600`}>{customer.phone}</div>
-                <div className={`col-span-2 text-gray-600`}>{customer.company}</div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Business Created */}
-        {activeTab === 'businessCreated' && (
-          <div className={`bg-white rounded-lg shadow-md overflow-hidden`}>
-            <div className={`grid grid-cols-12 gap-4 bg-gray-100 p-4 font-semibold text-gray-700`}>
-              <div className={`col-span-1`}>ID</div>
-              <div className={`col-span-3`}>Customer</div>
-              <div className={`col-span-3`}>Product</div>
-              <div className={`col-span-1`}>Price</div>
-              <div className={`col-span-2`}>Date</div>
-              <div className={`col-span-2`}>Revenue (10%)</div>
-            </div>
-            {getBusinessWithPurchaseCount().map((business) => (
-              <div key={business.id} className={`grid grid-cols-12 gap-4 p-4 border-b border-gray-200 hover:bg-gray-50`}>
-                <div className={`col-span-1 text-gray-600`}>#{business.id}</div>
-                <div className={`col-span-3 font-medium text-gray-800`}>
-                  <div className="flex items-center gap-2">
-                    <span>{business.customerName}</span>
-                    {business.purchaseCount > 1 && (
-                      <span className={`inline-block px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800 font-semibold`}>
-                        {getOrdinalSuffix(business.purchaseCount)} Purchase
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <div className={`col-span-3 text-gray-600`}>{business.productName}</div>
-                <div className={`col-span-1 text-gray-600`}>₹{business.price.toLocaleString()}</div>
-                <div className={`col-span-2 text-gray-600`}>{business.purchaseDate}</div>
-                <div className={`col-span-2 font-medium text-green-600`}>
-                  ₹{(business.price * 0.1).toLocaleString()}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Wallet Management */}
-        {activeTab === 'walletManagement' && (
-          <div className={`bg-white rounded-lg shadow-md overflow-hidden`}>
-            <div className={`grid grid-cols-12 gap-4 bg-gray-100 p-4 font-semibold text-gray-700`}>
-              <div className={`col-span-1`}>ID</div>
-              <div className={`col-span-2`}>Date</div>
-              <div className={`col-span-3`}>Customer</div>
-              <div className={`col-span-3`}>Product</div>
-              <div className={`col-span-2`}>Amount</div>
-                            <div className={`col-span-1`}>Status</div>
-            </div>
-
-            {walletTransactions.map((tx) => (
-              <div key={tx.id} className={`grid grid-cols-12 gap-4 p-4 border-b border-gray-200 hover:bg-gray-50`}>
-                <div className={`col-span-1 text-gray-600`}>#{tx.id}</div>
-                <div className={`col-span-2 text-gray-600`}>{tx.transactionDate}</div>
-                <div className={`col-span-3 font-medium text-gray-800`}>{tx.customerName}</div>
-                <div className={`col-span-3 text-gray-600`}>{tx.productName}</div>
-                <div className={`col-span-2 font-bold ${tx.status === 'Completed' ? 'text-green-600' : 'text-yellow-600'}`}>
-                  ₹{tx.amount.toFixed(2)}
-                </div>
-                <div className={`col-span-1`}>
-                  <span className={`inline-block px-2 py-1 text-xs rounded-full ${tx.status === 'Completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
-                    {tx.status}
-                  </span>
-                </div>
-              </div>
-            ))}
-
-            <div className={`p-4 bg-blue-50 border-t border-blue-100`}>
-              <div className={`flex justify-between items-center`}>
-                <div className={`text-blue-800`}>
-                  Total Commission: <span className={`font-bold`}>₹{walletTransactions.reduce((sum, tx) => sum + tx.amount, 0).toFixed(2)}</span>
-                </div>
-                <div className={`text-blue-800`}>
-                  Completed: <span className={`font-bold`}>₹{walletTransactions.filter(tx => tx.status === 'Completed').reduce((sum, tx) => sum + tx.amount, 0).toFixed(2)}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        <Icon className={`h-8 w-8 text-${color}-500`} />
       </div>
     </div>
   );
-}
 
-export default CRMApp;
+  const getTransactionRowClass = (item) => {
+    if (item.type === 'transfer') {
+      return item.status === 'Pending' ? 'bg-red-50' : 'bg-red-25';
+    }
+    return 'hover:bg-gray-50';
+  };
+
+  const getAmountColor = (item) => {
+    if (item.type === 'transfer') {
+      return 'text-red-600';
+    }
+    return 'text-green-600';
+  };
+
+  const getStatusColor = (status, type) => {
+    if (type === 'transfer') {
+      switch (status) {
+        case 'Pending':
+          return 'bg-red-100 text-red-800';
+        case 'Debited':
+          return 'bg-red-200 text-red-900';
+        default:
+          return 'bg-red-100 text-red-800';
+      }
+    }
+    
+    switch (status) {
+      case 'Credited':
+        return 'bg-green-100 text-green-800';
+      case 'Pending':
+        return 'bg-yellow-100 text-yellow-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <header className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-4">
+            <div className="flex items-center space-x-4">
+              <div className="bg-blue-500 p-2 rounded-lg">
+                <TrendingUp className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-gray-900">Marketing Panel</h1>
+                <p className="text-sm text-gray-600">Commission Management System</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-4">
+              <div className="bg-green-50 px-3 py-1 rounded-full">
+                <span className="text-sm font-medium text-green-800">Active</span>
+              </div>
+              <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                <User className="h-4 w-4 text-white" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Navigation */}
+      <nav className="bg-white border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex space-x-8">
+            <button
+              onClick={() => setActiveTab('dashboard')}
+              className={`py-4 px-2 border-b-2 font-medium text-sm ${
+                activeTab === 'dashboard'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              Dashboard
+            </button>
+            <button
+              onClick={() => setActiveTab('customers')}
+              className={`py-4 px-2 border-b-2 font-medium text-sm ${
+                activeTab === 'customers'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              Customer List
+            </button>
+            <button
+              onClick={() => setActiveTab('revenue')}
+              className={`py-4 px-2 border-b-2 font-medium text-sm ${
+                activeTab === 'revenue'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              Revenue Management
+            </button>
+          </div>
+        </div>
+      </nav>
+
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Dashboard Tab */}
+        {activeTab === 'dashboard' && (
+          <div className="space-y-6">
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600 mb-1">Current Balance</p>
+                    <p className="text-2xl font-bold text-gray-900">{showBalance ? `₹${walletBalance.toLocaleString()}` : '₹****'}</p>
+                    <p className="text-xs text-green-600 mt-1">+12.5% from last month</p>
+                  </div>
+                  <div className="bg-green-100 p-3 rounded-full">
+                    <Wallet className="h-6 w-6 text-green-600" />
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600 mb-1">Total Earnings</p>
+                    <p className="text-2xl font-bold text-gray-900">₹{totalEarnings.toLocaleString()}</p>
+                    <p className="text-xs text-blue-600 mt-1">+8.2% from last month</p>
+                  </div>
+                  <div className="bg-blue-100 p-3 rounded-full">
+                    <DollarSign className="h-6 w-6 text-blue-600" />
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600 mb-1">Total Customers</p>
+                    <p className="text-2xl font-bold text-gray-900">{totalCustomers}</p>
+                    <p className="text-xs text-purple-600 mt-1">+15 new this month</p>
+                  </div>
+                  <div className="bg-purple-100 p-3 rounded-full">
+                    <User className="h-6 w-6 text-purple-600" />
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600 mb-1">Active Customers</p>
+                    <p className="text-2xl font-bold text-gray-900">{activeCustomers}</p>
+                    <p className="text-xs text-orange-600 mt-1">70% retention rate</p>
+                  </div>
+                  <div className="bg-orange-100 p-3 rounded-full">
+                    <TrendingUp className="h-6 w-6 text-orange-600" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Wallet Section */}
+            <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-100">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-bold text-gray-900">Wallet Overview</h2>
+                <button
+                  onClick={() => setShowBalance(!showBalance)}
+                  className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors"
+                >
+                  {showBalance ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  <span className="text-sm font-medium">{showBalance ? 'Hide' : 'Show'} Balance</span>
+                </button>
+              </div>
+              
+              <div className="bg-gradient-to-br from-blue-600 via-purple-600 to-blue-800 rounded-xl p-8 text-white shadow-lg">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <p className="text-sm opacity-90 mb-2">Available Balance</p>
+                    <p className="text-4xl font-bold">
+                      {showBalance ? `₹${walletBalance.toLocaleString()}` : '₹****'}
+                    </p>
+                    <p className="text-sm opacity-80 mt-2">Last updated: Today</p>
+                  </div>
+                  <div className="bg-white bg-opacity-20 rounded-full p-4">
+                    <Wallet className="h-10 w-10" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Recent Commissions */}
+            <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-100">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-bold text-gray-900">Recent Transaction History</h2>
+                <div className="flex items-center space-x-2">
+                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                  <span className="text-sm text-gray-600">Live Updates</span>
+                </div>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Customer/Type</th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Amount</th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Commission/Transfer</th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Date</th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {transactionHistory.slice(0, 5).map((item) => (
+                      <tr key={item.id} className={`${getTransactionRowClass(item)} transition-colors duration-200`}>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center">
+                            <div className={`w-2 h-2 rounded-full mr-3 ${item.type === 'transfer' ? 'bg-red-500' : 'bg-green-500'}`}></div>
+                            <span className="text-sm font-medium text-gray-900">{item.customerName}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
+                          ₹{item.orderAmount.toLocaleString()}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-bold">
+                          <span className={getAmountColor(item)}>
+                            {item.type === 'transfer' ? `-₹${item.orderAmount.toLocaleString()}` : `₹${item.commission}`}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.date}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`px-3 py-1 text-xs font-semibold rounded-full ${getStatusColor(item.status, item.type)}`}>
+                            {item.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Customers Tab */}
+        {activeTab === 'customers' && (
+          <div className="space-y-6">
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-lg font-bold text-gray-900">Customer List</h2>
+                <button className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center space-x-2">
+                  <Download className="h-4 w-4" />
+                  <span>Export</span>
+                </button>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer Details</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Join Date</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Purchases</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Spent</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {customers.map((customer) => (
+                      <tr key={customer.id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div>
+                            <div className="text-sm font-medium text-gray-900">{customer.name}</div>
+                            <div className="text-sm text-gray-500">{customer.email}</div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{customer.phone}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{customer.joinDate}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{customer.totalPurchases}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">₹{customer.totalSpent.toLocaleString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Revenue Tab */}
+        {activeTab === 'revenue' && (
+          <div className="space-y-6">
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-lg font-bold text-gray-900">Revenue Management</h2>
+                <div className="flex items-center space-x-4">
+                  <select
+                    value={selectedFilter}
+                    onChange={(e) => setSelectedFilter(e.target.value)}
+                    className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="all">All Transactions</option>
+                    <option value="first">First Purchase (10%)</option>
+                    <option value="repeat">Repeat Purchase (5%)</option>
+                    <option value="transfer">Transfer Requests</option>
+                  </select>
+                  <button className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center space-x-2">
+                    <Download className="h-4 w-4" />
+                    <span>Export</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Transfer Request Section */}
+              <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 p-6 rounded-xl mb-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-gray-900">Quick Transfer Request</h3>
+                  <div className="bg-emerald-100 p-2 rounded-full">
+                    <ArrowUpCircle className="h-5 w-5 text-emerald-600" />
+                  </div>
+                </div>
+                <div className="flex items-center space-x-4">
+                  <div className="flex-1">
+                    <input
+                      type="number"
+                      placeholder="Enter amount to transfer"
+                      value={revenueTransferAmount}
+                      onChange={(e) => setRevenueTransferAmount(e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-lg"
+                    />
+                  </div>
+                  <button
+                    onClick={handleRevenueTransfer}
+                    className="bg-emerald-600 text-white px-6 py-3 rounded-lg hover:bg-emerald-700 flex items-center space-x-2 font-medium transition-colors duration-200"
+                  >
+                    <ArrowUpCircle className="h-5 w-5" />
+                    <span>Request Transfer</span>
+                  </button>
+                </div>
+                <div className="mt-3 flex items-center justify-between">
+                  <p className="text-sm text-gray-600">
+                    Available Balance: <span className="font-semibold text-emerald-600">₹{walletBalance.toLocaleString()}</span>
+                  </p>
+                  <p className="text-xs text-gray-500">Processing time: 2-3 business days</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div className="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 p-6 rounded-xl">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-sm font-semibold text-green-800">Total Commission Earned</p>
+                    <div className="bg-green-200 p-2 rounded-full">
+                      <DollarSign className="h-4 w-4 text-green-700" />
+                    </div>
+                  </div>
+                  <p className="text-3xl font-bold text-green-900 mb-1">₹{filteredTransactions.filter(item => item.type === 'commission').reduce((sum, item) => sum + item.commission, 0).toLocaleString()}</p>
+                  <p className="text-xs text-green-600">+5.2% from last week</p>
+                </div>
+                <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 p-6 rounded-xl">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-sm font-semibold text-blue-800">Total Transactions</p>
+                    <div className="bg-blue-200 p-2 rounded-full">
+                      <TrendingUp className="h-4 w-4 text-blue-700" />
+                    </div>
+                  </div>
+                  <p className="text-3xl font-bold text-blue-900 mb-1">{filteredTransactions.length}</p>
+                  <p className="text-xs text-blue-600">This month</p>
+                </div>
+                <div className="bg-gradient-to-br from-red-50 to-red-100 border border-red-200 p-6 rounded-xl">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-sm font-semibold text-red-800">Total Transfers</p>
+                    <div className="bg-red-200 p-2 rounded-full">
+                      <ArrowUpCircle className="h-4 w-4 text-red-700" />
+                    </div>
+                  </div>
+                  <p className="text-3xl font-bold text-red-900 mb-1">₹{Math.abs(filteredTransactions.filter(item => item.type === 'transfer').reduce((sum, item) => sum + item.commission, 0)).toLocaleString()}</p>
+                  <p className="text-xs text-red-600">Requested amount</p>
+                </div>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer/Type</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order Amount</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Commission Rate</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Transaction Type</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {filteredTransactions.map((item) => (
+                      <tr key={item.id} className={getTransactionRowClass(item)}>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.customerName}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">₹{item.orderAmount.toLocaleString()}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.commissionRate}%</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                          <span className={getAmountColor(item)}>
+                            {item.type === 'transfer' ? `-₹${item.orderAmount.toLocaleString()}` : `₹${item.commission}`}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                            item.type === 'transfer' ? 'bg-red-100 text-red-800' : 
+                            item.orderType === 'First Purchase' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'
+                          }`}>
+                            {item.orderType}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.date}</td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(item.status, item.type)}`}>
+                            {item.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+      </main>
+    </div>
+  );
+};
+
+export default MarketingPanel;

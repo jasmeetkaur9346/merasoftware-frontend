@@ -446,6 +446,7 @@ const handleRoleChange = async (newRole) => {
 
        </div>
 
+{user?.role !== ROLE.PARTNER && (
        <nav className="border-t py-3">
             <ul className="flex justify-between overflow-x-auto scrollbar-none">
               <li><a href="/dashboard"
@@ -476,6 +477,7 @@ const handleRoleChange = async (newRole) => {
               ))} */}
             </ul>
           </nav>
+)}
           
        </div>
     </header>
