@@ -66,6 +66,7 @@ import PartnerDashboard from "../pages/PartnerDashboard";
 import PartnerCustomers from "../pages/PartnerCustomers";
 import BusinessCreated from "../pages/BusinessCreated";
 import FirstPurchaseList from "../pages/FirstPurchaseList";
+import Practice from "../pages/Practice"
 
 // Create a conditional home route
 // const HomeRoute = () => {
@@ -202,6 +203,10 @@ const router = createBrowserRouter([
             {
                 path: "support-tickets/:ticketId",
                 element: <TicketDetail/>
+            },
+            {
+                path: "practice",
+                element: <Practice/>
             },
             {
                 path: "admin-tickets/:ticketId",

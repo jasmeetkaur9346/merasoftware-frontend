@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User, DollarSign, TrendingUp, Wallet, CreditCard, Filter, Download, Eye, EyeOff, ArrowUpCircle } from 'lucide-react';
+import { User, DollarSign, TrendingUp, Wallet, CreditCard, Filter, Download, Eye, EyeOff, ArrowUpCircle, ChevronDown, BarChart3, Users, ArrowUp } from 'lucide-react';
 import SummaryApi from '../common';
 
 const PartnerDashboard = () => {
@@ -9,11 +9,17 @@ const PartnerDashboard = () => {
   const [selectedFilter, setSelectedFilter] = useState('all');
   const [revenueTransferAmount, setRevenueTransferAmount] = useState('');
 
-  // Dummy data
+  // Dummy data for Current Balance and Total Transfers
   const walletBalance = 25450.75;
-  const totalEarnings = 45670.25;
-  const totalCustomers = 127;
-  const activeCustomers = 89;
+  const totalTransfers = 8000;
+
+  const filterOptions = ['all', 'first', 'repeat', 'transfer'];
+  const filterLabels = {
+    'all': 'All Transactions',
+    'first': 'First Purchase (10%)',
+    'repeat': 'Repeat Purchase (5%)',
+    'transfer': 'Transfer Requests'
+  };
 
   const [customers, setCustomers] = React.useState([]);
   const [loadingCustomers, setLoadingCustomers] = React.useState(false);
@@ -45,20 +51,6 @@ const PartnerDashboard = () => {
     };
     fetchCustomers();
   }, []);
-  
-
-  const [transactionHistory, setTransactionHistory] = useState([
-    { id: 1, type: 'commission', customerName: 'Rahul Sharma', orderAmount: 2500, commissionRate: 10, commission: 250, date: '2024-07-10', orderType: 'First Purchase', status: 'Credited' },
-    { id: 2, type: 'commission', customerName: 'Priya Patel', orderAmount: 1800, commissionRate: 10, commission: 180, date: '2024-07-09', orderType: 'First Purchase', status: 'Credited' },
-    { id: 3, type: 'commission', customerName: 'Rahul Sharma', orderAmount: 3200, commissionRate: 5, commission: 160, date: '2024-07-08', orderType: 'Repeat Purchase', status: 'Credited' },
-    { id: 4, type: 'commission', customerName: 'Amit Kumar', orderAmount: 4500, commissionRate: 10, commission: 450, date: '2024-07-07', orderType: 'First Purchase', status: 'Credited' },
-    { id: 5, type: 'commission', customerName: 'Sneha Gupta', orderAmount: 3200, commissionRate: 10, commission: 320, date: '2024-07-06', orderType: 'First Purchase', status: 'Credited' },
-    { id: 6, type: 'commission', customerName: 'Vikash Singh', orderAmount: 2800, commissionRate: 10, commission: 280, date: '2024-07-05', orderType: 'First Purchase', status: 'Credited' },
-    { id: 7, type: 'commission', customerName: 'Priya Patel', orderAmount: 2100, commissionRate: 5, commission: 105, date: '2024-07-04', orderType: 'Repeat Purchase', status: 'Credited' },
-    { id: 8, type: 'commission', customerName: 'Amit Kumar', orderAmount: 1900, commissionRate: 5, commission: 95, date: '2024-07-03', orderType: 'Repeat Purchase', status: 'Pending' },
-    { id: 9, type: 'transfer', customerName: 'Transfer Request', orderAmount: 5000, commissionRate: 0, commission: -5000, date: '2024-07-02', orderType: 'Bank Transfer', status: 'Pending' },
-    { id: 10, type: 'transfer', customerName: 'Transfer Request', orderAmount: 3000, commissionRate: 0, commission: -3000, date: '2024-07-01', orderType: 'Bank Transfer', status: 'Debited' }
-  ]);
 
   // Revenue Management tab state and data
   const [revenueData, setRevenueData] = React.useState([]);
@@ -66,7 +58,7 @@ const PartnerDashboard = () => {
   const [errorRevenue, setErrorRevenue] = React.useState(null);
 
   React.useEffect(() => {
-    if (activeTab === 'revenue') {
+    if (activeTab === 'dashboard') {
       const fetchRevenueData = async () => {
         setLoadingRevenue(true);
         setErrorRevenue(null);
@@ -94,60 +86,13 @@ const PartnerDashboard = () => {
     }
   }, [activeTab]);
 
-  const filteredTransactions = transactionHistory.filter(item => {
-    if (selectedFilter === 'all') return true;
-    if (selectedFilter === 'first') return item.orderType === 'First Purchase';
-    if (selectedFilter === 'repeat') return item.orderType === 'Repeat Purchase';
-    if (selectedFilter === 'transfer') return item.type === 'transfer';
-    return true;
-  });
-
   const handleRevenueTransfer = () => {
     if (revenueTransferAmount && parseFloat(revenueTransferAmount) <= walletBalance) {
-      const newTransfer = {
-        id: transactionHistory.length + 1,
-        type: 'transfer',
-        customerName: 'Transfer Request',
-        orderAmount: parseFloat(revenueTransferAmount),
-        commissionRate: 0,
-        commission: -parseFloat(revenueTransferAmount),
-        date: new Date().toISOString().split('T')[0],
-        orderType: 'Bank Transfer',
-        status: 'Pending'
-      };
-      
-      setTransactionHistory([newTransfer, ...transactionHistory]);
       alert(`Transfer request for ₹${revenueTransferAmount} has been submitted successfully. Amount will be credited to your account within 2-3 business days.`);
       setRevenueTransferAmount('');
     } else {
       alert('Invalid amount or insufficient balance');
     }
-  };
-
-  const StatCard = ({ title, value, icon: Icon, color = 'blue' }) => (
-    <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm font-medium text-gray-600">{title}</p>
-          <p className="text-2xl font-bold text-gray-900">{value}</p>
-        </div>
-        <Icon className={`h-8 w-8 text-${color}-500`} />
-      </div>
-    </div>
-  );
-
-  const getTransactionRowClass = (item) => {
-    if (item.type === 'transfer') {
-      return item.status === 'Pending' ? 'bg-red-50' : 'bg-red-25';
-    }
-    return 'hover:bg-gray-50';
-  };
-
-  const getAmountColor = (item) => {
-    if (item.type === 'transfer') {
-      return 'text-red-600';
-    }
-    return 'text-green-600';
   };
 
   const getStatusColor = (status, type) => {
@@ -172,204 +117,320 @@ const PartnerDashboard = () => {
     }
   };
 
+  // Filter revenue data based on selected filter
+  const filteredRevenueData = revenueData.filter(item => {
+    if (selectedFilter === 'all') return true;
+    if (selectedFilter === 'first') return item.paymentType === 'First Purchase';
+    if (selectedFilter === 'repeat') return item.paymentType === 'Repeat Purchase';
+    if (selectedFilter === 'transfer') return item.paymentType === 'Transfer';
+    return true;
+  });
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      {/* <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div className="flex items-center space-x-4">
-              <div className="bg-blue-500 p-2 rounded-lg">
-                <TrendingUp className="h-6 w-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-gray-900">Marketing Panel</h1>
-                <p className="text-sm text-gray-600">Commission Management System</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="bg-green-50 px-3 py-1 rounded-full">
-                <span className="text-sm font-medium text-green-800">Active</span>
-              </div>
-              <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                <User className="h-4 w-4 text-white" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </header> */}
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      
       {/* Navigation */}
-      <nav className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex space-x-8">
+      <main className="p-2 sm:p-6 lg:p-8 max-w-7xl mx-auto">
+        <div className="mb-4 lg:mb-8">
+          <div className="flex space-x-2 sm:space-x-4 lg:space-x-8 border-b border-gray-200 overflow-x-auto bg-white rounded-t-xl px-2 sm:px-4 lg:px-6">
             <button
               onClick={() => setActiveTab('dashboard')}
-              className={`py-4 px-2 border-b-2 font-medium text-sm ${
+              className={`px-3 py-3 sm:px-4 sm:py-4 text-xs sm:text-sm lg:text-base font-medium whitespace-nowrap transition-colors ${
                 activeTab === 'dashboard'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
+                  ? 'text-blue-600 border-b-2 border-blue-600'
+                  : 'text-gray-600 hover:text-gray-900'
               }`}
             >
               Dashboard
             </button>
             <button
               onClick={() => setActiveTab('customers')}
-              className={`py-4 px-2 border-b-2 font-medium text-sm ${
+              className={`px-3 py-3 sm:px-4 sm:py-4 text-xs sm:text-sm lg:text-base font-medium whitespace-nowrap transition-colors ${
                 activeTab === 'customers'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
+                  ? 'text-blue-600 border-b-2 border-blue-600'
+                  : 'text-gray-600 hover:text-gray-900'
               }`}
             >
               Customer List
             </button>
-            <button
-              onClick={() => setActiveTab('revenue')}
-              className={`py-4 px-2 border-b-2 font-medium text-sm ${
-                activeTab === 'revenue'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              Revenue Management
-            </button>
           </div>
         </div>
-      </nav>
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+
         {/* Dashboard Tab */}
         {activeTab === 'dashboard' && (
-          <div className="space-y-6">
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-shadow duration-300">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600 mb-1">Current Balance</p>
-                    <p className="text-2xl font-bold text-gray-900">{showBalance ? `₹${walletBalance.toLocaleString()}` : '₹****'}</p>
-                    <p className="text-xs text-green-600 mt-1">+12.5% from last month</p>
+          <div className="space-y-4 sm:space-y-6 lg:space-y-8">
+            {/* Revenue Management Header Card */}
+            <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6 lg:p-8 backdrop-blur-sm">
+              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 lg:gap-6 mb-4 sm:mb-6">
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg sm:rounded-xl flex items-center justify-center">
+                    <Wallet className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                   </div>
-                  <div className="bg-green-100 p-3 rounded-full">
-                    <Wallet className="h-6 w-6 text-green-600" />
+                  <div>
+                    <h1 className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-gray-900">Revenue Management</h1>
+                    <p className="text-xs sm:text-sm text-gray-500 mt-0.5 sm:mt-1">Track and manage your earnings</p>
                   </div>
                 </div>
-              </div>
-              <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-shadow duration-300">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600 mb-1">Total Earnings</p>
-                    <p className="text-2xl font-bold text-gray-900">₹{totalEarnings.toLocaleString()}</p>
-                    <p className="text-xs text-blue-600 mt-1">+8.2% from last month</p>
+                
+                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 lg:gap-4">
+                  {/* Filter Dropdown */}
+                  <div className="relative flex-1 sm:flex-none">
+                    <select 
+                      value={selectedFilter}
+                      onChange={(e) => setSelectedFilter(e.target.value)}
+                      className="w-full sm:w-auto lg:w-48 appearance-none bg-gray-50 border border-gray-200 rounded-lg sm:rounded-xl px-3 py-2 sm:px-4 sm:py-3 pr-8 sm:pr-10 text-xs sm:text-sm lg:text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    >
+                      {filterOptions.map((option) => (
+                        <option key={option} value={option}>
+                          {filterLabels[option]}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 w-3 h-3 sm:w-4 sm:h-4 text-gray-400 pointer-events-none" />
                   </div>
-                  <div className="bg-blue-100 p-3 rounded-full">
-                    <DollarSign className="h-6 w-6 text-blue-600" />
-                  </div>
+                  
+                  {/* Request Transfer Button */}
+                  <button 
+                    onClick={() => {
+                      const amount = prompt('Enter transfer amount:');
+                      if (amount) {
+                        setRevenueTransferAmount(amount);
+                        handleRevenueTransfer();
+                      }
+                    }}
+                    className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-4 sm:px-6 lg:px-8 py-2 sm:py-3 rounded-lg sm:rounded-xl flex items-center justify-center space-x-1 sm:space-x-2 font-medium text-xs sm:text-sm lg:text-base transition-all duration-200 shadow-lg hover:shadow-xl"
+                  >
+                    <ArrowUp className="w-3 h-3 sm:w-4 sm:h-4 lg:w-5 lg:h-5" />
+                    <span>Request Transfer</span>
+                  </button>
                 </div>
               </div>
-              <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-shadow duration-300">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600 mb-1">Total Customers</p>
-                    <p className="text-2xl font-bold text-gray-900">{totalCustomers}</p>
-                    <p className="text-xs text-purple-600 mt-1">+15 new this month</p>
+              
+              {/* Stats Cards - Mobile 2x2 Grid, Desktop 4 columns */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 xl:gap-8">
+                {/* Current Balance */}
+                <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-gray-100 p-3 sm:p-6 lg:p-8 hover:shadow-xl transition-shadow duration-300">
+                  <div className="flex items-center justify-between mb-2 sm:mb-4">
+                    <div className="w-8 h-8 sm:w-12 sm:h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg sm:rounded-xl flex items-center justify-center">
+                      <Wallet className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
+                    </div>
+                    <div className="text-xs sm:text-sm text-green-600 bg-green-50 px-2 py-0.5 sm:px-3 sm:py-1 rounded-full font-medium">
+                      +12.5% ↗
+                    </div>
                   </div>
-                  <div className="bg-purple-100 p-3 rounded-full">
-                    <User className="h-6 w-6 text-purple-600" />
+                  <div className="mb-1 sm:mb-2">
+                    <p className="text-xs sm:text-sm text-gray-600 mb-0.5 sm:mb-1">Current Balance</p>
+                    <div className="text-lg sm:text-2xl lg:text-3xl font-bold text-gray-900">₹{walletBalance.toLocaleString()}</div>
                   </div>
+                  <div className="text-xs sm:text-sm text-gray-500">from last month</div>
                 </div>
-              </div>
-              <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-shadow duration-300">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600 mb-1">Active Customers</p>
-                    <p className="text-2xl font-bold text-gray-900">{activeCustomers}</p>
-                    <p className="text-xs text-orange-600 mt-1">70% retention rate</p>
+
+                {/* Total Commission Earned */}
+                <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-gray-100 p-3 sm:p-6 lg:p-8 hover:shadow-xl transition-shadow duration-300">
+                  <div className="flex items-center justify-between mb-2 sm:mb-4">
+                    <div className="w-8 h-8 sm:w-12 sm:h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg sm:rounded-xl flex items-center justify-center">
+                      <span className="text-white text-sm sm:text-lg font-bold">₹</span>
+                    </div>
+                    <div className="text-xs sm:text-sm text-green-600 bg-green-50 px-2 py-0.5 sm:px-3 sm:py-1 rounded-full font-medium">
+                      +5.2% ↗
+                    </div>
                   </div>
-                  <div className="bg-orange-100 p-3 rounded-full">
-                    <TrendingUp className="h-6 w-6 text-orange-600" />
+                  <div className="mb-1 sm:mb-2">
+                    <p className="text-xs sm:text-sm text-gray-600 mb-0.5 sm:mb-1">Total Commission</p>
+                    <div className="text-lg sm:text-2xl lg:text-3xl font-bold text-gray-900">
+                      ₹{revenueData.reduce((sum, item) => {
+                        const commissionStr = item.revenueAmount.split(' ')[0];
+                        const commissionNum = parseFloat(commissionStr);
+                        return sum + (isNaN(commissionNum) ? 0 : commissionNum);
+                      }, 0).toLocaleString()}
+                    </div>
                   </div>
+                  <div className="text-xs sm:text-sm text-gray-500">from last week</div>
+                </div>
+
+                {/* Total Transactions */}
+                <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-gray-100 p-3 sm:p-6 lg:p-8 hover:shadow-xl transition-shadow duration-300">
+                  <div className="flex items-center justify-between mb-2 sm:mb-4">
+                    <div className="w-8 h-8 sm:w-12 sm:h-12 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg sm:rounded-xl flex items-center justify-center">
+                      <BarChart3 className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
+                    </div>
+                    <div className="text-xs sm:text-sm text-blue-600 bg-blue-50 px-2 py-0.5 sm:px-3 sm:py-1 rounded-full font-medium">
+                      This month
+                    </div>
+                  </div>
+                  <div className="mb-1 sm:mb-2">
+                    <p className="text-xs sm:text-sm text-gray-600 mb-0.5 sm:mb-1">Total Transactions</p>
+                    <div className="text-lg sm:text-2xl lg:text-3xl font-bold text-gray-900">{revenueData.length}</div>
+                  </div>
+                  <div className="text-xs sm:text-sm text-gray-500">active orders</div>
+                </div>
+
+                {/* Total Transfers */}
+                <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-gray-100 p-3 sm:p-6 lg:p-8 hover:shadow-xl transition-shadow duration-300">
+                  <div className="flex items-center justify-between mb-2 sm:mb-4">
+                    <div className="w-8 h-8 sm:w-12 sm:h-12 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg sm:rounded-xl flex items-center justify-center">
+                      <CreditCard className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
+                    </div>
+                    <div className="text-xs sm:text-sm text-orange-600 bg-orange-50 px-2 py-0.5 sm:px-3 sm:py-1 rounded-full font-medium">
+                      Pending
+                    </div>
+                  </div>
+                  <div className="mb-1 sm:mb-2">
+                    <p className="text-xs sm:text-sm text-gray-600 mb-0.5 sm:mb-1">Total Transfers</p>
+                    <div className="text-lg sm:text-2xl lg:text-3xl font-bold text-gray-900">₹{totalTransfers.toLocaleString()}</div>
+                  </div>
+                  <div className="text-xs sm:text-sm text-gray-500">requested amount</div>
                 </div>
               </div>
             </div>
-            {/* Wallet Section */}
-            <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-100">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-bold text-gray-900">Wallet Overview</h2>
-                <button
-                  onClick={() => setShowBalance(!showBalance)}
-                  className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors"
-                >
-                  {showBalance ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  <span className="text-sm font-medium">{showBalance ? 'Hide' : 'Show'} Balance</span>
-                </button>
-              </div>
-              <div className="bg-gradient-to-br from-blue-600 via-purple-600 to-blue-800 rounded-xl p-8 text-white shadow-lg">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <p className="text-sm opacity-90 mb-2">Available Balance</p>
-                    <p className="text-4xl font-bold">
-                      {showBalance ? `₹${walletBalance.toLocaleString()}` : '₹****'}
-                    </p>
-                    <p className="text-sm opacity-80 mt-2">Last updated: Today</p>
-                  </div>
-                  <div className="bg-white bg-opacity-20 rounded-full p-4">
-                    <Wallet className="h-10 w-10" />
+
+            {/* Transaction Table */}
+            <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+              {/* Table Header */}
+              <div className="bg-gray-50 px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-base sm:text-lg font-semibold text-gray-900">Recent Transactions</h2>
+                  <div className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm text-gray-500">
+                    <Filter className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <span className="hidden sm:inline">{filterLabels[selectedFilter]}</span>
                   </div>
                 </div>
               </div>
-            </div>
-            {/* Recent Commissions */}
-            <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-100">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-bold text-gray-900">Recent Transaction History</h2>
-                <div className="flex items-center space-x-2">
-                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                  <span className="text-sm text-gray-600">Live Updates</span>
-                </div>
+
+              {/* Mobile View */}
+              <div className="block sm:hidden">
+                {loadingRevenue ? (
+                  <div className="p-4 text-center text-gray-600">Loading revenue data...</div>
+                ) : errorRevenue ? (
+                  <div className="p-4 text-center text-red-600">{errorRevenue}</div>
+                ) : filteredRevenueData.length === 0 ? (
+                  <div className="p-4 text-center text-gray-600">No revenue data found.</div>
+                ) : (
+                  filteredRevenueData.map((item) => (
+                    <div key={item.serialNo} className="p-3 border-b border-gray-100 last:border-b-0 hover:bg-gray-50 transition-colors">
+                      <div className="flex justify-between items-start mb-2">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center">
+                            <Users className="w-4 h-4 text-white" />
+                          </div>
+                          <div>
+                            <div className="font-semibold text-gray-900 text-sm">{item.customerName}</div>
+                            <div className="text-xs text-gray-500">{new Date(item.date).toLocaleDateString()}</div>
+                          </div>
+                        </div>
+                        <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                          Pending
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 text-sm">
+                        <div className="bg-gray-50 p-2 rounded-lg">
+                          <span className="text-gray-500 block text-xs">Order Amount</span>
+                          <span className="text-gray-900 font-semibold text-sm">₹{item.paidAmount.toLocaleString()}</span>
+                        </div>
+                        <div className="bg-gray-50 p-2 rounded-lg">
+                          <span className="text-gray-500 block text-xs">Commission Rate</span>
+                          <span className="text-gray-900 font-semibold text-sm">{item.revenueAmount.split(' ')[1].replace('(', '').replace('%)', '')}%</span>
+                        </div>
+                        <div className="bg-green-50 p-2 rounded-lg">
+                          <span className="text-gray-500 block text-xs">Commission</span>
+                          <span className="text-green-600 font-semibold text-sm">₹{parseFloat(item.revenueAmount.split(' ')[0]).toFixed(2)}</span>
+                        </div>
+                        <div className="bg-gray-50 p-2 rounded-lg">
+                          <span className="text-gray-500 block text-xs">Type</span>
+                          <span className="text-gray-900 font-semibold text-xs">{item.paymentType}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
+
+              {/* Desktop View */}
+              <div className="hidden sm:block overflow-x-auto">
+                <table className="w-full">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Customer/Type</th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Amount</th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Commission/Transfer</th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Date</th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Status</th>
+                      <th className="text-left px-6 py-4 text-sm font-semibold text-gray-700">
+                        Customer Name
+                      </th>
+                      <th className="text-left px-6 py-4 text-sm font-semibold text-gray-700">
+                        Order Amount
+                      </th>
+                      <th className="text-left px-6 py-4 text-sm font-semibold text-gray-700">
+                        Commission Rate
+                      </th>
+                      <th className="text-left px-6 py-4 text-sm font-semibold text-gray-700">
+                        Commission Amount
+                      </th>
+                      <th className="text-left px-6 py-4 text-sm font-semibold text-gray-700">
+                        Transaction Type
+                      </th>
+                      <th className="text-left px-6 py-4 text-sm font-semibold text-gray-700">
+                        Date
+                      </th>
+                      <th className="text-left px-6 py-4 text-sm font-semibold text-gray-700">
+                        Status
+                      </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {transactionHistory.slice(0, 5).map((item) => (
-                      <tr key={item.id} className={`${getTransactionRowClass(item)} transition-colors duration-200`}>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center">
-                            <div className={`w-2 h-2 rounded-full mr-3 ${item.type === 'transfer' ? 'bg-red-500' : 'bg-green-500'}`}></div>
-                            <span className="text-sm font-medium text-gray-900">{item.customerName}</span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
-                          ₹{item.orderAmount.toLocaleString()}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-bold">
-                          <span className={getAmountColor(item)}>
-                            {item.type === 'transfer' ? `-₹${item.orderAmount.toLocaleString()}` : `₹${item.commission}`}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.date}</td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`px-3 py-1 text-xs font-semibold rounded-full ${getStatusColor(item.status, item.type)}`}>
-                            {item.status}
-                          </span>
-                        </td>
+                  <tbody className="bg-white divide-y divide-gray-100">
+                    {loadingRevenue ? (
+                      <tr>
+                        <td colSpan="7" className="text-center py-4 text-gray-600">Loading revenue data...</td>
                       </tr>
-                    ))}
+                    ) : errorRevenue ? (
+                      <tr>
+                        <td colSpan="7" className="text-center py-4 text-red-600">{errorRevenue}</td>
+                      </tr>
+                    ) : filteredRevenueData.length === 0 ? (
+                      <tr>
+                        <td colSpan="7" className="text-center py-4 text-gray-600">No revenue data found.</td>
+                      </tr>
+                    ) : (
+                      filteredRevenueData.map((item) => (
+                        <tr key={item.serialNo} className="hover:bg-gray-50 transition-colors">
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center">
+                                <Users className="w-4 h-4 text-white" />
+                              </div>
+                              <span className="text-sm font-semibold text-gray-900">{item.customerName}</span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            ₹{item.paidAmount.toLocaleString()}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
+                              {item.revenueAmount.split(' ')[1].replace('(', '').replace('%)', '')}%
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-600">
+                            ₹{parseFloat(item.revenueAmount.split(' ')[0]).toFixed(2)}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {item.paymentType}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {new Date(item.date).toLocaleDateString()}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className="inline-flex px-3 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                              Pending
+                            </span>
+                          </td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
             </div>
           </div>
         )}
-        {/* Customers Tab */}
+        
+        {/* Customers Tab - Unchanged */}
         {activeTab === 'customers' && (
           <div className="space-y-6">
             <div className="bg-white rounded-lg shadow-md p-6">
@@ -417,142 +478,6 @@ const PartnerDashboard = () => {
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(customer.dateAdded).toLocaleDateString()}</td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{customer.totalPurchases}</td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">₹{customer.totalSpend.toLocaleString()}</td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        )}
-        {/* Revenue Tab */}
-        {activeTab === 'revenue' && (
-          <div className="space-y-6">
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-lg font-bold text-gray-900">Revenue Management</h2>
-                <div className="flex items-center space-x-4">
-                  <select
-                    value={selectedFilter}
-                    onChange={(e) => setSelectedFilter(e.target.value)}
-                    className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    <option value="all">All Transactions</option>
-                    <option value="first">First Purchase (10%)</option>
-                    <option value="repeat">Repeat Purchase (5%)</option>
-                    <option value="transfer">Transfer Requests</option>
-                  </select>
-                  <button className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center space-x-2">
-                    <Download className="h-4 w-4" />
-                    <span>Export</span>
-                  </button>
-                </div>
-              </div>
-
-               {/* Transfer Request Section */}
-              <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 p-6 rounded-xl mb-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-gray-900">Quick Transfer Request</h3>
-                  <div className="bg-emerald-100 p-2 rounded-full">
-                    <ArrowUpCircle className="h-5 w-5 text-emerald-600" />
-                  </div>
-                </div>
-                <div className="flex items-center space-x-4">
-                  <div className="flex-1">
-                    <input
-                      type="number"
-                      placeholder="Enter amount to transfer"
-                      value={revenueTransferAmount}
-                      onChange={(e) => setRevenueTransferAmount(e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-lg"
-                    />
-                  </div>
-                  <button
-                    onClick={handleRevenueTransfer}
-                    className="bg-emerald-600 text-white px-6 py-3 rounded-lg hover:bg-emerald-700 flex items-center space-x-2 font-medium transition-colors duration-200"
-                  >
-                    <ArrowUpCircle className="h-5 w-5" />
-                    <span>Request Transfer</span>
-                  </button>
-                </div>
-                <div className="mt-3 flex items-center justify-between">
-                  <p className="text-sm text-gray-600">
-                    Available Balance: <span className="font-semibold text-emerald-600">₹{walletBalance.toLocaleString()}</span>
-                  </p>
-                  <p className="text-xs text-gray-500">Processing time: 2-3 business days</p>
-                </div>
-              </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                            <div className="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 p-6 rounded-xl">
-                              <div className="flex items-center justify-between mb-2">
-                                <p className="text-sm font-semibold text-green-800">Total Commission Earned</p>
-                                <div className="bg-green-200 p-2 rounded-full">
-                                  <DollarSign className="h-4 w-4 text-green-700" />
-                                </div>
-                              </div>
-                              <p className="text-3xl font-bold text-green-900 mb-1">₹{filteredTransactions.filter(item => item.type === 'commission').reduce((sum, item) => sum + item.commission, 0).toLocaleString()}</p>
-                              <p className="text-xs text-green-600">+5.2% from last week</p>
-                            </div>
-                            <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 p-6 rounded-xl">
-                              <div className="flex items-center justify-between mb-2">
-                                <p className="text-sm font-semibold text-blue-800">Total Transactions</p>
-                                <div className="bg-blue-200 p-2 rounded-full">
-                                  <TrendingUp className="h-4 w-4 text-blue-700" />
-                                </div>
-                              </div>
-                              <p className="text-3xl font-bold text-blue-900 mb-1">{filteredTransactions.length}</p>
-                              <p className="text-xs text-blue-600">This month</p>
-                            </div>
-                            <div className="bg-gradient-to-br from-red-50 to-red-100 border border-red-200 p-6 rounded-xl">
-                              <div className="flex items-center justify-between mb-2">
-                                <p className="text-sm font-semibold text-red-800">Total Transfers</p>
-                                <div className="bg-red-200 p-2 rounded-full">
-                                  <ArrowUpCircle className="h-4 w-4 text-red-700" />
-                                </div>
-                              </div>
-                              <p className="text-3xl font-bold text-red-900 mb-1">₹{Math.abs(filteredTransactions.filter(item => item.type === 'transfer').reduce((sum, item) => sum + item.commission, 0)).toLocaleString()}</p>
-                              <p className="text-xs text-red-600">Requested amount</p>
-                            </div>
-                          </div>
-
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer Name</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order Amount</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Commission Rate</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Commission Amount</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Transaction Type</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {loadingRevenue ? (
-                      <tr>
-                        <td colSpan="7" className="text-center py-4 text-gray-600">Loading revenue data...</td>
-                      </tr>
-                    ) : errorRevenue ? (
-                      <tr>
-                        <td colSpan="7" className="text-center py-4 text-red-600">{errorRevenue}</td>
-                      </tr>
-                    ) : revenueData.length === 0 ? (
-                      <tr>
-                        <td colSpan="7" className="text-center py-4 text-gray-600">No revenue data found.</td>
-                      </tr>
-                    ) : (
-                      revenueData.map((item) => (
-                        <tr key={item.serialNo} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.customerName}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">₹{item.paidAmount.toLocaleString()}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.revenueAmount.split(' ')[1].replace('(', '').replace('%)', '')}%</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">₹{parseFloat(item.revenueAmount.split(' ')[0]).toFixed(2)}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.paymentType === 'Full Payment' ? 'First Purchase' : 'Repeat Purchase'}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(item.date).toLocaleDateString()}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-yellow-600">Pending</td>
                         </tr>
                       ))
                     )}
