@@ -445,6 +445,38 @@ const SummaryApi = {
         url: `${backendDomain}/api/partner-customers`,
         method: "get"
       },
+     completeProfile : {
+      url: `${backendDomain}/api/complete-profile`,
+      method : "post"
+     },
+     getCommissionHistory:{
+      url: `${backendDomain}/api/get-commission-history`,
+      method: "get"
+     },
+      getCommissionWalletSummary:{
+      url: `${backendDomain}/api/commission-wallet-summary`,
+      method: "get"
+     },
+     getWithdrawalHistory :{
+      url: `${backendDomain}/api/get-withdrawal-history`,
+      method: "get"
+     },
+     requestWithdrawal : {
+      url: `${backendDomain}/api/request-withdrawal`,
+      method: "post"
+     },
+     getAllWithdrawalRequests: {
+      url: `${backendDomain}/api/all-withdrawal-requests`,
+      method: "get"
+     },
+     approveWithdrawalRequest : {
+      url: `${backendDomain}/api/approve-withdrawals`,
+      method: "post"
+     },
+      rejectWithdrawalRequest : {
+      url: `${backendDomain}/api/reject-withdrawals`,
+      method: "post"
+     },
     wallet : {
         balance :{
             url : `${backendDomain}/api/wallet/balance`,

@@ -97,32 +97,41 @@ const OtpVerification = ({ userData, onBackToLogin }) => {
         })
       });
       const data = await response.json();
-      if (data.success) {
-        CookieManager.setUserDetails({
-          _id: data.data.user._id,
-          name: data.data.user.name,
-          email: data.data.user.email,
-          role: data.data.user.role
-        });
-        dispatch(setUserDetails(data.data.user));
-        if (data.data.walletBalance) {
-          dispatch(updateWalletBalance(data.data.walletBalance));
-        }
-        if (context.fetchUserDetails) await context.fetchUserDetails();
-        if (context.fetchUserAddToCart) await context.fetchUserAddToCart();
-        toast.success(data.message);
-        if (userData.role === "admin") {
-            navigate("/admin-panel/all-products"); // 🟢 Admin redirect
-          } else if (userData.role === "manager") {
-            navigate("/manager-panel/dashboard");
-          } else if (userData.role === "partner") {
-            navigate("/partner-panel/dashboard");
-          } else {
-            navigate("/"); // 🟢 Non-admin redirect
+        if (data.success) {
+          CookieManager.setUserDetails({
+            _id: data.data.user._id,
+            name: data.data.user.name,
+            email: data.data.user.email,
+            role: data.data.user.role,
+            isDetailsCompleted: data.data.user.userDetails?.isDetailsCompleted || false
+          });
+          dispatch(setUserDetails(data.data.user));
+          if (data.data.walletBalance) {
+            dispatch(updateWalletBalance(data.data.walletBalance));
           }
-      } else {
-        toast.error(data.message);
-      }
+          if (context.fetchUserDetails) await context.fetchUserDetails();
+          if (context.fetchUserAddToCart) await context.fetchUserAddToCart();
+          toast.success(data.message);
+
+          // Check if userDetails.isDetailsCompleted is false and role is not customer
+          const isDetailsCompleted = data.data.user.userDetails?.isDetailsCompleted || false;
+          const role = data.data.user.role;
+          if (!isDetailsCompleted && role !== "customer") {
+            navigate("/complete-profile");
+          } else {
+            if (role === "admin") {
+              navigate("/admin-panel/all-products"); // 🟢 Admin redirect
+            } else if (role === "manager") {
+              navigate("/manager-panel/dashboard");
+            } else if (role === "partner") {
+              navigate("/partner-panel/dashboard");
+            } else {
+              navigate("/"); // 🟢 Non-admin redirect
+            }
+          }
+        } else {
+          toast.error(data.message);
+        }
     } catch (error) {
       console.error("OTP verification error:", error);
       toast.error("Verification failed. Please try again.");

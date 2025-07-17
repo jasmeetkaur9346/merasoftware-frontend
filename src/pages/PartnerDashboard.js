@@ -1,495 +1,831 @@
-import React, { useState } from 'react';
-import { User, DollarSign, TrendingUp, Wallet, CreditCard, Filter, Download, Eye, EyeOff, ArrowUpCircle, ChevronDown, BarChart3, Users, ArrowUp } from 'lucide-react';
-import SummaryApi from '../common';
+
+import React, { useEffect, useState } from 'react'
+import { useSelector } from 'react-redux'
+import { FaUsers, FaMoneyBillWave, FaChartLine, FaWallet, FaPlus, FaExchangeAlt } from 'react-icons/fa'
+import SummaryApi from '../common'
+import { toast } from 'react-toastify'
+import moment from 'moment'
 
 const PartnerDashboard = () => {
-  const [activeTab, setActiveTab] = useState('dashboard');
-  const [transferAmount, setTransferAmount] = useState('');
-  const [showBalance, setShowBalance] = useState(true);
-  const [selectedFilter, setSelectedFilter] = useState('all');
-  const [revenueTransferAmount, setRevenueTransferAmount] = useState('');
+  const user = useSelector(state => state?.user?.user)
+  
+  // States for dashboard data
+  const [totalUsers, setTotalUsers] = useState(0)
+  const [totalOrders, setTotalOrders] = useState(0)
+  const [totalCommissionEarned, setTotalCommissionEarned] = useState(0)
+  const [walletBalance, setWalletBalance] = useState(0)
+  const [commissionHistory, setCommissionHistory] = useState([])
+  const [customers, setCustomers] = useState([])
+  
+  // Loading states
+  const [loadingStats, setLoadingStats] = useState(true)
+  const [loadingCommissions, setLoadingCommissions] = useState(true)
+  const [loadingCustomers, setLoadingCustomers] = useState(true)
+  
+  // Active tab state
+  const [activeTab, setActiveTab] = useState('dashboard')
 
-  // Dummy data for Current Balance and Total Transfers
-  const walletBalance = 25450.75;
-  const totalTransfers = 8000;
+  // Add New Customer Modal State
+  const [openAddCustomerModal, setOpenAddCustomerModal] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    confirmPassword: ''
+  })
 
-  const filterOptions = ['all', 'first', 'repeat', 'transfer'];
-  const filterLabels = {
-    'all': 'All Transactions',
-    'first': 'First Purchase (10%)',
-    'repeat': 'Repeat Purchase (5%)',
-    'transfer': 'Transfer Requests'
-  };
+  // Withdrawal Request Modal States
+  const [showWithdrawalModal, setShowWithdrawalModal] = useState(false)
+  const [withdrawalAmount, setWithdrawalAmount] = useState('')
+  const [selectedBankAccountIndex, setSelectedBankAccountIndex] = useState('')
+  const [isRequestingWithdrawal, setIsRequestingWithdrawal] = useState(false)
+  const [bankAccounts, setBankAccounts] = useState([])
 
-  const [customers, setCustomers] = React.useState([]);
-  const [loadingCustomers, setLoadingCustomers] = React.useState(false);
-  const [errorCustomers, setErrorCustomers] = React.useState(null);
-
-  React.useEffect(() => {
-    const fetchCustomers = async () => {
-      setLoadingCustomers(true);
-      setErrorCustomers(null);
-      try {
-        const response = await fetch(SummaryApi.partnerCustomers.url, {
-          method: SummaryApi.partnerCustomers.method,
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          credentials: 'include'
-        });
-        const data = await response.json();
-        if (data.success) {
-          setCustomers(data.data);
-        } else {
-          setErrorCustomers(data.message || 'Failed to fetch customers');
+  // Fetch wallet balance
+  const fetchWalletBalance = async () => {
+    try {
+      setLoadingStats(true)
+      const response = await fetch(SummaryApi.getCommissionWalletSummary.url, {
+        method: SummaryApi.getCommissionWalletSummary.method,
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
         }
-      } catch (error) {
-        setErrorCustomers(error.message || 'Failed to fetch customers');
-      } finally {
-        setLoadingCustomers(false);
+      })
+      
+      const data = await response.json()
+      
+      if (data.success) {
+        setWalletBalance(data.data.availableBalance || 0)
       }
-    };
-    fetchCustomers();
-  }, []);
+    } catch (error) {
+      console.error('Error fetching wallet summary:', error)
+      toast.error('Error fetching wallet summary')
+    } finally {
+      setLoadingStats(false)
+    }
+  }
 
-  // Revenue Management tab state and data
-  const [revenueData, setRevenueData] = React.useState([]);
-  const [loadingRevenue, setLoadingRevenue] = React.useState(false);
-  const [errorRevenue, setErrorRevenue] = React.useState(null);
+  // Calculate total commission from commission history
+  const calculateTotalCommission = (commissions) => {
+    const total = commissions.reduce((sum, commission) => {
+      // Only count positive amounts for total commission calculation
+      if (commission.commissionAmount > 0) {
+        return sum + (commission.commissionAmount || 0)
+      }
+      return sum
+    }, 0)
+    setTotalCommissionEarned(total)
+  }
 
-  React.useEffect(() => {
-    if (activeTab === 'dashboard') {
-      const fetchRevenueData = async () => {
-        setLoadingRevenue(true);
-        setErrorRevenue(null);
-        try {
-          const response = await fetch(SummaryApi.businessCreatedToPartner.url, {
-            method: SummaryApi.businessCreatedToPartner.method,
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            credentials: 'include'
-          });
-          const data = await response.json();
-          if (data.success) {
-            setRevenueData(data.data);
-          } else {
-            setErrorRevenue(data.message || 'Failed to fetch revenue data');
-          }
-        } catch (error) {
-          setErrorRevenue(error.message || 'Failed to fetch revenue data');
-        } finally {
-          setLoadingRevenue(false);
+ // Fetch commission history for recent transactions AND total calculation
+const fetchCommissionHistory = async () => {
+  try {
+    setLoadingCommissions(true)
+    
+    // Commission history fetch करें
+    const commissionResponse = await fetch(SummaryApi.getCommissionHistory.url, {
+      method: SummaryApi.getCommissionHistory.method,
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+    
+    // Withdrawal history fetch करें
+    const withdrawalResponse = await fetch(SummaryApi.getWithdrawalHistory.url, {
+      method: SummaryApi.getWithdrawalHistory.method,
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+    
+    const commissionData = await commissionResponse.json()
+    const withdrawalData = await withdrawalResponse.json()
+    
+    if (commissionData.success && withdrawalData.success) {
+      // Withdrawal requests ko commission format में convert करें
+      const formattedWithdrawals = withdrawalData.data.map(withdrawal => ({
+        _id: withdrawal._id,
+        customerName: 'Admin Transfer',
+        commissionType: 'Withdrawal Request',
+        createdAt: withdrawal.createdAt,
+        status: withdrawal.status,
+        commissionAmount: -withdrawal.requestedAmount // Negative amount
+      }))
+      
+      // दोनों को combine करके date wise sort करें
+      const combinedHistory = [...commissionData.data, ...formattedWithdrawals]
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        .slice(0, 10) // Latest 10 entries
+      
+      setCommissionHistory(combinedHistory)
+      
+      // Total commission calculation (only positive amounts)
+      calculateTotalCommission(commissionData.data)
+    }
+  } catch (error) {
+    console.error('Error fetching transaction history:', error)
+    toast.error('Error fetching transaction history')
+  } finally {
+    setLoadingCommissions(false)
+  }
+}
+
+
+  // Fetch customers list using correct API endpoint
+  const fetchCustomers = async () => {
+    try {
+      setLoadingCustomers(true)
+      const response = await fetch(SummaryApi.partnerCustomers.url, {
+        method: SummaryApi.partnerCustomers.method,
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
         }
-      };
-      fetchRevenueData();
-    }
-  }, [activeTab]);
-
-  const handleRevenueTransfer = () => {
-    if (revenueTransferAmount && parseFloat(revenueTransferAmount) <= walletBalance) {
-      alert(`Transfer request for ₹${revenueTransferAmount} has been submitted successfully. Amount will be credited to your account within 2-3 business days.`);
-      setRevenueTransferAmount('');
-    } else {
-      alert('Invalid amount or insufficient balance');
-    }
-  };
-
-  const getStatusColor = (status, type) => {
-    if (type === 'transfer') {
-      switch (status) {
-        case 'Pending':
-          return 'bg-red-100 text-red-800';
-        case 'Debited':
-          return 'bg-red-200 text-red-900';
-        default:
-          return 'bg-red-100 text-red-800';
+      })
+      
+      const data = await response.json()
+      
+      if (data.success) {
+        setCustomers(data.data)
+        setTotalUsers(data.data.length)
       }
+    } catch (error) {
+      console.error('Error fetching customers:', error)
+      toast.error('Error fetching customers')
+    } finally {
+      setLoadingCustomers(false)
+      setLoadingStats(false)
+    }
+  }
+
+  // Handle new customer form submission
+  const handleAddCustomer = async (e) => {
+    e.preventDefault()
+    
+    if (formData.password !== formData.confirmPassword) {
+      toast.error('Password and confirm password do not match')
+      return
     }
     
-    switch (status) {
-      case 'Credited':
-        return 'bg-green-100 text-green-800';
-      case 'Pending':
-        return 'bg-yellow-100 text-yellow-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
+    setSubmitting(true)
+    
+    try {
+      const payload = {
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        role: 'customer',
+        referredBy: user._id
+      }
+      
+      const response = await fetch(SummaryApi.signUP.url, {
+        method: SummaryApi.signUP.method,
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify(payload)
+      })
+      
+      const result = await response.json()
+      
+      if (result.success) {
+        toast.success('Customer created successfully')
+        setFormData({
+          name: '',
+          email: '',
+          password: '',
+          confirmPassword: ''
+        })
+        setOpenAddCustomerModal(false)
+        fetchCustomers()
+        fetchWalletBalance()
+      } else {
+        toast.error(result.message || 'Failed to create customer')
+      }
+    } catch (error) {
+      console.error('Error creating customer:', error)
+      toast.error('Something went wrong while creating customer')
+    } finally {
+      setSubmitting(false)
     }
-  };
+  }
 
-  // Filter revenue data based on selected filter
-  const filteredRevenueData = revenueData.filter(item => {
-    if (selectedFilter === 'all') return true;
-    if (selectedFilter === 'first') return item.paymentType === 'First Purchase';
-    if (selectedFilter === 'repeat') return item.paymentType === 'Repeat Purchase';
-    if (selectedFilter === 'transfer') return item.paymentType === 'Transfer';
-    return true;
-  });
+  // Handle withdrawal request submission
+  const handleWithdrawalRequest = async () => {
+    if (!withdrawalAmount || isNaN(withdrawalAmount) || parseFloat(withdrawalAmount) <= 0) {
+      toast.error('Please enter a valid positive amount.')
+      return
+    }
+    if (parseFloat(withdrawalAmount) > walletBalance) {
+      toast.error('Requested amount exceeds available balance.')
+      return
+    }
+    if (selectedBankAccountIndex === '' || selectedBankAccountIndex === null) {
+      toast.error('Please select a bank account.')
+      return
+    }
+
+    const confirmWithdrawal = window.confirm(
+      `Are you sure you want to withdraw ${formatCurrency(parseFloat(withdrawalAmount))} to your selected account?`
+    )
+
+    if (!confirmWithdrawal) {
+      return
+    }
+
+    setIsRequestingWithdrawal(true)
+    try {
+      const response = await fetch(SummaryApi.requestWithdrawal.url, {
+        method: SummaryApi.requestWithdrawal.method,
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          amount: parseFloat(withdrawalAmount),
+          selectedBankAccountIndex: parseInt(selectedBankAccountIndex)
+        })
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        toast.success(result.message)
+        setShowWithdrawalModal(false)
+        setWithdrawalAmount('')
+        setSelectedBankAccountIndex('')
+        
+        // Update wallet balance immediately
+        setWalletBalance(prev => prev - parseFloat(withdrawalAmount))
+        
+        // Add withdrawal request entry to commission history (optimistically)
+        const withdrawalEntry = {
+          _id: `withdrawal_${Date.now()}`, // Temporary ID
+          customerName: 'Admin Transfer',
+          commissionType: 'Withdrawal Request',
+          createdAt: new Date().toISOString(),
+          status: 'pending',
+          commissionAmount: -parseFloat(withdrawalAmount)
+        }
+        
+        setCommissionHistory(prev => [withdrawalEntry, ...prev.slice(0, 9)])
+        
+        // Don't call fetchCommissionHistory() here to preserve the optimistic update
+        // Only refresh wallet balance to ensure it's in sync with backend
+        setTimeout(() => {
+          fetchWalletBalance()
+        }, 1000)
+
+      } else {
+        toast.error(result.message || 'Failed to submit withdrawal request.')
+      }
+    } catch (error) {
+      console.error('Error submitting withdrawal request:', error)
+      toast.error('Something went wrong while submitting your request.')
+    } finally {
+      setIsRequestingWithdrawal(false)
+    }
+  }
+
+  // Format commission type for display
+  const formatCommissionType = (type) => {
+    switch(type) {
+      case 'first_purchase':
+        return 'First Purchase'
+      case 'repeat_purchase':
+        return 'Repeat Purchase'
+      case 'referral_bonus':
+        return 'Referral Bonus'
+      case 'Withdrawal Request':
+        return 'Withdrawal Request'
+      default:
+        return type?.replace(/_/g, ' ')?.toUpperCase() || 'Commission'
+    }
+  }
+
+  // Format currency
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      minimumFractionDigits: 2
+    }).format(amount || 0)
+  }
+
+  useEffect(() => {
+    fetchWalletBalance()
+    fetchCommissionHistory()
+    fetchCustomers()
+    // Set bank accounts from user details if available
+    if (user && user.userDetails && user.userDetails.bankAccounts) {
+      setBankAccounts(user.userDetails.bankAccounts)
+    }
+  }, [user])
+
+  const tabs = [
+    { id: 'dashboard', label: 'Dashboard', icon: FaChartLine },
+    { id: 'customers', label: 'Customer List', icon: FaUsers }
+  ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-      
-      {/* Navigation */}
-      <main className="p-2 sm:p-6 lg:p-8 max-w-7xl mx-auto">
-        <div className="mb-4 lg:mb-8">
-          <div className="flex space-x-2 sm:space-x-4 lg:space-x-8 border-b border-gray-200 overflow-x-auto bg-white rounded-t-xl px-2 sm:px-4 lg:px-6">
-            <button
-              onClick={() => setActiveTab('dashboard')}
-              className={`px-3 py-3 sm:px-4 sm:py-4 text-xs sm:text-sm lg:text-base font-medium whitespace-nowrap transition-colors ${
-                activeTab === 'dashboard'
-                  ? 'text-blue-600 border-b-2 border-blue-600'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              Dashboard
-            </button>
-            <button
-              onClick={() => setActiveTab('customers')}
-              className={`px-3 py-3 sm:px-4 sm:py-4 text-xs sm:text-sm lg:text-base font-medium whitespace-nowrap transition-colors ${
-                activeTab === 'customers'
-                  ? 'text-blue-600 border-b-2 border-blue-600'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              Customer List
-            </button>
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="mb-8 flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              Welcome back, {user?.name}!
+            </h1>
+            <p className="text-gray-600">Here's what's happening with your partnership</p>
+          </div>
+          {/* Request Transfer Button */}
+          <button
+            onClick={() => setShowWithdrawalModal(true)}
+            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-md"
+          >
+            <FaExchangeAlt className="w-4 h-4" />
+            Request Transfer
+          </button>
+        </div>
+
+        {/* Navigation Tabs */}
+        <div className="mb-6">
+          <div className="border-b border-gray-200">
+            <nav className="-mb-px flex space-x-8">
+              {tabs.map((tab) => {
+                const Icon = tab.icon
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center gap-2 ${
+                      activeTab === tab.id
+                        ? 'border-blue-500 text-blue-600'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    }`}
+                  >
+                    <Icon className="w-4 h-4" />
+                    {tab.label}
+                  </button>
+                )
+              })}
+            </nav>
           </div>
         </div>
 
-
-        {/* Dashboard Tab */}
+        {/* Dashboard Tab Content */}
         {activeTab === 'dashboard' && (
-          <div className="space-y-4 sm:space-y-6 lg:space-y-8">
-            {/* Revenue Management Header Card */}
-            <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6 lg:p-8 backdrop-blur-sm">
-              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 lg:gap-6 mb-4 sm:mb-6">
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg sm:rounded-xl flex items-center justify-center">
-                    <Wallet className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-                  </div>
+          <div className="space-y-8">
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {/* Current Balance */}
+              <div className="bg-white rounded-lg shadow-md p-6">
+                <div className="flex items-center justify-between">
                   <div>
-                    <h1 className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-gray-900">Revenue Management</h1>
-                    <p className="text-xs sm:text-sm text-gray-500 mt-0.5 sm:mt-1">Track and manage your earnings</p>
+                    <p className="text-sm font-medium text-gray-600">Current Balance</p>
+                    {loadingStats ? (
+                      <div className="w-24 h-8 bg-gray-200 animate-pulse rounded mt-2"></div>
+                    ) : (
+                      <p className="text-2xl font-bold text-green-600">
+                        {formatCurrency(walletBalance)}
+                      </p>
+                    )}
+                  </div>
+                  <div className="p-3 bg-green-100 rounded-full">
+                    <FaWallet className="w-6 h-6 text-green-600" />
                   </div>
                 </div>
-                
-                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 lg:gap-4">
-                  {/* Filter Dropdown */}
-                  <div className="relative flex-1 sm:flex-none">
-                    <select 
-                      value={selectedFilter}
-                      onChange={(e) => setSelectedFilter(e.target.value)}
-                      className="w-full sm:w-auto lg:w-48 appearance-none bg-gray-50 border border-gray-200 rounded-lg sm:rounded-xl px-3 py-2 sm:px-4 sm:py-3 pr-8 sm:pr-10 text-xs sm:text-sm lg:text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                    >
-                      {filterOptions.map((option) => (
-                        <option key={option} value={option}>
-                          {filterLabels[option]}
-                        </option>
-                      ))}
-                    </select>
-                    <ChevronDown className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 w-3 h-3 sm:w-4 sm:h-4 text-gray-400 pointer-events-none" />
+              </div>
+
+              {/* Total Commission */}
+              <div className="bg-white rounded-lg shadow-md p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Total Commission</p>
+                    {loadingCommissions ? (
+                      <div className="w-24 h-8 bg-gray-200 animate-pulse rounded mt-2"></div>
+                    ) : (
+                      <p className="text-2xl font-bold text-blue-600">
+                        {formatCurrency(totalCommissionEarned)}
+                      </p>
+                    )}
                   </div>
-                  
-                  {/* Request Transfer Button */}
-                  <button 
-                    onClick={() => {
-                      const amount = prompt('Enter transfer amount:');
-                      if (amount) {
-                        setRevenueTransferAmount(amount);
-                        handleRevenueTransfer();
-                      }
-                    }}
-                    className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-4 sm:px-6 lg:px-8 py-2 sm:py-3 rounded-lg sm:rounded-xl flex items-center justify-center space-x-1 sm:space-x-2 font-medium text-xs sm:text-sm lg:text-base transition-all duration-200 shadow-lg hover:shadow-xl"
+                  <div className="p-3 bg-blue-100 rounded-full">
+                    <FaMoneyBillWave className="w-6 h-6 text-blue-600" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Total Customers */}
+              <div className="bg-white rounded-lg shadow-md p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Total Customers</p>
+                    {loadingCustomers ? (
+                      <div className="w-16 h-8 bg-gray-200 animate-pulse rounded mt-2"></div>
+                    ) : (
+                      <p className="text-2xl font-bold text-purple-600">{totalUsers}</p>
+                    )}
+                  </div>
+                  <div className="p-3 bg-purple-100 rounded-full">
+                    <FaUsers className="w-6 h-6 text-purple-600" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Total Orders (Placeholder for now) */}
+              <div className="bg-white rounded-lg shadow-md p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Total Orders</p>
+                    {loadingStats ? (
+                      <div className="w-16 h-8 bg-gray-200 animate-pulse rounded mt-2"></div>
+                    ) : (
+                      <p className="text-2xl font-bold text-orange-600">{totalOrders}</p>
+                    )}
+                  </div>
+                  <div className="p-3 bg-orange-100 rounded-full">
+                    <FaChartLine className="w-6 h-6 text-orange-600" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Recent Transactions */}
+            <div className="bg-white rounded-lg shadow-md">
+              <div className="p-6 border-b border-gray-200">
+                <h2 className="text-lg font-semibold text-gray-900">Recent Transactions</h2>
+                <p className="text-gray-600 text-sm">Your latest commission entries and withdrawal requests</p>
+              </div>
+              <div className="overflow-x-auto">
+                {loadingCommissions ? (
+                  <div className="p-6">
+                    <div className="space-y-3">
+                      {[1, 2, 3].map(i => (
+                        <div key={i} className="flex space-x-4">
+                          <div className="w-32 h-4 bg-gray-200 animate-pulse rounded"></div>
+                          <div className="w-24 h-4 bg-gray-200 animate-pulse rounded"></div>
+                          <div className="w-32 h-4 bg-gray-200 animate-pulse rounded"></div>
+                          <div className="w-20 h-4 bg-gray-200 animate-pulse rounded"></div>
+                          <div className="w-24 h-4 bg-gray-200 animate-pulse rounded"></div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Description
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Type
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Date & Time
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Status
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Amount
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {commissionHistory.length === 0 ? (
+                        <tr>
+                          <td colSpan="5" className="px-6 py-4 text-center text-gray-500">
+                            No recent transactions found
+                          </td>
+                        </tr>
+                      ) : (
+                        commissionHistory.map((transaction, index) => (
+                          <tr key={transaction._id || index} className="hover:bg-gray-50">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                              {transaction.commissionType === 'Withdrawal Request' ? 'Admin Transfer' : transaction.customerName || transaction.customerDetails?.name || transaction.customerId?.name || 'N/A'}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              {formatCommissionType(transaction.commissionType)}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              {moment(transaction.createdAt).format('MMM DD, YYYY hh:mm A')}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                transaction.status === 'credited' ? 'bg-green-100 text-green-800' :
+                                transaction.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                'bg-gray-100 text-gray-800'
+                              }`}>
+                                {transaction.status === 'credited' ? 'Credited' : transaction.status === 'pending' ? 'Pending' : 'N/A'}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              <div className="flex items-center">
+                                {transaction.commissionType === 'Withdrawal Request' ? (
+                                  <FaExchangeAlt className="w-4 h-4 text-red-600 mr-2" />
+                                ) : (
+                                  <FaMoneyBillWave className="w-4 h-4 text-green-600 mr-2" />
+                                )}
+                                <span className={`${transaction.commissionType === 'Withdrawal Request' ? 'text-red-600' : 'text-green-600'} font-medium`}>
+                                  {formatCurrency(transaction.commissionAmount)}
+                                </span>
+                              </div>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Customer List Tab Content */}
+        {activeTab === 'customers' && (
+          <div className="space-y-6">
+            {/* Add New Customer Button */}
+            <div className="flex justify-between items-center">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">Customer List</h2>
+                <p className="text-gray-600">Manage your referred customers</p>
+              </div>
+              <button
+                onClick={() => setOpenAddCustomerModal(true)}
+                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+              >
+                <FaPlus className="w-4 h-4" />
+                Add New Customer
+              </button>
+            </div>
+
+            {/* Customers Table */}
+            <div className="bg-white rounded-lg shadow-md">
+              <div className="overflow-x-auto">
+                {loadingCustomers ? (
+                  <div className="p-6">
+                    <div className="space-y-3">
+                      {[1, 2, 3, 4, 5].map(i => (
+                        <div key={i} className="flex space-x-4">
+                          <div className="w-32 h-4 bg-gray-200 animate-pulse rounded"></div>
+                          <div className="w-48 h-4 bg-gray-200 animate-pulse rounded"></div>
+                          <div className="w-32 h-4 bg-gray-200 animate-pulse rounded"></div>
+                          <div className="w-32 h-4 bg-gray-200 animate-pulse rounded"></div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Name
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Email
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Mobile
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Joined Date
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Status
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {customers.length === 0 ? (
+                        <tr>
+                          <td colSpan="5" className="px-6 py-4 text-center text-gray-500">
+                            No customers found
+                          </td>
+                        </tr>
+                      ) : (
+                        customers.map((customer) => (
+                          <tr key={customer._id} className="hover:bg-gray-50">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                              {customer.name}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              {customer.email}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              {customer.mobile || 'N/A'}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              {moment(customer.createdAt).format('MMM DD, YYYY')}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                                Active
+                              </span>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Add New Customer Modal */}
+        {openAddCustomerModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold text-gray-900">Add New Customer</h3>
+                <button
+                  onClick={() => setOpenAddCustomerModal(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  ×
+                </button>
+              </div>
+
+              <form onSubmit={handleAddCustomer} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Full Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.name}
+                    onChange={(e) => setFormData({...formData, name: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Enter customer name"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Email Address *
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    value={formData.email}
+                    onChange={(e) => setFormData({...formData, email: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Enter email address"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Password *
+                  </label>
+                  <input
+                    type="password"
+                    required
+                    value={formData.password}
+                    onChange={(e) => setFormData({...formData, password: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Enter password"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Confirm Password *
+                  </label>
+                  <input
+                    type="password"
+                    required
+                    value={formData.confirmPassword}
+                    onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Confirm password"
+                  />
+                </div>
+
+                <div className="flex gap-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setOpenAddCustomerModal(false)}
+                    className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium transition-colors"
+                    disabled={submitting}
                   >
-                    <ArrowUp className="w-3 h-3 sm:w-4 sm:h-4 lg:w-5 lg:h-5" />
-                    <span>Request Transfer</span>
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
+                    disabled={submitting}
+                  >
+                    {submitting ? 'Adding...' : 'Add Customer'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Withdrawal Request Modal */}
+        {showWithdrawalModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4 shadow-lg">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-xl font-semibold text-gray-900">Request Withdrawal</h3>
+                <button
+                  onClick={() => setShowWithdrawalModal(false)}
+                  className="text-gray-400 hover:text-gray-600 text-2xl"
+                >
+                  &times;
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Enter Amount (INR)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={withdrawalAmount}
+                    onChange={(e) => setWithdrawalAmount(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    placeholder="e.g., 500.00"
+                  />
+                </div>
+
+                <div className="text-sm text-gray-600">
+                  Available Balance: <span className="font-semibold text-green-600">{formatCurrency(walletBalance)}</span>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Select Bank Account
+                  </label>
+                  <select
+                    value={selectedBankAccountIndex}
+                    onChange={(e) => setSelectedBankAccountIndex(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white"
+                  >
+                    <option value="">-- Select an account --</option>
+                    {bankAccounts.length > 0 ? (
+                      bankAccounts.map((account, index) => (
+                        <option key={index} value={index}>
+                          {account.bankName} - {account.bankAccountNumber} ({account.accountHolderName})
+                          {account.upiId && ` (UPI: ${account.upiId})`}
+                        </option>
+                      ))
+                    ) : (
+                      <option disabled>No bank accounts found. Please update your profile.</option>
+                    )}
+                  </select>
+                </div>
+
+                <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-md text-sm text-yellow-800">
+                  <p className="font-semibold mb-1">Important Notification:</p>
+                  <ul className="list-disc list-inside">
+                    <li>Withdrawal requests are processed within 24-48 business hours.</li>
+                    <li>Ensure your bank account details are accurate to avoid delays.</li>
+                    <li>Minimum withdrawal amount is INR 100.</li>
+                  </ul>
+                </div>
+
+                <div className="flex gap-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setShowWithdrawalModal(false)}
+                    className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium transition-colors"
+                    disabled={isRequestingWithdrawal}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleWithdrawalRequest}
+                    className="flex-1 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
+                    disabled={isRequestingWithdrawal || bankAccounts.length === 0}
+                  >
+                    {isRequestingWithdrawal ? 'Processing...' : 'Proceed'}
                   </button>
                 </div>
               </div>
-              
-              {/* Stats Cards - Mobile 2x2 Grid, Desktop 4 columns */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 xl:gap-8">
-                {/* Current Balance */}
-                <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-gray-100 p-3 sm:p-6 lg:p-8 hover:shadow-xl transition-shadow duration-300">
-                  <div className="flex items-center justify-between mb-2 sm:mb-4">
-                    <div className="w-8 h-8 sm:w-12 sm:h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg sm:rounded-xl flex items-center justify-center">
-                      <Wallet className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
-                    </div>
-                    <div className="text-xs sm:text-sm text-green-600 bg-green-50 px-2 py-0.5 sm:px-3 sm:py-1 rounded-full font-medium">
-                      +12.5% ↗
-                    </div>
-                  </div>
-                  <div className="mb-1 sm:mb-2">
-                    <p className="text-xs sm:text-sm text-gray-600 mb-0.5 sm:mb-1">Current Balance</p>
-                    <div className="text-lg sm:text-2xl lg:text-3xl font-bold text-gray-900">₹{walletBalance.toLocaleString()}</div>
-                  </div>
-                  <div className="text-xs sm:text-sm text-gray-500">from last month</div>
-                </div>
-
-                {/* Total Commission Earned */}
-                <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-gray-100 p-3 sm:p-6 lg:p-8 hover:shadow-xl transition-shadow duration-300">
-                  <div className="flex items-center justify-between mb-2 sm:mb-4">
-                    <div className="w-8 h-8 sm:w-12 sm:h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg sm:rounded-xl flex items-center justify-center">
-                      <span className="text-white text-sm sm:text-lg font-bold">₹</span>
-                    </div>
-                    <div className="text-xs sm:text-sm text-green-600 bg-green-50 px-2 py-0.5 sm:px-3 sm:py-1 rounded-full font-medium">
-                      +5.2% ↗
-                    </div>
-                  </div>
-                  <div className="mb-1 sm:mb-2">
-                    <p className="text-xs sm:text-sm text-gray-600 mb-0.5 sm:mb-1">Total Commission</p>
-                    <div className="text-lg sm:text-2xl lg:text-3xl font-bold text-gray-900">
-                      ₹{revenueData.reduce((sum, item) => {
-                        const commissionStr = item.revenueAmount.split(' ')[0];
-                        const commissionNum = parseFloat(commissionStr);
-                        return sum + (isNaN(commissionNum) ? 0 : commissionNum);
-                      }, 0).toLocaleString()}
-                    </div>
-                  </div>
-                  <div className="text-xs sm:text-sm text-gray-500">from last week</div>
-                </div>
-
-                {/* Total Transactions */}
-                <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-gray-100 p-3 sm:p-6 lg:p-8 hover:shadow-xl transition-shadow duration-300">
-                  <div className="flex items-center justify-between mb-2 sm:mb-4">
-                    <div className="w-8 h-8 sm:w-12 sm:h-12 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg sm:rounded-xl flex items-center justify-center">
-                      <BarChart3 className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
-                    </div>
-                    <div className="text-xs sm:text-sm text-blue-600 bg-blue-50 px-2 py-0.5 sm:px-3 sm:py-1 rounded-full font-medium">
-                      This month
-                    </div>
-                  </div>
-                  <div className="mb-1 sm:mb-2">
-                    <p className="text-xs sm:text-sm text-gray-600 mb-0.5 sm:mb-1">Total Transactions</p>
-                    <div className="text-lg sm:text-2xl lg:text-3xl font-bold text-gray-900">{revenueData.length}</div>
-                  </div>
-                  <div className="text-xs sm:text-sm text-gray-500">active orders</div>
-                </div>
-
-                {/* Total Transfers */}
-                <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-gray-100 p-3 sm:p-6 lg:p-8 hover:shadow-xl transition-shadow duration-300">
-                  <div className="flex items-center justify-between mb-2 sm:mb-4">
-                    <div className="w-8 h-8 sm:w-12 sm:h-12 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg sm:rounded-xl flex items-center justify-center">
-                      <CreditCard className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
-                    </div>
-                    <div className="text-xs sm:text-sm text-orange-600 bg-orange-50 px-2 py-0.5 sm:px-3 sm:py-1 rounded-full font-medium">
-                      Pending
-                    </div>
-                  </div>
-                  <div className="mb-1 sm:mb-2">
-                    <p className="text-xs sm:text-sm text-gray-600 mb-0.5 sm:mb-1">Total Transfers</p>
-                    <div className="text-lg sm:text-2xl lg:text-3xl font-bold text-gray-900">₹{totalTransfers.toLocaleString()}</div>
-                  </div>
-                  <div className="text-xs sm:text-sm text-gray-500">requested amount</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Transaction Table */}
-            <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-              {/* Table Header */}
-              <div className="bg-gray-50 px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-base sm:text-lg font-semibold text-gray-900">Recent Transactions</h2>
-                  <div className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm text-gray-500">
-                    <Filter className="w-3 h-3 sm:w-4 sm:h-4" />
-                    <span className="hidden sm:inline">{filterLabels[selectedFilter]}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Mobile View */}
-              <div className="block sm:hidden">
-                {loadingRevenue ? (
-                  <div className="p-4 text-center text-gray-600">Loading revenue data...</div>
-                ) : errorRevenue ? (
-                  <div className="p-4 text-center text-red-600">{errorRevenue}</div>
-                ) : filteredRevenueData.length === 0 ? (
-                  <div className="p-4 text-center text-gray-600">No revenue data found.</div>
-                ) : (
-                  filteredRevenueData.map((item) => (
-                    <div key={item.serialNo} className="p-3 border-b border-gray-100 last:border-b-0 hover:bg-gray-50 transition-colors">
-                      <div className="flex justify-between items-start mb-2">
-                        <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center">
-                            <Users className="w-4 h-4 text-white" />
-                          </div>
-                          <div>
-                            <div className="font-semibold text-gray-900 text-sm">{item.customerName}</div>
-                            <div className="text-xs text-gray-500">{new Date(item.date).toLocaleDateString()}</div>
-                          </div>
-                        </div>
-                        <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                          Pending
-                        </span>
-                      </div>
-                      <div className="grid grid-cols-2 gap-2 text-sm">
-                        <div className="bg-gray-50 p-2 rounded-lg">
-                          <span className="text-gray-500 block text-xs">Order Amount</span>
-                          <span className="text-gray-900 font-semibold text-sm">₹{item.paidAmount.toLocaleString()}</span>
-                        </div>
-                        <div className="bg-gray-50 p-2 rounded-lg">
-                          <span className="text-gray-500 block text-xs">Commission Rate</span>
-                          <span className="text-gray-900 font-semibold text-sm">{item.revenueAmount.split(' ')[1].replace('(', '').replace('%)', '')}%</span>
-                        </div>
-                        <div className="bg-green-50 p-2 rounded-lg">
-                          <span className="text-gray-500 block text-xs">Commission</span>
-                          <span className="text-green-600 font-semibold text-sm">₹{parseFloat(item.revenueAmount.split(' ')[0]).toFixed(2)}</span>
-                        </div>
-                        <div className="bg-gray-50 p-2 rounded-lg">
-                          <span className="text-gray-500 block text-xs">Type</span>
-                          <span className="text-gray-900 font-semibold text-xs">{item.paymentType}</span>
-                        </div>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-
-              {/* Desktop View */}
-              <div className="hidden sm:block overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="text-left px-6 py-4 text-sm font-semibold text-gray-700">
-                        Customer Name
-                      </th>
-                      <th className="text-left px-6 py-4 text-sm font-semibold text-gray-700">
-                        Order Amount
-                      </th>
-                      <th className="text-left px-6 py-4 text-sm font-semibold text-gray-700">
-                        Commission Rate
-                      </th>
-                      <th className="text-left px-6 py-4 text-sm font-semibold text-gray-700">
-                        Commission Amount
-                      </th>
-                      <th className="text-left px-6 py-4 text-sm font-semibold text-gray-700">
-                        Transaction Type
-                      </th>
-                      <th className="text-left px-6 py-4 text-sm font-semibold text-gray-700">
-                        Date
-                      </th>
-                      <th className="text-left px-6 py-4 text-sm font-semibold text-gray-700">
-                        Status
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-100">
-                    {loadingRevenue ? (
-                      <tr>
-                        <td colSpan="7" className="text-center py-4 text-gray-600">Loading revenue data...</td>
-                      </tr>
-                    ) : errorRevenue ? (
-                      <tr>
-                        <td colSpan="7" className="text-center py-4 text-red-600">{errorRevenue}</td>
-                      </tr>
-                    ) : filteredRevenueData.length === 0 ? (
-                      <tr>
-                        <td colSpan="7" className="text-center py-4 text-gray-600">No revenue data found.</td>
-                      </tr>
-                    ) : (
-                      filteredRevenueData.map((item) => (
-                        <tr key={item.serialNo} className="hover:bg-gray-50 transition-colors">
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center">
-                                <Users className="w-4 h-4 text-white" />
-                              </div>
-                              <span className="text-sm font-semibold text-gray-900">{item.customerName}</span>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                            ₹{item.paidAmount.toLocaleString()}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
-                              {item.revenueAmount.split(' ')[1].replace('(', '').replace('%)', '')}%
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-600">
-                            ₹{parseFloat(item.revenueAmount.split(' ')[0]).toFixed(2)}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {item.paymentType}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {new Date(item.date).toLocaleDateString()}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="inline-flex px-3 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                              Pending
-                            </span>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
             </div>
           </div>
         )}
-        
-        {/* Customers Tab - Unchanged */}
-        {activeTab === 'customers' && (
-          <div className="space-y-6">
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-lg font-bold text-gray-900">Customer List</h2>
-                <button className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center space-x-2">
-                  <Download className="h-4 w-4" />
-                  <span>Export</span>
-                </button>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer Details</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Added</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Purchases</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Spent</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {loadingCustomers ? (
-                      <tr>
-                        <td colSpan="5" className="text-center py-4 text-gray-600">Loading customers...</td>
-                      </tr>
-                    ) : errorCustomers ? (
-                      <tr>
-                        <td colSpan="5" className="text-center py-4 text-red-600">{errorCustomers}</td>
-                      </tr>
-                    ) : customers.length === 0 ? (
-                      <tr>
-                        <td colSpan="5" className="text-center py-4 text-gray-600">No customers found.</td>
-                      </tr>
-                    ) : (
-                      customers.map((customer) => (
-                        <tr key={customer._id} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div>
-                              <div className="text-sm font-medium text-gray-900">{customer.name}</div>
-                              <div className="text-sm text-gray-500">{customer.email}</div>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{customer.phone || 'N/A'}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(customer.dateAdded).toLocaleDateString()}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{customer.totalPurchases}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">₹{customer.totalSpend.toLocaleString()}</td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        )}
-      </main>
+      </div>
     </div>
-  );
-};
- 
+  )
+}
+
 export default PartnerDashboard;

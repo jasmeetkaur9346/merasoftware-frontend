@@ -12,6 +12,12 @@ const RoleBasedHome = () => {
   }
   
   // Role ke according redirect karo
+  // Check if userDetails.isDetailsCompleted is false and role is not customer
+  const isDetailsCompleted = user.userDetails?.isDetailsCompleted || false;
+  if (!isDetailsCompleted && user.role !== "customer") {
+    return <Navigate to="/complete-profile" replace />;
+  }
+
   switch(user.role) {
     case 'admin':
       return <Navigate to="/admin-panel/all-products" replace />;

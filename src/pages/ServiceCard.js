@@ -1,518 +1,244 @@
 import React, { useState } from 'react';
-import { User, DollarSign, TrendingUp, Wallet, CreditCard, Filter, Download, Eye, EyeOff, ArrowUpCircle } from 'lucide-react';
+import { CheckCircle, XCircle, User, CreditCard, Building, DollarSign, Clock } from 'lucide-react';
 
-const MarketingPanel = () => {
-  const [activeTab, setActiveTab] = useState('dashboard');
-  const [transferAmount, setTransferAmount] = useState('');
-  const [showBalance, setShowBalance] = useState(true);
-  const [selectedFilter, setSelectedFilter] = useState('all');
-  const [revenueTransferAmount, setRevenueTransferAmount] = useState('');
+const AdminMoneyTransferPanel = () => {
+  const [selectedRequest, setSelectedRequest] = useState(null);
+  const [showPaymentForm, setShowPaymentForm] = useState(false);
+  const [paymentMode, setPaymentMode] = useState('');
+  const [transactionId, setTransactionId] = useState('');
 
-  // Dummy data
-  const walletBalance = 25450.75;
-  const totalEarnings = 45670.25;
-  const totalCustomers = 127;
-  const activeCustomers = 89;
-
-  const customers = [
-    { id: 1, name: 'Rahul Sharma', email: 'rahul.sharma@email.com', phone: '+91 9876543210', joinDate: '2024-01-15', totalPurchases: 3, totalSpent: 12500 },
-    { id: 2, name: 'Priya Patel', email: 'priya.patel@email.com', phone: '+91 8765432109', joinDate: '2024-01-20', totalPurchases: 2, totalSpent: 8900 },
-    { id: 3, name: 'Amit Kumar', email: 'amit.kumar@email.com', phone: '+91 7654321098', joinDate: '2024-02-01', totalPurchases: 5, totalSpent: 15600 },
-    { id: 4, name: 'Sneha Gupta', email: 'sneha.gupta@email.com', phone: '+91 6543210987', joinDate: '2024-02-05', totalPurchases: 1, totalSpent: 3200 },
-    { id: 5, name: 'Vikash Singh', email: 'vikash.singh@email.com', phone: '+91 5432109876', joinDate: '2024-02-10', totalPurchases: 4, totalSpent: 11200 }
-  ];
-
-  const [transactionHistory, setTransactionHistory] = useState([
-    { id: 1, type: 'commission', customerName: 'Rahul Sharma', orderAmount: 2500, commissionRate: 10, commission: 250, date: '2024-07-10', orderType: 'First Purchase', status: 'Credited' },
-    { id: 2, type: 'commission', customerName: 'Priya Patel', orderAmount: 1800, commissionRate: 10, commission: 180, date: '2024-07-09', orderType: 'First Purchase', status: 'Credited' },
-    { id: 3, type: 'commission', customerName: 'Rahul Sharma', orderAmount: 3200, commissionRate: 5, commission: 160, date: '2024-07-08', orderType: 'Repeat Purchase', status: 'Credited' },
-    { id: 4, type: 'commission', customerName: 'Amit Kumar', orderAmount: 4500, commissionRate: 10, commission: 450, date: '2024-07-07', orderType: 'First Purchase', status: 'Credited' },
-    { id: 5, type: 'commission', customerName: 'Sneha Gupta', orderAmount: 3200, commissionRate: 10, commission: 320, date: '2024-07-06', orderType: 'First Purchase', status: 'Credited' },
-    { id: 6, type: 'commission', customerName: 'Vikash Singh', orderAmount: 2800, commissionRate: 10, commission: 280, date: '2024-07-05', orderType: 'First Purchase', status: 'Credited' },
-    { id: 7, type: 'commission', customerName: 'Priya Patel', orderAmount: 2100, commissionRate: 5, commission: 105, date: '2024-07-04', orderType: 'Repeat Purchase', status: 'Credited' },
-    { id: 8, type: 'commission', customerName: 'Amit Kumar', orderAmount: 1900, commissionRate: 5, commission: 95, date: '2024-07-03', orderType: 'Repeat Purchase', status: 'Pending' },
-    { id: 9, type: 'transfer', customerName: 'Transfer Request', orderAmount: 5000, commissionRate: 0, commission: -5000, date: '2024-07-02', orderType: 'Bank Transfer', status: 'Pending' },
-    { id: 10, type: 'transfer', customerName: 'Transfer Request', orderAmount: 3000, commissionRate: 0, commission: -3000, date: '2024-07-01', orderType: 'Bank Transfer', status: 'Debited' }
+  // Sample money transfer requests
+  const [requests, setRequests] = useState([
+    {
+      id: 1,
+      partnerName: "John Smith",
+      amount: 15000,
+      bankAccount: "HDFC Bank - ***1234",
+      requestDate: "2024-07-15",
+      status: "pending"
+    },
+    {
+      id: 2,
+      partnerName: "Sarah Johnson",
+      amount: 25000,
+      bankAccount: "ICICI Bank - ***5678",
+      requestDate: "2024-07-14",
+      status: "pending"
+    },
+    {
+      id: 3,
+      partnerName: "Mike Wilson",
+      amount: 8500,
+      bankAccount: "SBI Bank - ***9012",
+      requestDate: "2024-07-13",
+      status: "pending"
+    }
   ]);
 
-  const filteredTransactions = transactionHistory.filter(item => {
-    if (selectedFilter === 'all') return true;
-    if (selectedFilter === 'first') return item.orderType === 'First Purchase';
-    if (selectedFilter === 'repeat') return item.orderType === 'Repeat Purchase';
-    if (selectedFilter === 'transfer') return item.type === 'transfer';
-    return true;
-  });
+  const handleApprove = (request) => {
+    setSelectedRequest(request);
+    setShowPaymentForm(true);
+  };
 
-  const handleTransfer = () => {
-    if (transferAmount && parseFloat(transferAmount) <= walletBalance) {
-      alert(`Transfer request for ₹${transferAmount} has been submitted successfully. Amount will be credited to your account within 2-3 business days.`);
-      setTransferAmount('');
-    } else {
-      alert('Invalid amount or insufficient balance');
+  const handleReject = (requestId) => {
+    setRequests(requests.map(req => 
+      req.id === requestId ? { ...req, status: 'rejected' } : req
+    ));
+  };
+
+  const handlePaymentComplete = () => {
+    if (paymentMode && transactionId) {
+      setRequests(requests.map(req => 
+        req.id === selectedRequest.id ? { ...req, status: 'completed' } : req
+      ));
+      setShowPaymentForm(false);
+      setSelectedRequest(null);
+      setPaymentMode('');
+      setTransactionId('');
     }
   };
 
-  const handleRevenueTransfer = () => {
-    if (revenueTransferAmount && parseFloat(revenueTransferAmount) <= walletBalance) {
-      const newTransfer = {
-        id: transactionHistory.length + 1,
-        type: 'transfer',
-        customerName: 'Transfer Request',
-        orderAmount: parseFloat(revenueTransferAmount),
-        commissionRate: 0,
-        commission: -parseFloat(revenueTransferAmount),
-        date: new Date().toISOString().split('T')[0],
-        orderType: 'Bank Transfer',
-        status: 'Pending'
-      };
-      
-      setTransactionHistory([newTransfer, ...transactionHistory]);
-      alert(`Transfer request for ₹${revenueTransferAmount} has been submitted successfully. Amount will be credited to your account within 2-3 business days.`);
-      setRevenueTransferAmount('');
-    } else {
-      alert('Invalid amount or insufficient balance');
-    }
-  };
-
-  const StatCard = ({ title, value, icon: Icon, color = 'blue' }) => (
-    <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm font-medium text-gray-600">{title}</p>
-          <p className="text-2xl font-bold text-gray-900">{value}</p>
-        </div>
-        <Icon className={`h-8 w-8 text-${color}-500`} />
-      </div>
-    </div>
-  );
-
-  const getTransactionRowClass = (item) => {
-    if (item.type === 'transfer') {
-      return item.status === 'Pending' ? 'bg-red-50' : 'bg-red-25';
-    }
-    return 'hover:bg-gray-50';
-  };
-
-  const getAmountColor = (item) => {
-    if (item.type === 'transfer') {
-      return 'text-red-600';
-    }
-    return 'text-green-600';
-  };
-
-  const getStatusColor = (status, type) => {
-    if (type === 'transfer') {
-      switch (status) {
-        case 'Pending':
-          return 'bg-red-100 text-red-800';
-        case 'Debited':
-          return 'bg-red-200 text-red-900';
-        default:
-          return 'bg-red-100 text-red-800';
-      }
-    }
-    
-    switch (status) {
-      case 'Credited':
-        return 'bg-green-100 text-green-800';
-      case 'Pending':
-        return 'bg-yellow-100 text-yellow-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
+  const getStatusColor = (status) => {
+    switch(status) {
+      case 'pending': return 'bg-yellow-100 text-yellow-800';
+      case 'completed': return 'bg-green-100 text-green-800';
+      case 'rejected': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div className="flex items-center space-x-4">
-              <div className="bg-blue-500 p-2 rounded-lg">
-                <TrendingUp className="h-6 w-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-gray-900">Marketing Panel</h1>
-                <p className="text-sm text-gray-600">Commission Management System</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="bg-green-50 px-3 py-1 rounded-full">
-                <span className="text-sm font-medium text-green-800">Active</span>
-              </div>
-              <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                <User className="h-4 w-4 text-white" />
-              </div>
-            </div>
-          </div>
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+            <DollarSign className="w-6 h-6 text-blue-600" />
+            Money Transfer Requests - Admin Panel
+          </h1>
+          <p className="text-gray-600 mt-2">Manage partner money transfer requests</p>
         </div>
-      </header>
 
-      {/* Navigation */}
-      <nav className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex space-x-8">
-            <button
-              onClick={() => setActiveTab('dashboard')}
-              className={`py-4 px-2 border-b-2 font-medium text-sm ${
-                activeTab === 'dashboard'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              Dashboard
-            </button>
-            <button
-              onClick={() => setActiveTab('customers')}
-              className={`py-4 px-2 border-b-2 font-medium text-sm ${
-                activeTab === 'customers'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              Customer List
-            </button>
-            <button
-              onClick={() => setActiveTab('revenue')}
-              className={`py-4 px-2 border-b-2 font-medium text-sm ${
-                activeTab === 'revenue'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              Revenue Management
-            </button>
+        {/* Requests List */}
+        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <h2 className="text-lg font-semibold text-gray-900">Pending Requests</h2>
           </div>
-        </div>
-      </nav>
-
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Dashboard Tab */}
-        {activeTab === 'dashboard' && (
-          <div className="space-y-6">
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-shadow duration-300">
+          
+          <div className="divide-y divide-gray-200">
+            {requests.map((request) => (
+              <div key={request.id} className="p-6 hover:bg-gray-50 transition-colors">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600 mb-1">Current Balance</p>
-                    <p className="text-2xl font-bold text-gray-900">{showBalance ? `₹${walletBalance.toLocaleString()}` : '₹****'}</p>
-                    <p className="text-xs text-green-600 mt-1">+12.5% from last month</p>
-                  </div>
-                  <div className="bg-green-100 p-3 rounded-full">
-                    <Wallet className="h-6 w-6 text-green-600" />
-                  </div>
-                </div>
-              </div>
-              
-              <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-shadow duration-300">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600 mb-1">Total Earnings</p>
-                    <p className="text-2xl font-bold text-gray-900">₹{totalEarnings.toLocaleString()}</p>
-                    <p className="text-xs text-blue-600 mt-1">+8.2% from last month</p>
-                  </div>
-                  <div className="bg-blue-100 p-3 rounded-full">
-                    <DollarSign className="h-6 w-6 text-blue-600" />
-                  </div>
-                </div>
-              </div>
-              
-              <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-shadow duration-300">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600 mb-1">Total Customers</p>
-                    <p className="text-2xl font-bold text-gray-900">{totalCustomers}</p>
-                    <p className="text-xs text-purple-600 mt-1">+15 new this month</p>
-                  </div>
-                  <div className="bg-purple-100 p-3 rounded-full">
-                    <User className="h-6 w-6 text-purple-600" />
-                  </div>
-                </div>
-              </div>
-              
-              <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-shadow duration-300">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600 mb-1">Active Customers</p>
-                    <p className="text-2xl font-bold text-gray-900">{activeCustomers}</p>
-                    <p className="text-xs text-orange-600 mt-1">70% retention rate</p>
-                  </div>
-                  <div className="bg-orange-100 p-3 rounded-full">
-                    <TrendingUp className="h-6 w-6 text-orange-600" />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Wallet Section */}
-            <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-100">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-bold text-gray-900">Wallet Overview</h2>
-                <button
-                  onClick={() => setShowBalance(!showBalance)}
-                  className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 transition-colors"
-                >
-                  {showBalance ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  <span className="text-sm font-medium">{showBalance ? 'Hide' : 'Show'} Balance</span>
-                </button>
-              </div>
-              
-              <div className="bg-gradient-to-br from-blue-600 via-purple-600 to-blue-800 rounded-xl p-8 text-white shadow-lg">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <p className="text-sm opacity-90 mb-2">Available Balance</p>
-                    <p className="text-4xl font-bold">
-                      {showBalance ? `₹${walletBalance.toLocaleString()}` : '₹****'}
-                    </p>
-                    <p className="text-sm opacity-80 mt-2">Last updated: Today</p>
-                  </div>
-                  <div className="bg-white bg-opacity-20 rounded-full p-4">
-                    <Wallet className="h-10 w-10" />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Recent Commissions */}
-            <div className="bg-white rounded-lg shadow-lg p-6 border border-gray-100">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-bold text-gray-900">Recent Transaction History</h2>
-                <div className="flex items-center space-x-2">
-                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                  <span className="text-sm text-gray-600">Live Updates</span>
-                </div>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Customer/Type</th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Amount</th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Commission/Transfer</th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Date</th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {transactionHistory.slice(0, 5).map((item) => (
-                      <tr key={item.id} className={`${getTransactionRowClass(item)} transition-colors duration-200`}>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center">
-                            <div className={`w-2 h-2 rounded-full mr-3 ${item.type === 'transfer' ? 'bg-red-500' : 'bg-green-500'}`}></div>
-                            <span className="text-sm font-medium text-gray-900">{item.customerName}</span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
-                          ₹{item.orderAmount.toLocaleString()}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-bold">
-                          <span className={getAmountColor(item)}>
-                            {item.type === 'transfer' ? `-₹${item.orderAmount.toLocaleString()}` : `₹${item.commission}`}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.date}</td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`px-3 py-1 text-xs font-semibold rounded-full ${getStatusColor(item.status, item.type)}`}>
-                            {item.status}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Customers Tab */}
-        {activeTab === 'customers' && (
-          <div className="space-y-6">
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-lg font-bold text-gray-900">Customer List</h2>
-                <button className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center space-x-2">
-                  <Download className="h-4 w-4" />
-                  <span>Export</span>
-                </button>
-              </div>
-
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer Details</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Join Date</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Purchases</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Spent</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {customers.map((customer) => (
-                      <tr key={customer.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div>
-                            <div className="text-sm font-medium text-gray-900">{customer.name}</div>
-                            <div className="text-sm text-gray-500">{customer.email}</div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{customer.phone}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{customer.joinDate}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{customer.totalPurchases}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">₹{customer.totalSpent.toLocaleString()}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Revenue Tab */}
-        {activeTab === 'revenue' && (
-          <div className="space-y-6">
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-lg font-bold text-gray-900">Revenue Management</h2>
-                <div className="flex items-center space-x-4">
-                  <select
-                    value={selectedFilter}
-                    onChange={(e) => setSelectedFilter(e.target.value)}
-                    className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    <option value="all">All Transactions</option>
-                    <option value="first">First Purchase (10%)</option>
-                    <option value="repeat">Repeat Purchase (5%)</option>
-                    <option value="transfer">Transfer Requests</option>
-                  </select>
-                  <button className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center space-x-2">
-                    <Download className="h-4 w-4" />
-                    <span>Export</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Transfer Request Section */}
-              <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 p-6 rounded-xl mb-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-gray-900">Quick Transfer Request</h3>
-                  <div className="bg-emerald-100 p-2 rounded-full">
-                    <ArrowUpCircle className="h-5 w-5 text-emerald-600" />
-                  </div>
-                </div>
-                <div className="flex items-center space-x-4">
                   <div className="flex-1">
-                    <input
-                      type="number"
-                      placeholder="Enter amount to transfer"
-                      value={revenueTransferAmount}
-                      onChange={(e) => setRevenueTransferAmount(e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-lg"
-                    />
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                      {/* Partner Name */}
+                      <div className="flex items-center gap-3">
+                        <User className="w-5 h-5 text-gray-400" />
+                        <div>
+                          <p className="text-sm text-gray-500">Partner Name</p>
+                          <p className="font-medium text-gray-900">{request.partnerName}</p>
+                        </div>
+                      </div>
+
+                      {/* Amount */}
+                      <div className="flex items-center gap-3">
+                        <DollarSign className="w-5 h-5 text-gray-400" />
+                        <div>
+                          <p className="text-sm text-gray-500">Amount</p>
+                          <p className="font-medium text-gray-900">₹{request.amount.toLocaleString()}</p>
+                        </div>
+                      </div>
+
+                      {/* Bank Account */}
+                      <div className="flex items-center gap-3">
+                        <Building className="w-5 h-5 text-gray-400" />
+                        <div>
+                          <p className="text-sm text-gray-500">Bank Account</p>
+                          <p className="font-medium text-gray-900">{request.bankAccount}</p>
+                        </div>
+                      </div>
+
+                      {/* Request Date */}
+                      <div className="flex items-center gap-3">
+                        <Clock className="w-5 h-5 text-gray-400" />
+                        <div>
+                          <p className="text-sm text-gray-500">Request Date</p>
+                          <p className="font-medium text-gray-900">{request.requestDate}</p>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                  <button
-                    onClick={handleRevenueTransfer}
-                    className="bg-emerald-600 text-white px-6 py-3 rounded-lg hover:bg-emerald-700 flex items-center space-x-2 font-medium transition-colors duration-200"
+
+                  {/* Status and Actions */}
+                  <div className="flex items-center gap-3 ml-6">
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(request.status)}`}>
+                      {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+                    </span>
+                    
+                    {request.status === 'pending' && (
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleApprove(request)}
+                          className="flex items-center gap-1 px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
+                        >
+                          <CheckCircle className="w-4 h-4" />
+                          Approve
+                        </button>
+                        <button
+                          onClick={() => handleReject(request.id)}
+                          className="flex items-center gap-1 px-3 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm"
+                        >
+                          <XCircle className="w-4 h-4" />
+                          Reject
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Payment Completion Form Modal */}
+        {showPaymentForm && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                Complete Payment for {selectedRequest?.partnerName}
+              </h3>
+              
+              <div className="space-y-4">
+                {/* Request Summary */}
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm text-gray-600">Amount:</span>
+                    <span className="font-medium">₹{selectedRequest?.amount.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-600">Bank Account:</span>
+                    <span className="font-medium">{selectedRequest?.bankAccount}</span>
+                  </div>
+                </div>
+
+                {/* Payment Mode Dropdown */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Payment Mode
+                  </label>
+                  <select
+                    value={paymentMode}
+                    onChange={(e) => setPaymentMode(e.target.value)}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   >
-                    <ArrowUpCircle className="h-5 w-5" />
-                    <span>Request Transfer</span>
+                    <option value="">Select Payment Mode</option>
+                    <option value="UPI">UPI</option>
+                    <option value="IMPS">IMPS</option>
+                  </select>
+                </div>
+
+                {/* Transaction ID Input */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Transaction ID
+                  </label>
+                  <input
+                    type="text"
+                    value={transactionId}
+                    onChange={(e) => setTransactionId(e.target.value)}
+                    placeholder="Enter transaction ID"
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-3 pt-4">
+                  <button
+                    onClick={() => {
+                      setShowPaymentForm(false);
+                      setSelectedRequest(null);
+                      setPaymentMode('');
+                      setTransactionId('');
+                    }}
+                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handlePaymentComplete}
+                    disabled={!paymentMode || !transactionId}
+                    className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                  >
+                    Complete Payment
                   </button>
                 </div>
-                <div className="mt-3 flex items-center justify-between">
-                  <p className="text-sm text-gray-600">
-                    Available Balance: <span className="font-semibold text-emerald-600">₹{walletBalance.toLocaleString()}</span>
-                  </p>
-                  <p className="text-xs text-gray-500">Processing time: 2-3 business days</p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                <div className="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 p-6 rounded-xl">
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="text-sm font-semibold text-green-800">Total Commission Earned</p>
-                    <div className="bg-green-200 p-2 rounded-full">
-                      <DollarSign className="h-4 w-4 text-green-700" />
-                    </div>
-                  </div>
-                  <p className="text-3xl font-bold text-green-900 mb-1">₹{filteredTransactions.filter(item => item.type === 'commission').reduce((sum, item) => sum + item.commission, 0).toLocaleString()}</p>
-                  <p className="text-xs text-green-600">+5.2% from last week</p>
-                </div>
-                <div className="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 p-6 rounded-xl">
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="text-sm font-semibold text-blue-800">Total Transactions</p>
-                    <div className="bg-blue-200 p-2 rounded-full">
-                      <TrendingUp className="h-4 w-4 text-blue-700" />
-                    </div>
-                  </div>
-                  <p className="text-3xl font-bold text-blue-900 mb-1">{filteredTransactions.length}</p>
-                  <p className="text-xs text-blue-600">This month</p>
-                </div>
-                <div className="bg-gradient-to-br from-red-50 to-red-100 border border-red-200 p-6 rounded-xl">
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="text-sm font-semibold text-red-800">Total Transfers</p>
-                    <div className="bg-red-200 p-2 rounded-full">
-                      <ArrowUpCircle className="h-4 w-4 text-red-700" />
-                    </div>
-                  </div>
-                  <p className="text-3xl font-bold text-red-900 mb-1">₹{Math.abs(filteredTransactions.filter(item => item.type === 'transfer').reduce((sum, item) => sum + item.commission, 0)).toLocaleString()}</p>
-                  <p className="text-xs text-red-600">Requested amount</p>
-                </div>
-              </div>
-
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer/Type</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order Amount</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Commission Rate</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Transaction Type</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {filteredTransactions.map((item) => (
-                      <tr key={item.id} className={getTransactionRowClass(item)}>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.customerName}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">₹{item.orderAmount.toLocaleString()}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.commissionRate}%</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                          <span className={getAmountColor(item)}>
-                            {item.type === 'transfer' ? `-₹${item.orderAmount.toLocaleString()}` : `₹${item.commission}`}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                            item.type === 'transfer' ? 'bg-red-100 text-red-800' : 
-                            item.orderType === 'First Purchase' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'
-                          }`}>
-                            {item.orderType}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.date}</td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(item.status, item.type)}`}>
-                            {item.status}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
               </div>
             </div>
           </div>
         )}
-      </main>
+      </div>
     </div>
   );
 };
 
-export default MarketingPanel;
+export default AdminMoneyTransferPanel;

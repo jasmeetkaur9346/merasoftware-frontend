@@ -69,23 +69,32 @@ const Login = () => {
               _id: dataApi.data.user._id,
               name: dataApi.data.user.name,
               email: dataApi.data.user.email,
-              role: dataApi.data.user.role
+              role: dataApi.data.user.role,
+              isDetailsCompleted: dataApi.data.user.userDetails?.isDetailsCompleted || false
             });
   
             await fetchUserDetails();
             await fetchUserAddToCart();
   
             toast.success(dataApi.message);
-           // ✅ Role-based redirect
-          if (userData.role === "admin") {
-            navigate("/admin-panel/all-products"); // 🟢 Admin redirect
-          } else if (userData.role === "manager") {
-            navigate("/manager-panel/dashboard");
-          } else if (userData.role === "partner") {
-            navigate("/partner-panel/dashboard");
-          } else {
-            navigate("/"); // 🟢 Non-admin redirect
-          }
+
+            // Check if userDetails.isDetailsCompleted is false and role is not customer
+            const isDetailsCompleted = dataApi.data.user.userDetails?.isDetailsCompleted || false;
+            const role = dataApi.data.user.role;
+            if (!isDetailsCompleted && role !== "customer") {
+              navigate("/complete-profile");
+            } else {
+              // ✅ Role-based redirect
+              if (role === "admin") {
+                navigate("/admin-panel/all-products"); // 🟢 Admin redirect
+              } else if (role === "manager") {
+                navigate("/manager-panel/dashboard");
+              } else if (role === "partner") {
+                navigate("/partner-panel/dashboard");
+              } else {
+                navigate("/"); // 🟢 Non-admin redirect
+              }
+            }
           }
         } else if (dataApi.error) {
           toast.error(dataApi.message);

@@ -1,299 +1,183 @@
 import React, { useState } from 'react';
-import { ChevronDown, TrendingUp, BarChart3, AlertCircle, ArrowUp, Wallet, Users, CreditCard, Filter } from 'lucide-react';
+import { ChevronDown, X, AlertCircle, Star } from 'lucide-react';
 
-const RevenueManagement = () => {
-  const [selectedFilter, setSelectedFilter] = useState('All Transactions');
-  
-  const filterOptions = ['All Transactions', 'Pending', 'Completed', 'Failed'];
-  
-  const transactionData = [
-    {
-      customerName: 'Mini',
-      orderAmount: '₹3,900',
-      commissionRate: '5%',
-      commissionAmount: '₹195.00',
-      transactionType: 'Repeat Purchase',
-      date: '7/14/2025',
-      status: 'Pending'
-    },
-    {
-      customerName: 'Rahul Kumar',
-      orderAmount: '₹5,200',
-      commissionRate: '6%',
-      commissionAmount: '₹312.00',
-      transactionType: 'New Customer',
-      date: '7/13/2025',
-      status: 'Completed'
-    },
-    {
-      customerName: 'Priya Sharma',
-      orderAmount: '₹2,100',
-      commissionRate: '4%',
-      commissionAmount: '₹84.00',
-      transactionType: 'Repeat Purchase',
-      date: '7/12/2025',
-      status: 'Failed'
+export default function CompactTransferForm() {
+  const [amount, setAmount] = useState('');
+  const [bankAccounts, setBankAccounts] = useState([
+    { id: 'hdfc', name: 'HDFC Bank', number: '****1234', isDefault: true },
+    { id: 'sbi', name: 'SBI Bank', number: '****5678', isDefault: false },
+    { id: 'icici', name: 'ICICI Bank', number: '****9012', isDefault: false }
+  ]);
+  const [selectedBank, setSelectedBank] = useState(
+    bankAccounts.find(bank => bank.isDefault)
+  );
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  const handleBankSelect = (bank) => {
+    setSelectedBank(bank);
+    setIsDropdownOpen(false);
+  };
+
+  const handleMakeDefault = () => {
+    // Update bank accounts - make selected bank default and others non-default
+    const updatedBankAccounts = bankAccounts.map(bank => ({
+      ...bank,
+      isDefault: bank.id === selectedBank.id
+    }));
+    
+    setBankAccounts(updatedBankAccounts);
+    
+    // Update selected bank state
+    const newDefaultBank = updatedBankAccounts.find(bank => bank.id === selectedBank.id);
+    setSelectedBank(newDefaultBank);
+    
+    // Show success message
+    alert(`${newDefaultBank.name} has been set as default account`);
+  };
+
+  const handleProceed = () => {
+    if (!amount || parseFloat(amount) < 100) {
+      alert('Please enter a valid amount (minimum ₹100)');
+      return;
     }
-  ];
+    console.log('Transfer initiated:', { amount, selectedBank });
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-2 sm:p-6 lg:p-8 max-w-7xl mx-auto">
-      {/* Navigation Tabs */}
-      <div className="mb-4 lg:mb-8">
-        <div className="flex space-x-2 sm:space-x-4 lg:space-x-8 border-b border-gray-200 overflow-x-auto bg-white rounded-t-xl px-2 sm:px-4 lg:px-6">
-          <button className="px-3 py-3 sm:px-4 sm:py-4 text-xs sm:text-sm lg:text-base text-blue-600 border-b-2 border-blue-600 font-medium whitespace-nowrap">
-            Dashboard
-          </button>
-           <button className="px-3 py-3 sm:px-4 sm:py-4 text-xs sm:text-sm lg:text-base text-gray-600 hover:text-gray-900 whitespace-nowrap transition-colors">
-            Customer List
-          </button>
-        </div>
+    <div className="max-w-md mx-auto bg-white rounded-lg shadow-lg p-6">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-xl font-semibold text-gray-800">Request Transfer</h2>
+        <button className="text-gray-400 hover:text-gray-600">
+          <X size={24} />
+        </button>
       </div>
 
-      {/* Revenue Management Header Card */}
-      <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6 lg:p-8 mb-4 sm:mb-6 lg:mb-8 backdrop-blur-sm">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 lg:gap-6 mb-4 sm:mb-6">
-          <div className="flex items-center gap-2 sm:gap-3">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg sm:rounded-xl flex items-center justify-center">
-              <Wallet className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-            </div>
-            <div>
-              <h1 className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-gray-900">Revenue Management</h1>
-              <p className="text-xs sm:text-sm text-gray-500 mt-0.5 sm:mt-1">Track and manage your earnings</p>
-            </div>
-          </div>
-          
-          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 lg:gap-4">
-            {/* Filter Dropdown */}
-            <div className="relative flex-1 sm:flex-none">
-              <select 
-                value={selectedFilter}
-                onChange={(e) => setSelectedFilter(e.target.value)}
-                className="w-full sm:w-auto lg:w-48 appearance-none bg-gray-50 border border-gray-200 rounded-lg sm:rounded-xl px-3 py-2 sm:px-4 sm:py-3 pr-8 sm:pr-10 text-xs sm:text-sm lg:text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-              >
-                {filterOptions.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 w-3 h-3 sm:w-4 sm:h-4 text-gray-400 pointer-events-none" />
-            </div>
-            
-            {/* Request Transfer Button */}
-            <button className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-4 sm:px-6 lg:px-8 py-2 sm:py-3 rounded-lg sm:rounded-xl flex items-center justify-center space-x-1 sm:space-x-2 font-medium text-xs sm:text-sm lg:text-base transition-all duration-200 shadow-lg hover:shadow-xl">
-              <ArrowUp className="w-3 h-3 sm:w-4 sm:h-4 lg:w-5 lg:h-5" />
-              <span>Request Transfer</span>
-            </button>
-          </div>
+      {/* Transfer Amount */}
+      <div className="mb-6">
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Transfer Amount
+        </label>
+        <div className="relative">
+          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+            ₹
+          </span>
+          <input
+            type="number"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            placeholder="Enter amount"
+            className="w-full pl-8 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+          />
         </div>
-        
-        {/* Stats Cards - Mobile 2x2 Grid, Desktop 4 columns */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 xl:gap-8">
-          {/* Current Balance */}
-          <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-gray-100 p-3 sm:p-6 lg:p-8 hover:shadow-xl transition-shadow duration-300">
-            <div className="flex items-center justify-between mb-2 sm:mb-4">
-              <div className="w-8 h-8 sm:w-12 sm:h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg sm:rounded-xl flex items-center justify-center">
-                <Wallet className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
-              </div>
-              <div className="text-xs sm:text-sm text-green-600 bg-green-50 px-2 py-0.5 sm:px-3 sm:py-1 rounded-full font-medium">
-                +12.5% ↗
-              </div>
-            </div>
-            <div className="mb-1 sm:mb-2">
-              <p className="text-xs sm:text-sm text-gray-600 mb-0.5 sm:mb-1">Current Balance</p>
-              <div className="text-lg sm:text-2xl lg:text-3xl font-bold text-gray-900">₹25,450.75</div>
-            </div>
-            <div className="text-xs sm:text-sm text-gray-500">from last month</div>
-          </div>
-
-          {/* Total Commission Earned */}
-          <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-gray-100 p-3 sm:p-6 lg:p-8 hover:shadow-xl transition-shadow duration-300">
-            <div className="flex items-center justify-between mb-2 sm:mb-4">
-              <div className="w-8 h-8 sm:w-12 sm:h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg sm:rounded-xl flex items-center justify-center">
-                <span className="text-white text-sm sm:text-lg font-bold">₹</span>
-              </div>
-              <div className="text-xs sm:text-sm text-green-600 bg-green-50 px-2 py-0.5 sm:px-3 sm:py-1 rounded-full font-medium">
-                +5.2% ↗
-              </div>
-            </div>
-            <div className="mb-1 sm:mb-2">
-              <p className="text-xs sm:text-sm text-gray-600 mb-0.5 sm:mb-1">Total Commission</p>
-              <div className="text-lg sm:text-2xl lg:text-3xl font-bold text-gray-900">₹1,840</div>
-            </div>
-            <div className="text-xs sm:text-sm text-gray-500">from last week</div>
-          </div>
-
-          {/* Total Transactions */}
-          <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-gray-100 p-3 sm:p-6 lg:p-8 hover:shadow-xl transition-shadow duration-300">
-            <div className="flex items-center justify-between mb-2 sm:mb-4">
-              <div className="w-8 h-8 sm:w-12 sm:h-12 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg sm:rounded-xl flex items-center justify-center">
-                <BarChart3 className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
-              </div>
-              <div className="text-xs sm:text-sm text-blue-600 bg-blue-50 px-2 py-0.5 sm:px-3 sm:py-1 rounded-full font-medium">
-                This month
-              </div>
-            </div>
-            <div className="mb-1 sm:mb-2">
-              <p className="text-xs sm:text-sm text-gray-600 mb-0.5 sm:mb-1">Total Transactions</p>
-              <div className="text-lg sm:text-2xl lg:text-3xl font-bold text-gray-900">10</div>
-            </div>
-            <div className="text-xs sm:text-sm text-gray-500">active orders</div>
-          </div>
-
-          {/* Total Transfers */}
-          <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-gray-100 p-3 sm:p-6 lg:p-8 hover:shadow-xl transition-shadow duration-300">
-            <div className="flex items-center justify-between mb-2 sm:mb-4">
-              <div className="w-8 h-8 sm:w-12 sm:h-12 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg sm:rounded-xl flex items-center justify-center">
-                <CreditCard className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
-              </div>
-              <div className="text-xs sm:text-sm text-orange-600 bg-orange-50 px-2 py-0.5 sm:px-3 sm:py-1 rounded-full font-medium">
-                Pending
-              </div>
-            </div>
-            <div className="mb-1 sm:mb-2">
-              <p className="text-xs sm:text-sm text-gray-600 mb-0.5 sm:mb-1">Total Transfers</p>
-              <div className="text-lg sm:text-2xl lg:text-3xl font-bold text-gray-900">₹8,000</div>
-            </div>
-            <div className="text-xs sm:text-sm text-gray-500">requested amount</div>
-          </div>
-        </div>
+        <p className="text-sm text-gray-500 mt-1">Available Balance: ₹25,450.75</p>
       </div>
 
-      {/* Transaction Table */}
-      <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-        {/* Table Header */}
-        <div className="bg-gray-50 px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200">
-          <div className="flex items-center justify-between">
-            <h2 className="text-base sm:text-lg font-semibold text-gray-900">Recent Transactions</h2>
-            <div className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm text-gray-500">
-              <Filter className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span className="hidden sm:inline">{selectedFilter}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Mobile View */}
-        <div className="block sm:hidden">
-          {transactionData.map((transaction, index) => (
-            <div key={index} className="p-3 border-b border-gray-100 last:border-b-0 hover:bg-gray-50 transition-colors">
-              <div className="flex justify-between items-start mb-2">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center">
-                    <Users className="w-4 h-4 text-white" />
-                  </div>
-                  <div>
-                    <div className="font-semibold text-gray-900 text-sm">{transaction.customerName}</div>
-                    <div className="text-xs text-gray-500">{transaction.date}</div>
-                  </div>
-                </div>
-                <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                  transaction.status === 'Pending' 
-                    ? 'bg-yellow-100 text-yellow-800' 
-                    : transaction.status === 'Completed'
-                    ? 'bg-green-100 text-green-800'
-                    : 'bg-red-100 text-red-800'
-                }`}>
-                  {transaction.status}
-                </span>
-              </div>
-              <div className="grid grid-cols-2 gap-2 text-sm">
-                <div className="bg-gray-50 p-2 rounded-lg">
-                  <span className="text-gray-500 block text-xs">Order Amount</span>
-                  <span className="text-gray-900 font-semibold text-sm">{transaction.orderAmount}</span>
-                </div>
-                <div className="bg-gray-50 p-2 rounded-lg">
-                  <span className="text-gray-500 block text-xs">Commission Rate</span>
-                  <span className="text-gray-900 font-semibold text-sm">{transaction.commissionRate}</span>
-                </div>
-                <div className="bg-green-50 p-2 rounded-lg">
-                  <span className="text-gray-500 block text-xs">Commission</span>
-                  <span className="text-green-600 font-semibold text-sm">{transaction.commissionAmount}</span>
-                </div>
-                <div className="bg-gray-50 p-2 rounded-lg">
-                  <span className="text-gray-500 block text-xs">Type</span>
-                  <span className="text-gray-900 font-semibold text-xs">{transaction.transactionType}</span>
+      {/* Bank Account Selection */}
+      <div className="mb-4">
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Select Bank Account
+        </label>
+        <div className="relative">
+          <button
+            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            className="w-full flex items-center justify-between p-3 border border-gray-300 rounded-lg hover:border-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+          >
+            <div className="flex items-center">
+              <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center mr-3">
+                <div className="w-6 h-4 bg-white rounded-sm flex items-center justify-center">
+                  <div className="w-3 h-1 bg-blue-500 rounded"></div>
                 </div>
               </div>
+              <div className="text-left">
+                <div className="font-medium text-gray-800">
+                  {selectedBank.name} - {selectedBank.number}
+                </div>
+                {selectedBank.isDefault && (
+                  <span className="text-xs text-green-600 font-medium">Default</span>
+                )}
+              </div>
             </div>
-          ))}
-        </div>
+            <ChevronDown 
+              size={20} 
+              className={`text-gray-400 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`}
+            />
+          </button>
 
-        {/* Desktop View */}
-        <div className="hidden sm:block overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="text-left px-6 py-4 text-sm font-semibold text-gray-700">
-                  Customer Name
-                </th>
-                <th className="text-left px-6 py-4 text-sm font-semibold text-gray-700">
-                  Order Amount
-                </th>
-                <th className="text-left px-6 py-4 text-sm font-semibold text-gray-700">
-                  Commission Rate
-                </th>
-                <th className="text-left px-6 py-4 text-sm font-semibold text-gray-700">
-                  Commission Amount
-                </th>
-                <th className="text-left px-6 py-4 text-sm font-semibold text-gray-700">
-                  Transaction Type
-                </th>
-                <th className="text-left px-6 py-4 text-sm font-semibold text-gray-700">
-                  Date
-                </th>
-                <th className="text-left px-6 py-4 text-sm font-semibold text-gray-700">
-                  Status
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-100">
-              {transactionData.map((transaction, index) => (
-                <tr key={index} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center">
-                        <Users className="w-4 h-4 text-white" />
-                      </div>
-                      <span className="text-sm font-semibold text-gray-900">{transaction.customerName}</span>
+          {/* Dropdown */}
+          {isDropdownOpen && (
+            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-10">
+              {bankAccounts.map((bank) => (
+                <button
+                  key={bank.id}
+                  onClick={() => handleBankSelect(bank)}
+                  className={`w-full flex items-center p-3 hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg ${
+                    selectedBank.id === bank.id ? 'bg-blue-50 border-r-2 border-blue-500' : ''
+                  }`}
+                >
+                  <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center mr-3">
+                    <div className="w-6 h-4 bg-white rounded-sm flex items-center justify-center">
+                      <div className="w-3 h-1 bg-blue-500 rounded"></div>
                     </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {transaction.orderAmount}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
-                      {transaction.commissionRate}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-600">
-                    {transaction.commissionAmount}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {transaction.transactionType}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {transaction.date}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full ${
-                      transaction.status === 'Pending' 
-                        ? 'bg-yellow-100 text-yellow-800' 
-                        : transaction.status === 'Completed'
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-red-100 text-red-800'
-                    }`}>
-                      {transaction.status}
-                    </span>
-                  </td>
-                </tr>
+                  </div>
+                  <div className="text-left">
+                    <div className="font-medium text-gray-800">
+                      {bank.name} - {bank.number}
+                    </div>
+                    {bank.isDefault && (
+                      <span className="text-xs text-green-600 font-medium">Default</span>
+                    )}
+                  </div>
+                  {selectedBank.id === bank.id && (
+                    <div className="ml-auto w-2 h-2 bg-blue-500 rounded-full"></div>
+                  )}
+                </button>
               ))}
-            </tbody>
-          </table>
+            </div>
+          )}
         </div>
+      </div>
+
+      {/* Make Default Option - Outside of dropdown */}
+      {!selectedBank.isDefault && (
+        <div className="mb-6">
+          <button
+            onClick={handleMakeDefault}
+            className="flex items-center px-4 py-2 text-sm text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors border border-blue-200"
+          >
+            <Star size={16} className="mr-2" />
+            Make {selectedBank.name} Default
+          </button>
+        </div>
+      )}
+
+      {/* Important Information */}
+      <div className="mb-6 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+        <div className="flex items-start">
+          <AlertCircle className="text-yellow-600 mr-2 mt-0.5 flex-shrink-0" size={16} />
+          <div>
+            <h4 className="text-sm font-medium text-yellow-800 mb-1">Important Information</h4>
+            <ul className="text-sm text-yellow-700 space-y-1">
+              <li>• Transfer will take 3-5 working days to process</li>
+              <li>• Once processed, this action cannot be undone</li>
+              <li>• Minimum transfer amount is ₹100</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      {/* Action Buttons */}
+      <div className="flex gap-3">
+        <button className="flex-1 py-3 px-4 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors">
+          Cancel
+        </button>
+        <button 
+          onClick={handleProceed}
+          className="flex-1 py-3 px-4 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 transition-colors"
+        >
+          Proceed
+        </button>
       </div>
     </div>
   );
-};
-
-export default RevenueManagement;
+}

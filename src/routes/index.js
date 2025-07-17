@@ -67,6 +67,7 @@ import PartnerCustomers from "../pages/PartnerCustomers";
 import BusinessCreated from "../pages/BusinessCreated";
 import FirstPurchaseList from "../pages/FirstPurchaseList";
 import Practice from "../pages/Practice"
+import CompleteProfile from "../pages/CompleteProfile";
 
 // Create a conditional home route
 // const HomeRoute = () => {
@@ -211,6 +212,10 @@ const router = createBrowserRouter([
             {
                 path: "admin-tickets/:ticketId",
                 element: <TicketDetail isAdmin={true} />
+            },
+            {
+                path: "complete-profile",
+                element: <CompleteProfile/>
             },
             {
                 path: "admin-panel",
