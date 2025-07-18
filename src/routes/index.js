@@ -68,6 +68,7 @@ import BusinessCreated from "../pages/BusinessCreated";
 import FirstPurchaseList from "../pages/FirstPurchaseList";
 import Practice from "../pages/Practice"
 import CompleteProfile from "../pages/CompleteProfile";
+import AdminWithdrawalManagement from "../pages/AdminWithdrawalManagement";
 
 // Create a conditional home route
 // const HomeRoute = () => {
@@ -312,6 +313,10 @@ const router = createBrowserRouter([
                     {
                         path : "wallet-management",
                         element : <WalletManagement/>
+                    },
+                    {
+                        path : "partner-withdrawal-requests",
+                        element : <AdminWithdrawalManagement/>
                     }
                 ]
             },

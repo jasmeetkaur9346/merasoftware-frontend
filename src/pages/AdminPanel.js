@@ -102,6 +102,13 @@ const AdminPanel = () => {
                                         Support Panel
                                     </Link>
                                     <Link 
+                                        to={"partner-withdrawal-requests"} 
+                                        className='block px-3 py-2.5 text-sm text-gray-400 hover:bg-slate-700 hover:text-white rounded-md transition-colors'
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
+                                        Partner Withdrawal Requests
+                                    </Link>
+                                    <Link 
                                         to={"wallet-management"} 
                                         className='block px-3 py-2.5 text-sm text-gray-400 hover:bg-slate-700 hover:text-white rounded-md transition-colors'
                                         onClick={(e) => e.stopPropagation()}

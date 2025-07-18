@@ -518,14 +518,20 @@ const fetchCommissionHistory = async () => {
                               {moment(transaction.createdAt).format('MMM DD, YYYY hh:mm A')}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
-                              <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                                transaction.status === 'credited' ? 'bg-green-100 text-green-800' :
-                                transaction.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                                'bg-gray-100 text-gray-800'
-                              }`}>
-                                {transaction.status === 'credited' ? 'Credited' : transaction.status === 'pending' ? 'Pending' : 'N/A'}
-                              </span>
-                            </td>
+  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+    transaction.status === 'credited' ? 'bg-green-100 text-green-800' :
+    transaction.status === 'approved' ? 'bg-green-100 text-green-800' :  // ✅ Added
+    transaction.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+    transaction.status === 'rejected' ? 'bg-red-100 text-red-800' :      // ✅ Added
+    'bg-gray-100 text-gray-800'
+  }`}>
+    {transaction.status === 'credited' ? 'Credited' : 
+     transaction.status === 'approved' ? 'Approved' :     // ✅ Added
+     transaction.status === 'pending' ? 'Pending' : 
+     transaction.status === 'rejected' ? 'Rejected' :     // ✅ Added
+     'N/A'}
+  </span>
+</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                               <div className="flex items-center">
                                 {transaction.commissionType === 'Withdrawal Request' ? (
