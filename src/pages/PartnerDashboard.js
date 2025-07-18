@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, Fragment } from 'react'
 import { useSelector } from 'react-redux'
 import { FaUsers, FaMoneyBillWave, FaChartLine, FaWallet, FaPlus, FaExchangeAlt } from 'react-icons/fa'
 import SummaryApi from '../common'
@@ -16,7 +16,17 @@ const PartnerDashboard = () => {
   const [walletBalance, setWalletBalance] = useState(0)
   const [commissionHistory, setCommissionHistory] = useState([])
   const [customers, setCustomers] = useState([])
-  
+  const [showTransactionDetailModal, setShowTransactionDetailModal] = useState(false)
+  const [selectedTransactionDetail, setSelectedTransactionDetail] = useState(null)
+  const [expandedCustomer, setExpandedCustomer] = useState(null)
+  const [editingCustomer, setEditingCustomer] = useState(null)
+  const [editFormData, setEditFormData] = useState({
+    name: '',
+    email: '',
+    phone: ''
+  })
+  const [isUpdating, setIsUpdating] = useState(false)
+
   // Loading states
   const [loadingStats, setLoadingStats] = useState(true)
   const [loadingCommissions, setLoadingCommissions] = useState(true)
@@ -113,7 +123,9 @@ const fetchCommissionHistory = async () => {
         commissionType: 'Withdrawal Request',
         createdAt: withdrawal.createdAt,
         status: withdrawal.status,
-        commissionAmount: -withdrawal.requestedAmount // Negative amount
+        commissionAmount: -withdrawal.requestedAmount, // Negative amount
+        adminResponse: withdrawal.adminResponse, // Add this line
+       selectedBankAccount: withdrawal.selectedBankAccount
       }))
       
       // दोनों को combine करके date wise sort करें
@@ -214,6 +226,43 @@ const fetchCommissionHistory = async () => {
       setSubmitting(false)
     }
   }
+
+  // Handle customer update function
+const handleUpdateCustomer = async (customerId) => {
+  if (!editFormData.name && !editFormData.email && !editFormData.phone) {
+    toast.error('At least one field is required to update')
+    return
+  }
+
+  setIsUpdating(true)
+  
+  try {
+    const response = await fetch(`${SummaryApi.updatePartnerCustomer.url}/${customerId}`, {
+      method: SummaryApi.updatePartnerCustomer.method,
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      credentials: 'include',
+      body: JSON.stringify(editFormData)
+    })
+    
+    const result = await response.json()
+    
+    if (result.success) {
+      toast.success('Customer details updated successfully')
+      setEditingCustomer(null)
+      setEditFormData({ name: '', email: '', phone: '' })
+      fetchCustomers() // Refresh customer list
+    } else {
+      toast.error(result.message || 'Failed to update customer')
+    }
+  } catch (error) {
+    console.error('Error updating customer:', error)
+    toast.error('Something went wrong while updating customer')
+  } finally {
+    setIsUpdating(false)
+  }
+}
 
   // Handle withdrawal request submission
   const handleWithdrawalRequest = async () => {
@@ -316,6 +365,20 @@ const fetchCommissionHistory = async () => {
       minimumFractionDigits: 2
     }).format(amount || 0)
   }
+
+  const getStatusColor = (status) => {
+    switch (status) {
+        case 'completed':
+        case 'approved':
+            return 'text-green-600'
+        case 'pending':
+            return 'text-yellow-600'
+        case 'rejected':
+            return 'text-red-600'
+        default:
+            return 'text-gray-600'
+    }
+}
 
   useEffect(() => {
     fetchWalletBalance()
@@ -507,7 +570,14 @@ const fetchCommissionHistory = async () => {
                         </tr>
                       ) : (
                         commissionHistory.map((transaction, index) => (
-                          <tr key={transaction._id || index} className="hover:bg-gray-50">
+                          <tr 
+                            key={transaction._id || index} 
+                            className="hover:bg-gray-50 cursor-pointer transition-colors duration-200"
+                            onClick={() => {
+                                setSelectedTransactionDetail(transaction)
+                                setShowTransactionDetailModal(true)
+                            }}
+                        >
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                               {transaction.commissionType === 'Withdrawal Request' ? 'Admin Transfer' : transaction.customerName || transaction.customerDetails?.name || transaction.customerId?.name || 'N/A'}
                             </td>
@@ -618,26 +688,80 @@ const fetchCommissionHistory = async () => {
                           </td>
                         </tr>
                       ) : (
-                        customers.map((customer) => (
-                          <tr key={customer._id} className="hover:bg-gray-50">
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                              {customer.name}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              {customer.email}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              {customer.mobile || 'N/A'}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              {moment(customer.createdAt).format('MMM DD, YYYY')}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
-                                Active
-                              </span>
-                            </td>
-                          </tr>
+      customers.map((customer) => (
+        <React.Fragment key={customer._id}>
+          {/* Main Row */}
+          <tr 
+            className="hover:bg-gray-50 cursor-pointer transition-colors"
+            onClick={() => setExpandedCustomer(expandedCustomer === customer._id ? null : customer._id)}
+          >
+            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+              <div className="flex items-center">
+                <span className="mr-2">
+                  {expandedCustomer === customer._id ? '▼' : '▶'}
+                </span>
+                {customer.name}
+              </div>
+            </td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              {customer.email}
+            </td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              {customer.phone || 'N/A'}
+            </td>
+            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+              {moment(customer.dateAdded).format('MMM DD, YYYY')}
+            </td>
+            <td className="px-6 py-4 whitespace-nowrap">
+              <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                Active
+              </span>
+            </td>
+          </tr>
+
+            {/* Expanded Row */}
+          {expandedCustomer === customer._id && (
+            <tr>
+              <td colSpan="5" className="px-6 py-4 bg-gray-50">
+                <div className="space-y-4">
+                  {/* Customer Stats */}
+                  <div className="grid grid-cols-3 gap-4 mb-4">
+                    <div className="text-center p-3 bg-white rounded-lg shadow-sm">
+                      <p className="text-sm text-gray-600">Total Purchases</p>
+                      <p className="text-lg font-semibold text-blue-600">{customer.totalPurchases}</p>
+                    </div>
+                    <div className="text-center p-3 bg-white rounded-lg shadow-sm">
+                      <p className="text-sm text-gray-600">Total Spend</p>
+                      <p className="text-lg font-semibold text-green-600">{formatCurrency(customer.totalSpend)}</p>
+                    </div>
+                    <div className="text-center p-3 bg-white rounded-lg shadow-sm">
+                      <p className="text-sm text-gray-600">Wallet Balance</p>
+                      <p className="text-lg font-semibold text-purple-600">{formatCurrency(customer.walletBalance)}</p>
+                    </div>
+                  </div>
+
+                    {/* Edit Button */}
+                  <div className="flex justify-center">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setEditingCustomer(customer._id)
+                        setEditFormData({
+                          name: customer.name,
+                          email: customer.email,
+                          phone: customer.phone || ''
+                        })
+                      }}
+                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+                    >
+                      Edit Details
+                    </button>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          )}
+        </React.Fragment>
                         ))
                       )}
                     </tbody>
@@ -647,6 +771,92 @@ const fetchCommissionHistory = async () => {
             </div>
           </div>
         )}
+
+        {/* Edit Customer Modal */}
+{editingCustomer && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-lg font-semibold text-gray-900">Edit Customer Details</h3>
+        <button
+          onClick={() => {
+            setEditingCustomer(null)
+            setEditFormData({ name: '', email: '', phone: '' })
+          }}
+          className="text-gray-400 hover:text-gray-600"
+        >
+          ×
+        </button>
+      </div>
+
+      <form onSubmit={(e) => {
+        e.preventDefault()
+        handleUpdateCustomer(editingCustomer)
+      }} className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Full Name
+          </label>
+          <input
+            type="text"
+            value={editFormData.name}
+            onChange={(e) => setEditFormData({...editFormData, name: e.target.value})}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="Enter customer name"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Email Address
+          </label>
+          <input
+            type="email"
+            value={editFormData.email}
+            onChange={(e) => setEditFormData({...editFormData, email: e.target.value})}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="Enter email address"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Phone Number
+          </label>
+          <input
+            type="tel"
+            value={editFormData.phone}
+            onChange={(e) => setEditFormData({...editFormData, phone: e.target.value})}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="Enter phone number"
+          />
+        </div>
+
+        <div className="flex gap-3 pt-4">
+          <button
+            type="button"
+            onClick={() => {
+              setEditingCustomer(null)
+              setEditFormData({ name: '', email: '', phone: '' })
+            }}
+            className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium transition-colors"
+            disabled={isUpdating}
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
+            disabled={isUpdating}
+          >
+            {isUpdating ? 'Updating...' : 'Update Customer'}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+)}
+
 
         {/* Add New Customer Modal */}
         {openAddCustomerModal && (
@@ -662,7 +872,10 @@ const fetchCommissionHistory = async () => {
                 </button>
               </div>
 
-              <form onSubmit={handleAddCustomer} className="space-y-4">
+              <form autoComplete="off" onSubmit={handleAddCustomer} className="space-y-4">
+                 {/* Hidden fake fields to fool browser */}
+  <input type="text" name="fakeusernameremembered" autoComplete="username" style={{ display: 'none' }} />
+  <input type="password" name="fakepasswordremembered" autoComplete="new-password" style={{ display: 'none' }} />
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Full Name *
@@ -683,6 +896,8 @@ const fetchCommissionHistory = async () => {
                   </label>
                   <input
                     type="email"
+                    name="email"
+                    autoComplete="new-email"  
                     required
                     value={formData.email}
                     onChange={(e) => setFormData({...formData, email: e.target.value})}
@@ -697,6 +912,8 @@ const fetchCommissionHistory = async () => {
                   </label>
                   <input
                     type="password"
+                    name="newCustomerPassword"
+                    autoComplete="new-password" 
                     required
                     value={formData.password}
                     onChange={(e) => setFormData({...formData, password: e.target.value})}
@@ -711,6 +928,8 @@ const fetchCommissionHistory = async () => {
                   </label>
                   <input
                     type="password"
+                     name="confirmCustomerPassword"
+                    autoComplete="new-password"
                     required
                     value={formData.confirmPassword}
                     onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
@@ -829,6 +1048,163 @@ const fetchCommissionHistory = async () => {
             </div>
           </div>
         )}
+
+        {/* Transaction Detail Modal */}
+{showTransactionDetailModal && selectedTransactionDetail && (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-lg w-full max-w-lg shadow-xl max-h-[90vh] overflow-y-auto">
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-gray-200">
+                <div className="flex justify-between items-center">
+                    <h3 className="text-xl font-semibold text-gray-900">
+                        {selectedTransactionDetail.commissionType === 'Withdrawal Request' 
+                            ? 'Withdrawal Request Details' 
+                            : 'Commission Details'}
+                    </h3>
+                    <button
+                        onClick={() => {
+                            setShowTransactionDetailModal(false)
+                            setSelectedTransactionDetail(null)
+                        }}
+                        className="text-gray-400 hover:text-gray-600 text-2xl font-bold"
+                    >
+                        ×
+                    </button>
+                </div>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6 space-y-4">
+                {selectedTransactionDetail.commissionType === 'Withdrawal Request' ? (
+                    // Withdrawal Request Details
+                    <>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <p className="text-sm text-gray-600">Type</p>
+                                <p className="font-semibold">Withdrawal Request</p>
+                            </div>
+                            <div>
+                                <p className="text-sm text-gray-600">Amount</p>
+                                <p className="font-semibold text-red-600">
+                                    {formatCurrency(Math.abs(selectedTransactionDetail.commissionAmount))}
+                                </p>
+                            </div>
+                            <div>
+                                <p className="text-sm text-gray-600">Status</p>
+                                <p className={`font-semibold ${getStatusColor(selectedTransactionDetail.status)}`}>
+                                    {selectedTransactionDetail.status?.charAt(0).toUpperCase() + selectedTransactionDetail.status?.slice(1)}
+                                </p>
+                            </div>
+                            <div>
+                                <p className="text-sm text-gray-600">Requested At</p>
+                                <p className="font-semibold">
+                                    {moment(selectedTransactionDetail.createdAt).format('MMM DD, YYYY hh:mm A')}
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Bank Account Details - यह data backend से आना चाहिए */}
+                        {selectedTransactionDetail.selectedBankAccount && (
+                            <div className="mt-4 p-4 bg-blue-50 rounded-lg border">
+                                <h4 className="font-semibold text-gray-900 mb-2">Bank Account Details:</h4>
+                                <div className="text-sm space-y-1">
+                                    <p><strong>Bank:</strong> {selectedTransactionDetail.selectedBankAccount.bankName}</p>
+                                    <p><strong>Account No:</strong> {selectedTransactionDetail.selectedBankAccount.bankAccountNumber}</p>
+                                    <p><strong>IFSC:</strong> {selectedTransactionDetail.selectedBankAccount.bankIFSCCode}</p>
+                                    <p><strong>Account Holder:</strong> {selectedTransactionDetail.selectedBankAccount.accountHolderName}</p>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Admin Response Details */}
+                        {selectedTransactionDetail.status === 'approved' && selectedTransactionDetail.adminResponse && (
+                            <div className="mt-4 p-4 bg-green-50 rounded-lg border border-green-200">
+                                <h4 className="font-semibold text-gray-900 mb-2">Approval Details:</h4>
+                                <div className="text-sm space-y-1">
+                                    <p><strong>Approved By:</strong> Admin</p>
+                                    <p><strong>Payment Mode:</strong> {selectedTransactionDetail.adminResponse.paymentMode}</p>
+                                    <p><strong>Transaction ID:</strong> {selectedTransactionDetail.adminResponse.transactionId}</p>
+                                    <p><strong>Processed At:</strong> {moment(selectedTransactionDetail.adminResponse.processedAt).format('MMM DD, YYYY hh:mm A')}</p>
+                                </div>
+                            </div>
+                        )}
+
+                        {selectedTransactionDetail.status === 'rejected' && selectedTransactionDetail.adminResponse && (
+                            <div className="mt-4 p-4 bg-red-50 rounded-lg border border-red-200">
+                                <h4 className="font-semibold text-gray-900 mb-2">Rejection Details:</h4>
+                                <div className="text-sm space-y-1">
+                                    <p><strong>Rejected By:</strong> Admin</p>
+                                    <p><strong>Reason:</strong> {selectedTransactionDetail.adminResponse.rejectionReason}</p>
+                                    <p><strong>Rejected At:</strong> {moment(selectedTransactionDetail.adminResponse.processedAt).format('MMM DD, YYYY hh:mm A')}</p>
+                                </div>
+                            </div>
+                        )}
+                    </>
+                ) : (
+                    // Commission Details 
+                    <>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <p className="text-sm text-gray-600">Customer Name</p>
+                                <p className="font-semibold">{selectedTransactionDetail.customerName}</p>
+                            </div>
+                            <div>
+                                <p className="text-sm text-gray-600">Commission Type</p>
+                                <p className="font-semibold">{formatCommissionType(selectedTransactionDetail.commissionType)}</p>
+                            </div>
+                            <div>
+                                <p className="text-sm text-gray-600">Date & Time</p>
+                                <p className="font-semibold">
+                                    {moment(selectedTransactionDetail.createdAt).format('MMM DD, YYYY hh:mm A')}
+                                </p>
+                            </div>
+                            <div>
+                                <p className="text-sm text-gray-600">Amount Credited</p>
+                                <p className="font-semibold text-green-600">
+                                    {formatCurrency(selectedTransactionDetail.commissionAmount)}
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Customer Contact Details */}
+                        {selectedTransactionDetail.customerId && (
+                            <div className="mt-4 p-4 bg-gray-50 rounded-lg border">
+                                <h4 className="font-semibold text-gray-900 mb-2">Customer Contact:</h4>
+                                <div className="text-sm space-y-1">
+                                    <p><strong>Email:</strong> {selectedTransactionDetail.customerId.email || 'N/A'}</p>
+                                    <p><strong>Phone:</strong> {selectedTransactionDetail.customerId.phone || 'N/A'}</p>
+                                </div>
+                            </div>
+                        )}
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <p className="text-sm text-gray-600">Commission Rate</p>
+                                <p className="font-semibold">
+                                    {selectedTransactionDetail.commissionRate ? `${(selectedTransactionDetail.commissionRate * 100).toFixed(0)}%` : 'N/A'}
+                                </p>
+                            </div>
+                            <div>
+                                <p className="text-sm text-gray-600">Order Amount</p>
+                                <p className="font-semibold">
+                                    {selectedTransactionDetail.orderAmount ? formatCurrency(selectedTransactionDetail.orderAmount) : 'N/A'}
+                                </p>
+                            </div>
+                        </div>
+
+                        {selectedTransactionDetail.serviceName && (
+                            <div>
+                                <p className="text-sm text-gray-600">Service Name</p>
+                                <p className="font-semibold">{selectedTransactionDetail.serviceName}</p>
+                            </div>
+                        )}
+                    </>
+                )}
+            </div>
+        </div>
+    </div>
+)}
+
       </div>
     </div>
   )

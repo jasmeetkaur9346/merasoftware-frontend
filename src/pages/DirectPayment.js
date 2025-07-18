@@ -24,7 +24,7 @@ const DirectPayment = () => {
   const [isPartialPayment, setIsPartialPayment] = useState(false);
   const [installmentNumber, setInstallmentNumber] = useState(1);
   const [remainingPayments, setRemainingPayments] = useState([]);
-  
+  const [isSubmittingVerification, setIsSubmittingVerification] = useState(false);
 
   useEffect(() => {
     // Get payment data from location state
@@ -431,7 +431,7 @@ if (paymentData.selectedFeatures && paymentData.selectedFeatures.length > 0) {
     }
     
     try {
-      setLoading(true);
+      setIsSubmittingVerification(true);
       setVerificationStatus('Submitting verification request...');
   
       // Debug logs
@@ -525,13 +525,13 @@ if (paymentData.selectedFeatures && paymentData.selectedFeatures.length > 0) {
         setPaymentProcessed(true);
       } else {
         setVerificationStatus(data.message || 'Verification submission failed. Please contact support.');
+        setIsSubmittingVerification(false);
       }
     } catch (error) {
       console.error('Error verifying payment:', error);
       setVerificationStatus('Error submitting verification. Please contact support with error: ' + (error.message || 'Unknown error'));
-    } finally {
-      setLoading(false);
-    }
+   setIsSubmittingVerification(false); // Stop loader on error
+  }
   };
 
   const renderInstallmentInfo = () => {
@@ -585,11 +585,11 @@ if (paymentData.selectedFeatures && paymentData.selectedFeatures.length > 0) {
 
   return (
     <div className="container mx-auto p-4 max-w-3xl">
-      {loading && (
-        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-          <TriangleMazeLoader />
-        </div>
-      )}
+       {(loading || isSubmittingVerification) && (
+      <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+        <TriangleMazeLoader />
+      </div>
+    )}
       
       
 
@@ -806,13 +806,13 @@ if (paymentData.selectedFeatures && paymentData.selectedFeatures.length > 0) {
                 </p>
               </div>
               
-              <button
-                onClick={verifyPayment}
-                disabled={loading || !upiTransactionId.trim()}
-                className="bg-green-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors w-full disabled:bg-gray-400"
-              >
-                {loading ? 'Verifying...' : 'Submit for Verification'}
-              </button>
+               <button
+      onClick={verifyPayment}
+      disabled={loading || !upiTransactionId.trim() || isSubmittingVerification}
+      className="bg-green-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-green-700 transition-colors w-full disabled:bg-gray-400"
+    >
+      {isSubmittingVerification ? 'Processing...' : (loading ? 'Verifying...' : 'Submit for Verification')}
+    </button>
               
               {verificationStatus && (
                 <p className="mt-3 text-center">

@@ -477,6 +477,10 @@ const SummaryApi = {
       url: `${backendDomain}/api/reject-withdrawals`,
       method: "post"
      },
+     updatePartnerCustomer : {
+      url: `${backendDomain}/api/update-partner-customer`,
+      method: "post"
+     },
     wallet : {
         balance :{
             url : `${backendDomain}/api/wallet/balance`,

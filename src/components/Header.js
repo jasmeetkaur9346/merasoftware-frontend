@@ -17,6 +17,7 @@ import StorageService from '../utils/storageService';
 import displayCurrency from "../helpers/displayCurrency" 
 import NotificationBell from './NotificationBell';
 import LoginPopup from '../components/LoginPopup';
+import TriangleMazeLoader from '../components/TriangleMazeLoader';
 
 const Header = () => {
   const user = useSelector(state => state?.user?.user)
@@ -36,6 +37,7 @@ const Header = () => {
   const [loading, setLoading] = useState(true);
   const [showLoginPopup, setShowLoginPopup] = useState(false);
   const [roleDropdownOpen, setRoleDropdownOpen] = useState(false);
+  const [isRoleSwitching, setIsRoleSwitching] = useState(false);
 
   // Get user authentication status
   const userDetails = useSelector((state) => state.user.user);
@@ -245,6 +247,8 @@ const handleRoleChange = async (newRole) => {
     return;
   }
   try {
+    setIsRoleSwitching(true); 
+
     const response = await fetch(SummaryApi.userRoleSwitch.url, {
       method: SummaryApi.userRoleSwitch.method,
       credentials: 'include',
@@ -271,6 +275,7 @@ const handleRoleChange = async (newRole) => {
       if (!isDetailsCompleted && newRole !== "customer") {
         setTimeout(() => {
           navigate("/complete-profile");
+          setIsRoleSwitching(false); 
         }, 100);
       } else {
         // Redirect based on new role
@@ -296,14 +301,17 @@ const handleRoleChange = async (newRole) => {
         // Add small delay to allow Redux state update to propagate
         setTimeout(() => {
           navigate(redirectPath);
+          setIsRoleSwitching(false);
         }, 100);
       }
     } else {
       toast.error(data.message || "Failed to switch role");
+      setIsRoleSwitching(false);
     }
   } catch (error) {
     console.error("Error switching role:", error);
     toast.error("Error switching role");
+    setIsRoleSwitching(false);
   }
   setRoleDropdownOpen(false);
 };
@@ -316,6 +324,12 @@ const handleRoleChange = async (newRole) => {
 
   return (
     <>
+     {/* Add TriangleMazeLoader for role switching */}
+    {isRoleSwitching && (
+      <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+        <TriangleMazeLoader />
+      </div>
+    )}
 
     <header className='hidden md:block bg-white shadow-sm sticky top-0 z-50'>
       <div className='max-w-7xl mx-auto px-6'>
@@ -339,7 +353,7 @@ const handleRoleChange = async (newRole) => {
             >
               {user.role.toUpperCase()} ▼
             </button>
-            {roleDropdownOpen && (
+            {roleDropdownOpen && !isRoleSwitching &&(
               <ul className="absolute right-0 mt-1 w-40 bg-white border border-gray-300 rounded-md shadow-lg z-50">
                 {user.roles.map((roleItem) => (
                   <li
