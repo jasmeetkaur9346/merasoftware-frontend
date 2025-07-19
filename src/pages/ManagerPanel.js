@@ -2,26 +2,54 @@ import React, { useEffect, useState } from 'react'
 import { FaRegCircleUser, FaChevronDown, FaChevronUp } from 'react-icons/fa6'
 import { MdDashboard, MdAdminPanelSettings, MdShoppingCart, MdPeople, MdWeb } from 'react-icons/md'
 import { useSelector } from 'react-redux'
-import { Link, Outlet, useNavigate } from 'react-router-dom'
+import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom'
 import ROLE from '../common/role'
 
 const ManagerPanel = () => {
     const user = useSelector(state => state?.user?.user)
     const navigate = useNavigate()
+    const location = useLocation()
     
     // State for collapsible sections - only one can be open at a time
     const [openSection, setOpenSection] = useState(null)
 
-   useEffect(() => {
-            // Assuming user.roles is an array of strings
-            if (!user?.roles?.includes(ROLE.MANAGER)) { 
-                navigate("/");
-            }
-        }, [user, navigate]);
+    useEffect(() => {
+        // Assuming user.roles is an array of strings
+        if (!user?.roles?.includes(ROLE.MANAGER)) { 
+            navigate("/");
+        }
+    }, [user, navigate]);
+
+    // Current path के base पर section को auto-open करने के लिए
+    useEffect(() => {
+        const currentPath = location.pathname
+        
+        if (currentPath.includes('all-categories') || 
+            currentPath.includes('all-products') || 
+            currentPath.includes('hidden-products')) {
+            setOpenSection('productManagement')
+        } else if (currentPath.includes('welcome-content') || 
+                   currentPath.includes('all-ads')) {
+            setOpenSection('websiteManagement')
+        }
+    }, [location.pathname])
 
     const toggleSection = (section) => {
         // If clicking on already open section, close it. Otherwise open the new section
         setOpenSection(prev => prev === section ? null : section)
+    }
+
+    // Helper function to check if link is active
+    const isActiveLink = (path) => {
+        const currentPath = location.pathname
+        
+        if (path === "") {
+            // Dashboard के लिए - यह check करता है कि कोई sub-route active नहीं है
+            const subRoutes = ['all-categories', 'all-products', 'hidden-products', 'welcome-content', 'all-ads']
+            const hasActiveSubRoute = subRoutes.some(route => currentPath.includes(route))
+            return !hasActiveSubRoute
+        }
+        return currentPath.includes(path)
     }
 
     return (
@@ -46,11 +74,17 @@ const ManagerPanel = () => {
                 <div className='p-2'>
                     <nav className='space-y-1'>
                         {/* Dashboard */}
-                        <Link to={""} className='flex items-center px-3 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors'>
+                        <Link 
+                            to={""} 
+                            className={`flex items-center px-3 py-2 text-sm rounded-md transition-colors ${
+                                isActiveLink("") 
+                                    ? 'bg-blue-600 text-white' 
+                                    : 'text-gray-300 hover:bg-slate-700 hover:text-white'
+                            }`}
+                        >
                             <MdDashboard className='mr-3 text-lg' />
                             Dashboard
                         </Link>
-
 
                         {/* Product Management Section */}
                         <div className='mt-4'>
@@ -69,21 +103,33 @@ const ManagerPanel = () => {
                                 <div className='ml-6 mt-2 border-l-2 border-blue-500 pl-4 space-y-1'>
                                     <Link 
                                         to={"all-categories"} 
-                                        className='block px-3 py-2.5 text-sm text-gray-400 hover:bg-slate-700 hover:text-white rounded-md transition-colors'
+                                        className={`block px-3 py-2.5 text-sm rounded-md transition-colors ${
+                                            isActiveLink("all-categories")
+                                                ? 'bg-blue-600 text-white'
+                                                : 'text-gray-400 hover:bg-slate-700 hover:text-white'
+                                        }`}
                                         onClick={(e) => e.stopPropagation()}
                                     >
                                         All Services
                                     </Link>
                                     <Link 
                                         to={"all-products"} 
-                                        className='block px-3 py-2.5 text-sm text-gray-400 hover:bg-slate-700 hover:text-white rounded-md transition-colors'
+                                        className={`block px-3 py-2.5 text-sm rounded-md transition-colors ${
+                                            isActiveLink("all-products")
+                                                ? 'bg-blue-600 text-white'
+                                                : 'text-gray-400 hover:bg-slate-700 hover:text-white'
+                                        }`}
                                         onClick={(e) => e.stopPropagation()}
                                     >
                                         All Products
                                     </Link>
                                     <Link 
                                         to={"hidden-products"} 
-                                        className='block px-3 py-2.5 text-sm text-gray-400 hover:bg-slate-700 hover:text-white rounded-md transition-colors'
+                                        className={`block px-3 py-2.5 text-sm rounded-md transition-colors ${
+                                            isActiveLink("hidden-products")
+                                                ? 'bg-blue-600 text-white'
+                                                : 'text-gray-400 hover:bg-slate-700 hover:text-white'
+                                        }`}
                                         onClick={(e) => e.stopPropagation()}
                                     >
                                         Hidden Products
@@ -91,7 +137,6 @@ const ManagerPanel = () => {
                                 </div>
                             )}
                         </div>
-
 
                         {/* Website Management Section */}
                         <div className='mt-4'>
@@ -110,14 +155,22 @@ const ManagerPanel = () => {
                                 <div className='ml-6 mt-2 border-l-2 border-blue-500 pl-4 space-y-1'>
                                     <Link 
                                         to={"welcome-content"} 
-                                        className='block px-3 py-2.5 text-sm text-gray-400 hover:bg-slate-700 hover:text-white rounded-md transition-colors'
+                                        className={`block px-3 py-2.5 text-sm rounded-md transition-colors ${
+                                            isActiveLink("welcome-content")
+                                                ? 'bg-blue-600 text-white'
+                                                : 'text-gray-400 hover:bg-slate-700 hover:text-white'
+                                        }`}
                                         onClick={(e) => e.stopPropagation()}
                                     >
                                         Welcome Content
                                     </Link>
                                     <Link 
                                         to={"all-ads"} 
-                                        className='block px-3 py-2.5 text-sm text-gray-400 hover:bg-slate-700 hover:text-white rounded-md transition-colors'
+                                        className={`block px-3 py-2.5 text-sm rounded-md transition-colors ${
+                                            isActiveLink("all-ads")
+                                                ? 'bg-blue-600 text-white'
+                                                : 'text-gray-400 hover:bg-slate-700 hover:text-white'
+                                        }`}
                                         onClick={(e) => e.stopPropagation()}
                                     >
                                         All Banner Ads
@@ -137,3 +190,4 @@ const ManagerPanel = () => {
 }
 
 export default ManagerPanel;
+

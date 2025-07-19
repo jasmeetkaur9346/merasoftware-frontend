@@ -139,6 +139,17 @@ const AdminPanel = () => {
                                         Payment Verification
                                     </Link>
                                     <Link 
+                                        to={"partner-withdrawal-requests"} 
+                                        className={`block px-3 py-2.5 text-sm rounded-md transition-colors ${
+                                            isActive('partner-withdrawal-requests')
+                                                ? 'bg-blue-600 text-white'
+                                                : 'text-gray-400 hover:bg-slate-700 hover:text-white'
+                                        }`}
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
+                                        Partner Requests
+                                    </Link>
+                                    {/* <Link 
                                         to={"order-approval"} 
                                         className={`block px-3 py-2.5 text-sm rounded-md transition-colors ${
                                             isActive('order-approval')
@@ -148,7 +159,7 @@ const AdminPanel = () => {
                                         onClick={(e) => e.stopPropagation()}
                                     >
                                         Pending Orders
-                                    </Link>
+                                    </Link> */}
                                     <Link 
                                         to={"admin-settings"} 
                                         className={`block px-3 py-2.5 text-sm rounded-md transition-colors ${
@@ -170,17 +181,6 @@ const AdminPanel = () => {
                                         onClick={(e) => e.stopPropagation()}
                                     >
                                         Support Panel
-                                    </Link>
-                                    <Link 
-                                        to={"partner-withdrawal-requests"} 
-                                        className={`block px-3 py-2.5 text-sm rounded-md transition-colors ${
-                                            isActive('partner-withdrawal-requests')
-                                                ? 'bg-blue-600 text-white'
-                                                : 'text-gray-400 hover:bg-slate-700 hover:text-white'
-                                        }`}
-                                        onClick={(e) => e.stopPropagation()}
-                                    >
-                                        Partner Withdrawal Requests
                                     </Link>
                                     <Link 
                                         to={"wallet-management"} 

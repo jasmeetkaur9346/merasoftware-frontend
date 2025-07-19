@@ -481,6 +481,10 @@ const SummaryApi = {
       url: `${backendDomain}/api/update-partner-customer`,
       method: "post"
      },
+     getPendingOrdersAndPayments:{
+      url: `${backendDomain}/api/get-order-payment-verification`,
+      method: "get"
+     },
     wallet : {
         balance :{
             url : `${backendDomain}/api/wallet/balance`,

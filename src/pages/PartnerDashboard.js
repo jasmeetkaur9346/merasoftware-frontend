@@ -1,7 +1,6 @@
-
 import React, { useEffect, useState, Fragment } from 'react'
 import { useSelector } from 'react-redux'
-import { FaUsers, FaMoneyBillWave, FaChartLine, FaWallet, FaPlus, FaExchangeAlt } from 'react-icons/fa'
+import { FaUsers, FaMoneyBillWave, FaChartLine, FaWallet, FaPlus, FaExchangeAlt, FaSignOutAlt } from 'react-icons/fa'
 import SummaryApi from '../common'
 import { toast } from 'react-toastify'
 import moment from 'moment'
@@ -145,7 +144,6 @@ const fetchCommissionHistory = async () => {
     setLoadingCommissions(false)
   }
 }
-
 
   // Fetch customers list using correct API endpoint
   const fetchCustomers = async () => {
@@ -370,15 +368,35 @@ const handleUpdateCustomer = async (customerId) => {
     switch (status) {
         case 'completed':
         case 'approved':
-            return 'text-green-600'
+        case 'Credited':
+            return 'bg-green-100 text-green-800'
         case 'pending':
-            return 'text-yellow-600'
+            return 'bg-yellow-100 text-yellow-800'
         case 'rejected':
-            return 'text-red-600'
+            return 'bg-red-100 text-red-800'
+        case 'Transferred':
+            return 'bg-blue-100 text-blue-800'
         default:
-            return 'text-gray-600'
+            return 'bg-gray-100 text-gray-800'
     }
 }
+
+  const getStatusText = (transaction) => {
+    if (transaction.commissionType === 'Withdrawal Request') {
+      switch (transaction.status) {
+        case 'approved':
+          return 'Transferred'
+        case 'pending':
+          return 'Transfer'
+        case 'rejected':
+          return 'Rejected'
+        default:
+          return 'Transfer'
+      }
+    } else {
+      return transaction.status === 'credited' ? 'Credited' : 'Pending'
+    }
+  }
 
   useEffect(() => {
     fetchWalletBalance()
@@ -390,319 +408,324 @@ const handleUpdateCustomer = async (customerId) => {
     }
   }, [user])
 
-  const tabs = [
+  const sidebarItems = [
     { id: 'dashboard', label: 'Dashboard', icon: FaChartLine },
-    { id: 'customers', label: 'Customer List', icon: FaUsers }
+    { id: 'customers', label: 'My Customers', icon: FaUsers }
   ]
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8 flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              Welcome back, {user?.name}!
-            </h1>
-            <p className="text-gray-600">Here's what's happening with your partnership</p>
-          </div>
-          {/* Request Transfer Button */}
-          <button
-            onClick={() => setShowWithdrawalModal(true)}
-            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition-colors shadow-md"
-          >
-            <FaExchangeAlt className="w-4 h-4" />
-            Request Transfer
+    <div className="flex min-h-screen bg-gray-50">
+      {/* Sidebar */}
+      <div className="w-64 bg-white shadow-lg">
+        <div className="p-6">
+          <h2 className="text-xl font-bold text-gray-800">Partner Portal</h2>
+        </div>
+        
+        <nav className="mt-6">
+          {sidebarItems.map((item) => {
+            const Icon = item.icon
+            return (
+              <button
+                key={item.id}
+                onClick={() => setActiveTab(item.id)}
+                className={`w-full flex items-center px-6 py-3 text-left transition-colors ${
+                  activeTab === item.id
+                    ? 'bg-blue-50 text-blue-600 border-r-4 border-blue-600'
+                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                }`}
+              >
+                <Icon className="w-5 h-5 mr-3" />
+                {item.label}
+              </button>
+            )
+          })}
+        </nav>
+
+        <div className="absolute bottom-0 w-64 p-6">
+          <button className="w-full flex items-center px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+            <FaSignOutAlt className="w-5 h-5 mr-3" />
+            Logout
           </button>
         </div>
+      </div>
 
-        {/* Navigation Tabs */}
-        <div className="mb-6">
-          <div className="border-b border-gray-200">
-            <nav className="-mb-px flex space-x-8">
-              {tabs.map((tab) => {
-                const Icon = tab.icon
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center gap-2 ${
-                      activeTab === tab.id
-                        ? 'border-blue-500 text-blue-600'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                    }`}
-                  >
-                    <Icon className="w-4 h-4" />
-                    {tab.label}
-                  </button>
-                )
-              })}
-            </nav>
-          </div>
-        </div>
-
-        {/* Dashboard Tab Content */}
-        {activeTab === 'dashboard' && (
-          <div className="space-y-8">
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {/* Current Balance */}
-              <div className="bg-white rounded-lg shadow-md p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Current Balance</p>
-                    {loadingStats ? (
-                      <div className="w-24 h-8 bg-gray-200 animate-pulse rounded mt-2"></div>
-                    ) : (
-                      <p className="text-2xl font-bold text-green-600">
-                        {formatCurrency(walletBalance)}
-                      </p>
-                    )}
-                  </div>
-                  <div className="p-3 bg-green-100 rounded-full">
-                    <FaWallet className="w-6 h-6 text-green-600" />
-                  </div>
-                </div>
-              </div>
-
-              {/* Total Commission */}
-              <div className="bg-white rounded-lg shadow-md p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Total Commission</p>
-                    {loadingCommissions ? (
-                      <div className="w-24 h-8 bg-gray-200 animate-pulse rounded mt-2"></div>
-                    ) : (
-                      <p className="text-2xl font-bold text-blue-600">
-                        {formatCurrency(totalCommissionEarned)}
-                      </p>
-                    )}
-                  </div>
-                  <div className="p-3 bg-blue-100 rounded-full">
-                    <FaMoneyBillWave className="w-6 h-6 text-blue-600" />
-                  </div>
-                </div>
-              </div>
-
-              {/* Total Customers */}
-              <div className="bg-white rounded-lg shadow-md p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Total Customers</p>
-                    {loadingCustomers ? (
-                      <div className="w-16 h-8 bg-gray-200 animate-pulse rounded mt-2"></div>
-                    ) : (
-                      <p className="text-2xl font-bold text-purple-600">{totalUsers}</p>
-                    )}
-                  </div>
-                  <div className="p-3 bg-purple-100 rounded-full">
-                    <FaUsers className="w-6 h-6 text-purple-600" />
-                  </div>
-                </div>
-              </div>
-
-              {/* Total Orders (Placeholder for now) */}
-              <div className="bg-white rounded-lg shadow-md p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">Total Orders</p>
-                    {loadingStats ? (
-                      <div className="w-16 h-8 bg-gray-200 animate-pulse rounded mt-2"></div>
-                    ) : (
-                      <p className="text-2xl font-bold text-orange-600">{totalOrders}</p>
-                    )}
-                  </div>
-                  <div className="p-3 bg-orange-100 rounded-full">
-                    <FaChartLine className="w-6 h-6 text-orange-600" />
-                  </div>
-                </div>
-              </div>
+      {/* Main Content */}
+      <div className="flex-1 overflow-hidden">
+        <div className="p-6 h-full overflow-y-auto">
+          {/* Header */}
+          <div className="flex justify-between items-start mb-8">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900 mb-2 flex items-center">
+                Welcome back, {user?.name}! 
+                <span className="text-2xl ml-2">🎯</span>
+              </h1>
+              <p className="text-gray-600">Here's what's happening with your partnership</p>
             </div>
+            {activeTab === 'dashboard' && (
+              <button
+                onClick={() => setShowWithdrawalModal(true)}
+                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg font-medium transition-colors shadow-sm"
+              >
+                <FaExchangeAlt className="w-4 h-4" />
+                Request Transfer
+              </button>
+            )}
+          </div>
 
-            {/* Recent Transactions */}
-            <div className="bg-white rounded-lg shadow-md">
-              <div className="p-6 border-b border-gray-200">
-                <h2 className="text-lg font-semibold text-gray-900">Recent Transactions</h2>
-                <p className="text-gray-600 text-sm">Your latest commission entries and withdrawal requests</p>
+          {/* Dashboard Tab Content */}
+          {activeTab === 'dashboard' && (
+            <div className="space-y-6">
+              {/* Stats Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {/* Current Balance */}
+                <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <p className="text-sm text-gray-500 font-medium mb-1">CURRENT BALANCE</p>
+                      {loadingStats ? (
+                        <div className="w-24 h-6 bg-gray-200 animate-pulse rounded"></div>
+                      ) : (
+                        <p className="text-2xl font-bold text-gray-900">
+                          {formatCurrency(walletBalance)}
+                        </p>
+                      )}
+                      <div className="flex items-center mt-1">
+                        <span className="text-xs text-green-600 font-medium">+12.5%</span>
+                      </div>
+                    </div>
+                    <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                      <FaWallet className="w-6 h-6 text-green-600" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Total Commission */}
+                <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <p className="text-sm text-gray-500 font-medium mb-1">TOTAL COMMISSION</p>
+                      {loadingCommissions ? (
+                        <div className="w-24 h-6 bg-gray-200 animate-pulse rounded"></div>
+                      ) : (
+                        <p className="text-2xl font-bold text-gray-900">
+                          {formatCurrency(totalCommissionEarned)}
+                        </p>
+                      )}
+                      <div className="flex items-center mt-1">
+                        <span className="text-xs text-green-600 font-medium">+8.2%</span>
+                      </div>
+                    </div>
+                    <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                      <FaMoneyBillWave className="w-6 h-6 text-blue-600" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Total Customers */}
+                <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <p className="text-sm text-gray-500 font-medium mb-1">TOTAL CUSTOMERS</p>
+                      {loadingCustomers ? (
+                        <div className="w-16 h-6 bg-gray-200 animate-pulse rounded"></div>
+                      ) : (
+                        <p className="text-2xl font-bold text-gray-900">{totalUsers}</p>
+                      )}
+                      <div className="flex items-center mt-1">
+                        <span className="text-xs text-green-600 font-medium">+100%</span>
+                      </div>
+                    </div>
+                    <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+                      <FaUsers className="w-6 h-6 text-purple-600" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Total Orders */}
+                <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <p className="text-sm text-gray-500 font-medium mb-1">TOTAL ORDERS</p>
+                      {loadingStats ? (
+                        <div className="w-16 h-6 bg-gray-200 animate-pulse rounded"></div>
+                      ) : (
+                        <p className="text-2xl font-bold text-gray-900">{totalOrders}</p>
+                      )}
+                      <div className="flex items-center mt-1">
+                        <span className="text-xs text-red-600 font-medium">-2.5%</span>
+                      </div>
+                    </div>
+                    <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
+                      <FaChartLine className="w-6 h-6 text-orange-600" />
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="overflow-x-auto">
-                {loadingCommissions ? (
-                  <div className="p-6">
-                    <div className="space-y-3">
+
+              {/* Recent Transactions */}
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
+                <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+                  <div>
+                    <h2 className="text-lg font-semibold text-gray-900">Recent Transactions</h2>
+                    <p className="text-gray-500 text-sm">Your latest earnings and transfers</p>
+                  </div>
+                  <div className="w-6 h-6 text-gray-400">
+                    🔔
+                  </div>
+                </div>
+                
+                <div className="p-6">
+                  {loadingCommissions ? (
+                    <div className="space-y-4">
                       {[1, 2, 3].map(i => (
-                        <div key={i} className="flex space-x-4">
-                          <div className="w-32 h-4 bg-gray-200 animate-pulse rounded"></div>
-                          <div className="w-24 h-4 bg-gray-200 animate-pulse rounded"></div>
-                          <div className="w-32 h-4 bg-gray-200 animate-pulse rounded"></div>
+                        <div key={i} className="flex items-center space-x-4">
+                          <div className="w-10 h-10 bg-gray-200 animate-pulse rounded-full"></div>
+                          <div className="flex-1">
+                            <div className="w-40 h-4 bg-gray-200 animate-pulse rounded mb-2"></div>
+                            <div className="w-24 h-3 bg-gray-200 animate-pulse rounded"></div>
+                          </div>
                           <div className="w-20 h-4 bg-gray-200 animate-pulse rounded"></div>
-                          <div className="w-24 h-4 bg-gray-200 animate-pulse rounded"></div>
                         </div>
                       ))}
                     </div>
-                  </div>
-                ) : (
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Description
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Type
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Date & Time
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Status
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Amount
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {commissionHistory.length === 0 ? (
-                        <tr>
-                          <td colSpan="5" className="px-6 py-4 text-center text-gray-500">
-                            No recent transactions found
-                          </td>
-                        </tr>
-                      ) : (
-                        commissionHistory.map((transaction, index) => (
-                          <tr 
-                            key={transaction._id || index} 
-                            className="hover:bg-gray-50 cursor-pointer transition-colors duration-200"
-                            onClick={() => {
-                                setSelectedTransactionDetail(transaction)
-                                setShowTransactionDetailModal(true)
-                            }}
+                  ) : commissionHistory.length === 0 ? (
+                    <div className="text-center py-8">
+                      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <FaMoneyBillWave className="w-8 h-8 text-gray-400" />
+                      </div>
+                      <p className="text-gray-500">No recent transactions found</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {commissionHistory.map((transaction, index) => (
+                        <div 
+                          key={transaction._id || index}
+                          className="flex items-center justify-between p-4 hover:bg-gray-50 rounded-xl cursor-pointer transition-colors"
+                          onClick={() => {
+                            setSelectedTransactionDetail(transaction)
+                            setShowTransactionDetailModal(true)
+                          }}
                         >
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                              {transaction.commissionType === 'Withdrawal Request' ? 'Admin Transfer' : transaction.customerName || transaction.customerDetails?.name || transaction.customerId?.name || 'N/A'}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              {formatCommissionType(transaction.commissionType)}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              {moment(transaction.createdAt).format('MMM DD, YYYY hh:mm A')}
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-    transaction.status === 'credited' ? 'bg-green-100 text-green-800' :
-    transaction.status === 'approved' ? 'bg-green-100 text-green-800' :  // ✅ Added
-    transaction.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-    transaction.status === 'rejected' ? 'bg-red-100 text-red-800' :      // ✅ Added
-    'bg-gray-100 text-gray-800'
-  }`}>
-    {transaction.status === 'credited' ? 'Credited' : 
-     transaction.status === 'approved' ? 'Approved' :     // ✅ Added
-     transaction.status === 'pending' ? 'Pending' : 
-     transaction.status === 'rejected' ? 'Rejected' :     // ✅ Added
-     'N/A'}
-  </span>
-</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                              <div className="flex items-center">
-                                {transaction.commissionType === 'Withdrawal Request' ? (
-                                  <FaExchangeAlt className="w-4 h-4 text-red-600 mr-2" />
-                                ) : (
-                                  <FaMoneyBillWave className="w-4 h-4 text-green-600 mr-2" />
-                                )}
-                                <span className={`${transaction.commissionType === 'Withdrawal Request' ? 'text-red-600' : 'text-green-600'} font-medium`}>
-                                  {formatCurrency(transaction.commissionAmount)}
+                          <div className="flex items-center space-x-4">
+                            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                              transaction.commissionType === 'Withdrawal Request' ? 'bg-red-100' : 'bg-green-100'
+                            }`}>
+                              {transaction.commissionType === 'Withdrawal Request' ? 
+                                <span className="text-lg">↗️</span> : 
+                                <span className="text-lg">↗️</span>
+                              }
+                            </div>
+                            <div>
+                              <p className="font-medium text-gray-900">
+                                {transaction.commissionType === 'Withdrawal Request' 
+                                  ? 'Money Transfer Request' 
+                                  : `${transaction.customerName || 'Customer'} purchased ${transaction.serviceName || 'Service'}`
+                                }
+                              </p>
+                              <div className="flex items-center space-x-2 text-sm text-gray-500">
+                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(transaction.status)}`}>
+                                  {getStatusText(transaction)}
                                 </span>
+                                <span>•</span>
+                                <span>{moment(transaction.createdAt).format('MMM DD, YYYY at hh:mm A')}</span>
                               </div>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className={`font-bold text-lg ${
+                              transaction.commissionType === 'Withdrawal Request' ? 'text-red-600' : 'text-green-600'
+                            }`}>
+                              {transaction.commissionType === 'Withdrawal Request' ? '-' : '+'}
+                              {formatCurrency(Math.abs(transaction.commissionAmount))}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Customer List Tab Content */}
+          {activeTab === 'customers' && (
+            <div className="space-y-6">
+              {/* Add New Customer Button */}
+              <div className="flex justify-between items-center">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">Customer List</h2>
+                  <p className="text-gray-600">Manage your referred customers</p>
+                </div>
+                <button
+                  onClick={() => setOpenAddCustomerModal(true)}
+                  className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
+                >
+                  <FaPlus className="w-4 h-4" />
+                  Add New Customer
+                </button>
+              </div>
+
+              {/* Customers Table */}
+              <div className="bg-white rounded-lg shadow-md">
+                <div className="overflow-x-auto">
+                  {loadingCustomers ? (
+                    <div className="p-6">
+                      <div className="space-y-3">
+                        {[1, 2, 3, 4, 5].map(i => (
+                          <div key={i} className="flex space-x-4">
+                            <div className="w-32 h-4 bg-gray-200 animate-pulse rounded"></div>
+                            <div className="w-48 h-4 bg-gray-200 animate-pulse rounded"></div>
+                            <div className="w-32 h-4 bg-gray-200 animate-pulse rounded"></div>
+                            <div className="w-32 h-4 bg-gray-200 animate-pulse rounded"></div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Name
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Email
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Mobile
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Joined Date
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Status
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {customers.length === 0 ? (
+                          <tr>
+                            <td colSpan="5" className="px-6 py-4 text-center text-gray-500">
+                              No customers found
                             </td>
                           </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Customer List Tab Content */}
-        {activeTab === 'customers' && (
-          <div className="space-y-6">
-            {/* Add New Customer Button */}
-            <div className="flex justify-between items-center">
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900">Customer List</h2>
-                <p className="text-gray-600">Manage your referred customers</p>
-              </div>
-              <button
-                onClick={() => setOpenAddCustomerModal(true)}
-                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors"
-              >
-                <FaPlus className="w-4 h-4" />
-                Add New Customer
-              </button>
-            </div>
-
-            {/* Customers Table */}
-            <div className="bg-white rounded-lg shadow-md">
-              <div className="overflow-x-auto">
-                {loadingCustomers ? (
-                  <div className="p-6">
-                    <div className="space-y-3">
-                      {[1, 2, 3, 4, 5].map(i => (
-                        <div key={i} className="flex space-x-4">
-                          <div className="w-32 h-4 bg-gray-200 animate-pulse rounded"></div>
-                          <div className="w-48 h-4 bg-gray-200 animate-pulse rounded"></div>
-                          <div className="w-32 h-4 bg-gray-200 animate-pulse rounded"></div>
-                          <div className="w-32 h-4 bg-gray-200 animate-pulse rounded"></div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ) : (
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Name
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Email
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Mobile
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Joined Date
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Status
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {customers.length === 0 ? (
-                        <tr>
-                          <td colSpan="5" className="px-6 py-4 text-center text-gray-500">
-                            No customers found
-                          </td>
-                        </tr>
-                      ) : (
-      customers.map((customer) => (
-        <React.Fragment key={customer._id}>
-          {/* Main Row */}
-          <tr 
-            className="hover:bg-gray-50 cursor-pointer transition-colors"
-            onClick={() => setExpandedCustomer(expandedCustomer === customer._id ? null : customer._id)}
-          >
-            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-              <div className="flex items-center">
-                <span className="mr-2">
-                  {expandedCustomer === customer._id ? '▼' : '▶'}
-                </span>
-                {customer.name}
-              </div>
-            </td>
+                        ) : (
+        customers.map((customer) => (
+          <React.Fragment key={customer._id}>
+            {/* Main Row */}
+            <tr 
+              className="hover:bg-gray-50 cursor-pointer transition-colors"
+              onClick={() => setExpandedCustomer(expandedCustomer === customer._id ? null : customer._id)}
+            >
+              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                <div className="flex items-center">
+                  <span className="mr-2">
+                    {expandedCustomer === customer._id ? '▼' : '▶'}
+                  </span>
+                  {customer.name}
+                </div>
+              </td>
             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
               {customer.email}
             </td>
@@ -1206,6 +1229,7 @@ const handleUpdateCustomer = async (customerId) => {
 )}
 
       </div>
+    </div>
     </div>
   )
 }

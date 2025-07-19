@@ -324,7 +324,7 @@ useEffect(() => {
          position='top-center' 
          autoClose={1000}
          />
-        <Header activeProject={activeProject} />
+        {user?.role !== 'partner' && <Header activeProject={activeProject} />}
         <main className='min-h-[calc(100vh-120px)] pt-0 md:pt-0'>
        <Outlet/>
         </main>

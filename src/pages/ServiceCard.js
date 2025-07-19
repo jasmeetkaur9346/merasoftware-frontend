@@ -1,244 +1,456 @@
 import React, { useState } from 'react';
-import { CheckCircle, XCircle, User, CreditCard, Building, DollarSign, Clock } from 'lucide-react';
+import { 
+  BarChart3, 
+  Users, 
+  Settings, 
+  User, 
+  LogOut, 
+  Menu, 
+  X, 
+  ArrowUpRight,
+  ArrowDownLeft,
+  Clock,
+  CheckCircle,
+  Wallet,
+  DollarSign,
+  TrendingUp,
+  Package,
+  Home,
+  Bell
+} from 'lucide-react';
 
-const AdminMoneyTransferPanel = () => {
-  const [selectedRequest, setSelectedRequest] = useState(null);
-  const [showPaymentForm, setShowPaymentForm] = useState(false);
-  const [paymentMode, setPaymentMode] = useState('');
-  const [transactionId, setTransactionId] = useState('');
+const Dashboard = () => {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('dashboard');
 
-  // Sample money transfer requests
-  const [requests, setRequests] = useState([
+  const stats = [
+    {
+      title: 'Current Balance',
+      value: '₹1,749.85',
+      icon: Wallet,
+      bgColor: 'bg-gradient-to-br from-emerald-500 to-emerald-600',
+      change: '+12.5%'
+    },
+    {
+      title: 'Total Commission',
+      value: '₹1,749.85',
+      icon: DollarSign,
+      bgColor: 'bg-gradient-to-br from-blue-500 to-blue-600',
+      change: '+8.2%'
+    },
+    {
+      title: 'Total Customers',
+      value: '1',
+      icon: Users,
+      bgColor: 'bg-gradient-to-br from-purple-500 to-purple-600',
+      change: '+100%'
+    },
+    {
+      title: 'Total Orders',
+      value: '4',
+      icon: Package,
+      bgColor: 'bg-gradient-to-br from-orange-500 to-orange-600',
+      change: '+25%'
+    }
+  ];
+
+  const transactions = [
     {
       id: 1,
-      partnerName: "John Smith",
-      amount: 15000,
-      bankAccount: "HDFC Bank - ***1234",
-      requestDate: "2024-07-15",
-      status: "pending"
+      description: 'Mini purchased iPhone 14 Pro',
+      customerName: 'Mini',
+      type: 'Repeat Purchase',
+      date: 'Jul 19, 2025',
+      time: '04:07 PM',
+      status: 'credited',
+      amount: 449.95,
+      isCredit: true,
+      category: 'repeat'
     },
     {
       id: 2,
-      partnerName: "Sarah Johnson",
-      amount: 25000,
-      bankAccount: "ICICI Bank - ***5678",
-      requestDate: "2024-07-14",
-      status: "pending"
+      description: 'Mini purchased MacBook Air',
+      customerName: 'Mini',
+      type: 'First Purchase',
+      date: 'Jul 19, 2025',
+      time: '04:00 PM',
+      status: 'credited',
+      amount: 519.90,
+      isCredit: true,
+      category: 'first'
     },
     {
       id: 3,
-      partnerName: "Mike Wilson",
-      amount: 8500,
-      bankAccount: "SBI Bank - ***9012",
-      requestDate: "2024-07-13",
-      status: "pending"
+      description: 'Money Transfer Request',
+      customerName: null,
+      type: 'Transfer',
+      date: 'Jul 19, 2025',
+      time: '03:29 PM',
+      status: 'transferred',
+      amount: 390.00,
+      isCredit: false,
+      category: 'transfer'
+    },
+    {
+      id: 4,
+      description: 'Mini purchased AirPods Pro',
+      customerName: 'Mini',
+      type: 'First Purchase',
+      date: 'Jul 19, 2025',
+      time: '03:25 PM',
+      status: 'pending',
+      amount: 390.00,
+      isCredit: true,
+      category: 'first'
     }
-  ]);
+  ];
 
-  const handleApprove = (request) => {
-    setSelectedRequest(request);
-    setShowPaymentForm(true);
-  };
-
-  const handleReject = (requestId) => {
-    setRequests(requests.map(req => 
-      req.id === requestId ? { ...req, status: 'rejected' } : req
-    ));
-  };
-
-  const handlePaymentComplete = () => {
-    if (paymentMode && transactionId) {
-      setRequests(requests.map(req => 
-        req.id === selectedRequest.id ? { ...req, status: 'completed' } : req
-      ));
-      setShowPaymentForm(false);
-      setSelectedRequest(null);
-      setPaymentMode('');
-      setTransactionId('');
-    }
-  };
-
-  const getStatusColor = (status) => {
-    switch(status) {
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'completed': return 'bg-green-100 text-green-800';
-      case 'rejected': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+  const getStatusStyle = (status) => {
+    switch (status) {
+      case 'credited':
+        return 'bg-emerald-50 text-emerald-700 border border-emerald-200';
+      case 'transferred':
+        return 'bg-red-50 text-red-700 border border-red-200';
+      case 'pending':
+        return 'bg-amber-50 text-amber-700 border border-amber-200';
+      default:
+        return 'bg-gray-50 text-gray-700 border border-gray-200';
     }
   };
 
-  return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <DollarSign className="w-6 h-6 text-blue-600" />
-            Money Transfer Requests - Admin Panel
-          </h1>
-          <p className="text-gray-600 mt-2">Manage partner money transfer requests</p>
-        </div>
+  const getCategoryStyle = (category) => {
+    switch (category) {
+      case 'first':
+        return 'bg-emerald-100 text-emerald-700';
+      case 'repeat':
+        return 'bg-blue-100 text-blue-700';
+      case 'transfer':
+        return 'bg-red-100 text-red-700';
+      default:
+        return 'bg-gray-100 text-gray-700';
+    }
+  };
 
-        {/* Requests List */}
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-semibold text-gray-900">Pending Requests</h2>
+  const sidebarItems = [
+    { id: 'dashboard', name: 'Dashboard', icon: Home },
+    { id: 'customers', name: 'My Customers', icon: Users },
+    // { id: 'settings', name: 'Settings', icon: Settings },
+    // { id: 'profile', name: 'Profile', icon: User }
+  ];
+
+  const renderContent = () => {
+    if (activeTab === 'customers') {
+      return (
+        <div className="p-6 max-w-7xl mx-auto">
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">My Customers</h2>
+            <p className="text-gray-600">Manage your customer relationships</p>
           </div>
-          
-          <div className="divide-y divide-gray-200">
-            {requests.map((request) => (
-              <div key={request.id} className="p-6 hover:bg-gray-50 transition-colors">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                      {/* Partner Name */}
-                      <div className="flex items-center gap-3">
-                        <User className="w-5 h-5 text-gray-400" />
-                        <div>
-                          <p className="text-sm text-gray-500">Partner Name</p>
-                          <p className="font-medium text-gray-900">{request.partnerName}</p>
-                        </div>
-                      </div>
-
-                      {/* Amount */}
-                      <div className="flex items-center gap-3">
-                        <DollarSign className="w-5 h-5 text-gray-400" />
-                        <div>
-                          <p className="text-sm text-gray-500">Amount</p>
-                          <p className="font-medium text-gray-900">₹{request.amount.toLocaleString()}</p>
-                        </div>
-                      </div>
-
-                      {/* Bank Account */}
-                      <div className="flex items-center gap-3">
-                        <Building className="w-5 h-5 text-gray-400" />
-                        <div>
-                          <p className="text-sm text-gray-500">Bank Account</p>
-                          <p className="font-medium text-gray-900">{request.bankAccount}</p>
-                        </div>
-                      </div>
-
-                      {/* Request Date */}
-                      <div className="flex items-center gap-3">
-                        <Clock className="w-5 h-5 text-gray-400" />
-                        <div>
-                          <p className="text-sm text-gray-500">Request Date</p>
-                          <p className="font-medium text-gray-900">{request.requestDate}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Status and Actions */}
-                  <div className="flex items-center gap-3 ml-6">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(request.status)}`}>
-                      {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
-                    </span>
-                    
-                    {request.status === 'pending' && (
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleApprove(request)}
-                          className="flex items-center gap-1 px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
-                        >
-                          <CheckCircle className="w-4 h-4" />
-                          Approve
-                        </button>
-                        <button
-                          onClick={() => handleReject(request.id)}
-                          className="flex items-center gap-1 px-3 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm"
-                        >
-                          <XCircle className="w-4 h-4" />
-                          Reject
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
+          <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 text-center">
+            <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <Users className="h-8 w-8 text-white" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">No customers yet</h3>
+            <p className="text-gray-500 mb-6">Start building your customer network</p>
+            <button className="bg-gradient-to-r from-purple-500 to-purple-600 text-white px-6 py-3 rounded-xl font-medium hover:from-purple-600 hover:to-purple-700 transition-all duration-200">
+              Add New Customers
+            </button>
           </div>
         </div>
+      );
+    }
 
-        {/* Payment Completion Form Modal */}
-        {showPaymentForm && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Complete Payment for {selectedRequest?.partnerName}
-              </h3>
-              
+    if (activeTab === 'settings') {
+      return (
+        <div className="p-6 max-w-7xl mx-auto">
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Settings</h2>
+            <p className="text-gray-600">Customize your account preferences</p>
+          </div>
+          <div className="grid gap-6">
+            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Account Settings</h3>
               <div className="space-y-4">
-                {/* Request Summary */}
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm text-gray-600">Amount:</span>
-                    <span className="font-medium">₹{selectedRequest?.amount.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Bank Account:</span>
-                    <span className="font-medium">{selectedRequest?.bankAccount}</span>
-                  </div>
-                </div>
-
-                {/* Payment Mode Dropdown */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Payment Mode
-                  </label>
-                  <select
-                    value={paymentMode}
-                    onChange={(e) => setPaymentMode(e.target.value)}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    <option value="">Select Payment Mode</option>
-                    <option value="UPI">UPI</option>
-                    <option value="IMPS">IMPS</option>
-                  </select>
-                </div>
-
-                {/* Transaction ID Input */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Transaction ID
-                  </label>
-                  <input
-                    type="text"
-                    value={transactionId}
-                    onChange={(e) => setTransactionId(e.target.value)}
-                    placeholder="Enter transaction ID"
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-
-                {/* Action Buttons */}
-                <div className="flex gap-3 pt-4">
-                  <button
-                    onClick={() => {
-                      setShowPaymentForm(false);
-                      setSelectedRequest(null);
-                      setPaymentMode('');
-                      setTransactionId('');
-                    }}
-                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                  >
-                    Cancel
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                  <span className="font-medium text-gray-900">Email Notifications</span>
+                  <button className="bg-blue-500 relative inline-flex h-6 w-11 items-center rounded-full transition-colors">
+                    <span className="translate-x-6 inline-block h-4 w-4 transform rounded-full bg-white transition-transform" />
                   </button>
-                  <button
-                    onClick={handlePaymentComplete}
-                    disabled={!paymentMode || !transactionId}
-                    className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
-                  >
-                    Complete Payment
+                </div>
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                  <span className="font-medium text-gray-900">SMS Alerts</span>
+                  <button className="bg-gray-300 relative inline-flex h-6 w-11 items-center rounded-full transition-colors">
+                    <span className="translate-x-1 inline-block h-4 w-4 transform rounded-full bg-white transition-transform" />
                   </button>
                 </div>
               </div>
             </div>
           </div>
+        </div>
+      );
+    }
+
+    if (activeTab === 'profile') {
+      return (
+        <div className="p-6 max-w-7xl mx-auto">
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Profile</h2>
+            <p className="text-gray-600">Manage your profile information</p>
+          </div>
+          <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
+            <div className="flex items-center space-x-6 mb-8">
+              <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center text-white text-2xl font-bold shadow-lg">
+                AS
+              </div>
+              <div>
+                <h3 className="text-2xl font-bold text-gray-900">Arveet Singh</h3>
+                <p className="text-blue-600 font-medium">Premium Partner</p>
+                <p className="text-gray-500">Member since Jul 2025</p>
+              </div>
+            </div>
+            <div className="border-t pt-6">
+              <button className="flex items-center space-x-3 text-red-600 hover:text-red-700 font-medium transition-colors">
+                <LogOut className="w-5 h-5" />
+                <span>Logout</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="p-6 max-w-7xl mx-auto space-y-8">
+        {/* Stats Grid */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+          {stats.map((stat, index) => {
+            const Icon = stat.icon;
+            return (
+              <div key={index} className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 relative overflow-hidden">
+                <div className="relative z-10">
+                  <div className={`w-12 h-12 ${stat.bgColor} rounded-xl flex items-center justify-center mb-4 shadow-lg`}>
+                    <Icon className="h-6 w-6 text-white" />
+                  </div>
+                  <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">{stat.title}</h3>
+                  <p className="text-2xl lg:text-3xl font-bold text-gray-900 mb-1">{stat.value}</p>
+                  <div className="flex items-center space-x-1">
+                    <TrendingUp className="h-3 w-3 text-emerald-500" />
+                    <span className="text-xs font-medium text-emerald-600">{stat.change}</span>
+                  </div>
+                </div>
+                <div className="absolute -top-6 -right-6 w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full opacity-20" />
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Recent Transactions */}
+        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+          <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-xl font-bold text-gray-900">Recent Transactions</h3>
+                <p className="text-gray-600 text-sm">Your latest earnings and transfers</p>
+              </div>
+              <Bell className="h-5 w-5 text-gray-400" />
+            </div>
+          </div>
+          
+          <div className="divide-y divide-gray-100">
+            {transactions.map((transaction) => (
+              <div key={transaction.id} className="p-6 hover:bg-gray-50 transition-colors duration-150">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-start space-x-4 flex-1">
+                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                      transaction.isCredit 
+                        ? 'bg-emerald-100 text-emerald-600' 
+                        : 'bg-red-100 text-red-600'
+                    }`}>
+                      {transaction.isCredit ? (
+                        <ArrowUpRight className="w-6 h-6" />
+                      ) : (
+                        <ArrowDownLeft className="w-6 h-6" />
+                      )}
+                    </div>
+                    
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-semibold text-gray-900 mb-1">{transaction.description}</h4>
+                      <div className="flex items-center space-x-2 mb-2">
+                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${getCategoryStyle(transaction.category)}`}>
+                          {transaction.type}
+                        </span>
+                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusStyle(transaction.status)}`}>
+                          {transaction.status === 'credited' && <CheckCircle className="w-3 h-3 inline mr-1" />}
+                          {transaction.status === 'pending' && <Clock className="w-3 h-3 inline mr-1" />}
+                          {transaction.status.charAt(0).toUpperCase() + transaction.status.slice(1)}
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-500">{transaction.date} at {transaction.time}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="text-right ml-4">
+                    <div className={`text-xl font-bold ${
+                      transaction.isCredit ? 'text-emerald-600' : 'text-red-600'
+                    }`}>
+                      {transaction.isCredit ? '+' : '-'}₹{transaction.amount}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          <div className="p-6 bg-gray-50 border-t border-gray-100">
+            <button className="w-full text-center text-blue-600 font-medium hover:text-blue-700 transition-colors">
+              View All Transactions
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
+      {/* Fixed Header */}
+      <div className="bg-white/80 backdrop-blur-xl shadow-lg border-b border-gray-200/50 sticky top-0 z-40">
+        <div className="flex items-center justify-between p-4 lg:p-6 max-w-7xl mx-auto">
+          <div className="flex items-center space-x-4">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="lg:hidden p-2 rounded-xl hover:bg-gray-100 transition-colors"
+            >
+              <Menu className="w-6 h-6 text-gray-700" />
+            </button>
+            <div>
+              <h1 className="text-xl lg:text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                Welcome back, Arveet Singh! 👋
+              </h1>
+              <p className="text-sm text-gray-600 mt-1">Here's what's happening with your partnership</p>
+            </div>
+          </div>
+          <button className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-4 lg:px-6 py-2 lg:py-3 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 shadow-lg">
+            <ArrowUpRight className="w-4 h-4" />
+            <span className="hidden sm:inline">Request Transfer</span>
+            <span className="sm:hidden">Transfer</span>
+          </button>
+        </div>
+      </div>
+
+      <div className="flex">
+        {/* Desktop Sidebar */}
+        <div className="hidden lg:flex lg:flex-col lg:w-72 lg:fixed lg:inset-y-0 lg:pt-20">
+          <div className="flex flex-col flex-1 min-h-0 bg-white/50 backdrop-blur-xl border-r border-gray-200/50 m-4 rounded-2xl shadow-xl">
+            <div className="flex flex-col flex-1 pt-8 pb-4">
+              <nav className="flex-1 px-6 space-y-2">
+                {sidebarItems.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => setActiveTab(item.id)}
+                      className={`w-full text-left group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 ${
+                        activeTab === item.id
+                          ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg transform scale-105'
+                          : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                      }`}
+                    >
+                      <Icon className="mr-3 h-5 w-5" />
+                      {item.name}
+                    </button>
+                  );
+                })}
+                <div className="pt-4 border-t border-gray-200 mt-4">
+                  <button className="w-full text-left group flex items-center px-4 py-3 text-sm font-medium rounded-xl text-red-600 hover:bg-red-50 transition-all duration-200">
+                    <LogOut className="mr-3 h-5 w-5" />
+                    Logout
+                  </button>
+                </div>
+              </nav>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Sidebar */}
+        {sidebarOpen && (
+          <div className="lg:hidden fixed inset-0 z-50 flex">
+            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
+            <div className="relative flex flex-col flex-1 max-w-xs w-full bg-white rounded-r-2xl shadow-2xl">
+              <div className="absolute top-0 right-0 -mr-12 pt-4">
+                <button
+                  onClick={() => setSidebarOpen(false)}
+                  className="ml-1 flex items-center justify-center h-12 w-12 rounded-full bg-white/10 backdrop-blur-sm text-white"
+                >
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+              <div className="flex-1 h-0 pt-8 pb-4 overflow-y-auto">
+                <nav className="px-6 space-y-2">
+                  {sidebarItems.map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => {
+                          setActiveTab(item.id);
+                          setSidebarOpen(false);
+                        }}
+                        className={`w-full text-left group flex items-center px-4 py-3 text-base font-medium rounded-xl transition-all duration-200 ${
+                          activeTab === item.id
+                            ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg'
+                            : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                        }`}
+                      >
+                        <Icon className="mr-4 h-6 w-6" />
+                        {item.name}
+                      </button>
+                    );
+                  })}
+                  <div className="pt-4 border-t border-gray-200 mt-4">
+                    <button className="w-full text-left group flex items-center px-4 py-3 text-base font-medium rounded-xl text-red-600 hover:bg-red-50 transition-all duration-200">
+                      <LogOut className="mr-4 h-6 w-6" />
+                      Logout
+                    </button>
+                  </div>
+                </nav>
+              </div>
+            </div>
+          </div>
         )}
+
+        {/* Main Content */}
+        <div className="lg:pl-80 flex flex-col flex-1">
+          <main className="flex-1 pt-20 lg:pt-0 pb-24 lg:pb-8">
+            {renderContent()}
+          </main>
+        </div>
+      </div>
+
+      {/* Mobile Bottom Navigation */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-t border-gray-200/50 px-2 py-2 z-30 shadow-2xl">
+        <div className="flex justify-around items-center max-w-md mx-auto">
+          {sidebarItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <button
+                key={item.id}
+                onClick={() => setActiveTab(item.id)}
+                className={`flex flex-col items-center space-y-1 p-3 rounded-xl transition-all duration-200 ${
+                  activeTab === item.id 
+                    ? 'bg-gradient-to-t from-blue-500 to-blue-600 text-white shadow-lg transform -translate-y-1' 
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                }`}
+              >
+                <Icon className="h-5 w-5" />
+                <span className="text-xs font-medium">{item.name === 'My Customers' ? 'Customers' : item.name}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
 };
 
-export default AdminMoneyTransferPanel;
+export default Dashboard;
