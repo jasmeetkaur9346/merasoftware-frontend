@@ -328,7 +328,7 @@ useEffect(() => {
         <main className='min-h-[calc(100vh-120px)] pt-0 md:pt-0'>
        <Outlet/>
         </main>
-        <Footer />
+        {user?.role !== 'partner' && <Footer />}
       </Context.Provider>
   )
 }

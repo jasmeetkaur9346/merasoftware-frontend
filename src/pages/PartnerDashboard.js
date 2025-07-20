@@ -1,14 +1,27 @@
 import React, { useEffect, useState, Fragment } from 'react'
-import { useSelector } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
 import { FaUsers, FaMoneyBillWave, FaChartLine, FaWallet, FaPlus, FaExchangeAlt, FaSignOutAlt } from 'react-icons/fa'
 import SummaryApi from '../common'
 import { toast } from 'react-toastify'
 import moment from 'moment'
+import { ArrowUpRight, ArrowDownLeft, Bell, CheckCircle, Clock, TrendingUp, Menu, X, Home, LogOut, Users } from 'lucide-react';
+import { setUserDetails, logout, updateUserRole } from '../store/userSlice';
+import ROLE from '../common/role'; 
+import CookieManager from '../utils/cookieManager'; 
+import StorageService from '../utils/storageService'; 
+import TriangleMazeLoader from '../components/TriangleMazeLoader'; 
+import { FaRegCircleUser } from "react-icons/fa6"; 
+import { ChevronDown, ChevronUp } from 'lucide-react'; 
+import { useNavigate } from 'react-router-dom';
 
 const PartnerDashboard = () => {
-  const user = useSelector(state => state?.user?.user)
+  const user = useSelector(state => state?.user?.user);
+  const dispatch = useDispatch(); 
+  const navigate = useNavigate(); 
   
   // States for dashboard data
+  const [roleDropdownOpen, setRoleDropdownOpen] = useState(false);
+  const [isRoleSwitching, setIsRoleSwitching] = useState(false);
   const [totalUsers, setTotalUsers] = useState(0)
   const [totalOrders, setTotalOrders] = useState(0)
   const [totalCommissionEarned, setTotalCommissionEarned] = useState(0)
@@ -19,6 +32,7 @@ const PartnerDashboard = () => {
   const [selectedTransactionDetail, setSelectedTransactionDetail] = useState(null)
   const [expandedCustomer, setExpandedCustomer] = useState(null)
   const [editingCustomer, setEditingCustomer] = useState(null)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   const [editFormData, setEditFormData] = useState({
     name: '',
     email: '',
@@ -225,6 +239,98 @@ const fetchCommissionHistory = async () => {
     }
   }
 
+    const handleRoleChange = async (newRole) => {
+    if(newRole === user.role) {
+      setRoleDropdownOpen(false);
+      return;
+    }
+    try {
+      setIsRoleSwitching(true); 
+
+      const response = await fetch(SummaryApi.userRoleSwitch.url, {
+        method: SummaryApi.userRoleSwitch.method,
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ newRole })
+      });
+      const data = await response.json();
+      if(data.success) {
+        dispatch(updateUserRole(newRole));
+        const updatedUser = { ...user, role: newRole };
+        StorageService.setUserDetails(updatedUser);
+        dispatch(setUserDetails(updatedUser));
+        toast.success("Role switched to " + newRole);
+        setRoleDropdownOpen(false);
+        CookieManager.setUserDetails({ ...user, role: newRole });
+
+        const isDetailsCompleted = user.userDetails?.isDetailsCompleted || false;
+        if (!isDetailsCompleted && newRole !== "customer") {
+          setTimeout(() => {
+            navigate("/complete-profile");
+            setIsRoleSwitching(false); 
+          }, 100);
+        } else {
+          let redirectPath = "/";
+          switch(newRole) {
+            case ROLE.ADMIN:
+              redirectPath = '/admin-panel/all-products';
+              break;
+            case ROLE.MANAGER:
+              redirectPath = '/manager-panel/dashboard';
+              break;
+            case ROLE.PARTNER:
+              redirectPath = '/partner-panel/dashboard';
+              break;
+            case ROLE.DEVELOPER:
+              redirectPath = '/developer-panel';
+              break;
+            case ROLE.CUSTOMER:
+              redirectPath = '/home';
+              break;
+          }
+          setTimeout(() => {
+            navigate(redirectPath);
+            setIsRoleSwitching(false);
+          }, 100);
+        }
+      } else {
+        toast.error(data.message || "Failed to switch role");
+        setIsRoleSwitching(false);
+      }
+    } catch (error) {
+      console.error("Error switching role:", error);
+      toast.error("Error switching role");
+      setIsRoleSwitching(false);
+    }
+    setRoleDropdownOpen(false);
+  };
+
+    useEffect(() => {
+    const handleClickOutside = (event) => {
+      // Check if the click is outside the role dropdown
+      if (roleDropdownOpen && !event.target.closest('.role-dropdown-container')) { // Add a class to your role dropdown container
+        setRoleDropdownOpen(false);
+      }
+    };
+    
+    const handleEscKey = (event) => {
+      if (event.key === 'Escape') {
+        if (roleDropdownOpen) setRoleDropdownOpen(false);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleEscKey);
+    
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscKey);
+    };
+  }, [roleDropdownOpen]); // Add roleDropdownOpen to dependency array
+
+
   // Handle customer update function
 const handleUpdateCustomer = async (customerId) => {
   if (!editFormData.name && !editFormData.email && !editFormData.phone) {
@@ -409,242 +515,484 @@ const handleUpdateCustomer = async (customerId) => {
   }, [user])
 
   const sidebarItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: FaChartLine },
+    { id: 'dashboard', label: 'Dashboard', icon: Home },
     { id: 'customers', label: 'My Customers', icon: FaUsers }
   ]
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      {/* Sidebar */}
-      <div className="w-64 bg-white shadow-lg">
-        <div className="p-6">
-          <h2 className="text-xl font-bold text-gray-800">Partner Portal</h2>
-        </div>
-        
-        <nav className="mt-6">
-          {sidebarItems.map((item) => {
-            const Icon = item.icon
-            return (
-              <button
-                key={item.id}
-                onClick={() => setActiveTab(item.id)}
-                className={`w-full flex items-center px-6 py-3 text-left transition-colors ${
-                  activeTab === item.id
-                    ? 'bg-blue-50 text-blue-600 border-r-4 border-blue-600'
-                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                }`}
-              >
-                <Icon className="w-5 h-5 mr-3" />
-                {item.label}
-              </button>
-            )
-          })}
-        </nav>
+    <>
+     {/* Add TriangleMazeLoader for role switching */}
+    {isRoleSwitching && (
+      <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+        <TriangleMazeLoader />
+      </div>
+    )}
 
-        <div className="absolute bottom-0 w-64 p-6">
-          <button className="w-full flex items-center px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
-            <FaSignOutAlt className="w-5 h-5 mr-3" />
-            Logout
-          </button>
+     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
+    {/* Fixed Header */}
+    <div className="bg-white/80 backdrop-blur-xl shadow-lg border-b border-gray-200/50 sticky top-0 z-40">
+  <div className="flex items-center justify-between p-4 lg:p-6 max-w-7xl mx-auto">
+    
+    {/* LEFT SIDE - Desktop aur Mobile ke liye alag */}
+    <div className="flex items-center space-x-4">
+      
+      {/* Desktop Left Side - Current content */}
+      <div className="hidden lg:flex items-center space-x-4">
+        <div>
+          <h1 className="text-xl lg:text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            Welcome back, {user?.name}! 👋
+          </h1>
+          <p className="text-sm text-gray-600 mt-1">Here's what's happening with your partnership</p>
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="flex-1 overflow-hidden">
-        <div className="p-6 h-full overflow-y-auto">
-          {/* Header */}
-          <div className="flex justify-between items-start mb-8">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900 mb-2 flex items-center">
-                Welcome back, {user?.name}! 
-                <span className="text-2xl ml-2">🎯</span>
-              </h1>
-              <p className="text-gray-600">Here's what's happening with your partnership</p>
-            </div>
-            {activeTab === 'dashboard' && (
-              <button
-                onClick={() => setShowWithdrawalModal(true)}
-                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg font-medium transition-colors shadow-sm"
+      {/* Mobile Left Side - Sirf Welcome Message */}
+      <div className="lg:hidden">
+        <p className="text-xl lg:text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Welcome back, {user?.name || 'Partner'}</p>
+        {/* <h2 className="text-xl lg:text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          {user?.name || 'Partner'}
+        </h2> */}
+      </div>
+      
+    </div>
+
+    {/* RIGHT SIDE - Transfer button aur wallet balance */}
+    {activeTab === 'dashboard' && (
+      <div className="flex items-center space-x-3">
+        {/* Wallet Balance Display - Desktop only */}
+        <div className="hidden lg:flex items-center space-x-2 bg-gradient-to-r from-emerald-50 to-emerald-100 px-4 py-2 rounded-xl border border-emerald-200">
+          <FaWallet className="w-4 h-4 text-emerald-600" />
+          <span className="text-sm font-semibold text-emerald-700">{formatCurrency(walletBalance)}</span>
+        </div>
+        
+        {/* Transfer Button */}
+        <button
+          onClick={() => setShowWithdrawalModal(true)}
+          className="hidden lg:flex bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-4 lg:px-6 py-2 lg:py-3 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 shadow-lg"
+        >
+          <ArrowUpRight className="w-4 h-4" />
+          <span className="hidden sm:inline">Request Transfer</span>
+          {/* <span className="sm:hidden">Transfer</span> */}
+        </button>
+      </div>
+    )}
+    
+  </div>
+</div>
+
+
+     <div className="flex">
+      {/* Desktop Sidebar */}
+<div className="hidden lg:flex lg:flex-col lg:w-72 lg:fixed lg:inset-y-0 lg:pt-20">
+  <div className="flex flex-col flex-1 min-h-0 bg-white/50 backdrop-blur-xl border-r border-gray-200/50 m-4 rounded-2xl shadow-xl">
+    <div className="flex flex-col flex-1 pt-8 pb-4">
+      {/* User Profile Section - Add this block */}
+      <div className="border-gray-200 px-4">
+        <div className="text-center mb-4">
+          {user?.profilePic ? (
+            <img 
+              src={user?.profilePic} 
+              alt={user?.name}
+              className="w-20 h-20 rounded-full mx-auto mb-3 object-cover border-4 border-white shadow-lg"
+            />
+          ) : (
+            <FaRegCircleUser className="w-20 h-20 rounded-full mx-auto mb-3 text-gray-400" />
+          )}
+          <h3 className="font-semibold text-gray-900 text-sm">{user?.name}</h3>
+          {user?.roles && user.roles.length > 1 && (
+            <div className="relative role-dropdown-container">
+              <button 
+                onClick={() => setRoleDropdownOpen(!roleDropdownOpen)}
+                className="flex items-center justify-center space-x-1 text-xs text-blue-600 font-medium mx-auto mt-1"
               >
-                <FaExchangeAlt className="w-4 h-4" />
-                Request Transfer
+                <span>{user?.role?.toUpperCase()}</span>
+                {roleDropdownOpen ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
               </button>
-            )}
+              
+              {/* Desktop Role Dropdown */}
+              {roleDropdownOpen && !isRoleSwitching && (
+                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 bg-white rounded-xl shadow-xl border border-gray-200 py-2 z-50 min-w-40">
+                  {user.roles.map((roleItem) => (
+                    <button 
+                      key={roleItem}
+                      onClick={() => handleRoleChange(roleItem)}
+                      className={`w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors ${
+                        roleItem === user.role ? 'font-bold bg-blue-100' : ''
+                      }`}
+                    >
+                      {roleItem.toUpperCase()}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <nav className="flex-1 px-6 space-y-2">
+        {sidebarItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => setActiveTab(item.id)}
+                    className={`w-full text-left group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 ${
+                      activeTab === item.id
+                        ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg transform scale-105'
+                        : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                    }`}
+                  >
+                     <Icon className="mr-3 h-5 w-5" />
+                    {item.label}
+                  </button>
+                );
+              })}
+              
+        <div className="pt-4 border-t border-gray-200 mt-4">
+          <button onClick={() => { /* Logout logic here */ }} className="w-full text-left group flex items-center px-4 py-3 text-sm font-medium rounded-xl text-red-600 hover:bg-red-50 transition-all duration-200">
+            <LogOut className="mr-3 h-5 w-5" />
+            Logout
+          </button>
+        </div>
+      </nav>
+    </div>
+  </div>
+</div>
+
+
+      {/* Mobile Sidebar */}
+{sidebarOpen && (
+  <div className="lg:hidden fixed inset-0 z-50 flex">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
+    <div className="relative flex flex-col flex-1 max-w-xs w-full bg-white rounded-r-2xl shadow-2xl">
+      <div className="absolute top-0 right-0 -mr-12 pt-4">
+        <button
+          onClick={() => setSidebarOpen(false)}
+          className="ml-1 flex items-center justify-center h-12 w-12 rounded-full bg-white/10 backdrop-blur-sm text-white"
+        >
+          <X className="h-6 w-6" />
+        </button>
+      </div>
+      <div className="flex-1 h-0 pt-8 pb-4 overflow-y-auto">
+        {/* Mobile User Profile Section - Add this block */}
+        <div className="px-6 mb-4 text-center">
+          {user?.profilePic ? (
+            <img 
+              src={user?.profilePic} 
+              alt={user?.name}
+              className="w-16 h-16 rounded-full mx-auto mb-2 object-cover border-2 border-white shadow-md"
+            />
+          ) : (
+            <FaRegCircleUser className="w-16 h-16 rounded-full mx-auto mb-2 text-gray-400" />
+          )}
+          <h3 className="font-semibold text-gray-900 text-base">{user?.name}</h3>
+          {user?.roles && user.roles.length > 1 && (
+            <div className="relative inline-block role-dropdown-container">
+              <button 
+                onClick={() => setRoleDropdownOpen(!roleDropdownOpen)}
+                className="flex items-center justify-center space-x-1 text-sm text-blue-600 font-medium mt-1"
+              >
+                <span>{user?.role?.toUpperCase()}</span>
+                {roleDropdownOpen ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+              </button>
+              
+              {/* Mobile Role Dropdown */}
+              {roleDropdownOpen && !isRoleSwitching && (
+                <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 bg-white rounded-xl shadow-xl border border-gray-200 py-2 z-50 min-w-32">
+                  {user.roles.map((roleItem) => (
+                    <button 
+                      key={roleItem}
+                      onClick={() => {
+                        handleRoleChange(roleItem);
+                        setSidebarOpen(false); // Close sidebar after selection
+                      }}
+                      className={`w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors ${
+                        roleItem === user.role ? 'font-bold bg-blue-100' : ''
+                      }`}
+                    >
+                      {roleItem.toUpperCase()}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        <nav className="px-6 space-y-2">
+          {/* ... (आपके मौजूदा मोबाइल साइडबार आइटम्स) */}
+          <div className="pt-4 border-t border-gray-200 mt-4">
+            <button onClick={() => { /* Logout logic here */ }} className="w-full text-left group flex items-center px-4 py-3 text-base font-medium rounded-xl text-red-600 hover:bg-red-50 transition-all duration-200">
+              <LogOut className="mr-4 h-6 w-6" />
+              Logout
+            </button>
           </div>
+        </nav>
+      </div>
+    </div>
+  </div>
+)}
+
+
+       {/* Main Content */}
+      <div className="lg:pl-72 flex flex-col flex-1">
+        <main className="flex-1 pt-20 lg:pt-0 pb-24 lg:pb-8">
+          <div className="p-6 max-w-7xl mx-auto">
+            {/* Header */}
+            {/* <div className="flex justify-between items-start mb-8">
+              <div>
+                <h1 className="text-xl lg:text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent flex items-center">
+                  Welcome back, {user?.name}! 👋
+                </h1>
+                <p className="text-sm text-gray-600 mt-1">Here's what's happening with your partnership</p>
+              </div>
+              {activeTab === 'dashboard' && (
+                <button
+                  onClick={() => setShowWithdrawalModal(true)}
+                  className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-4 lg:px-6 py-2 lg:py-3 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 shadow-lg"
+                >
+                  <ArrowUpRight className="w-4 h-4" />
+                  <span className="hidden sm:inline">Request Transfer</span>
+                  <span className="sm:hidden">Transfer</span>
+                </button>
+              )}
+            </div> */}
 
           {/* Dashboard Tab Content */}
           {activeTab === 'dashboard' && (
-            <div className="space-y-6">
+            <div className="space-y-8">
               {/* Stats Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
                 {/* Current Balance */}
-                <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <p className="text-sm text-gray-500 font-medium mb-1">CURRENT BALANCE</p>
-                      {loadingStats ? (
-                        <div className="w-24 h-6 bg-gray-200 animate-pulse rounded"></div>
-                      ) : (
-                        <p className="text-2xl font-bold text-gray-900">
-                          {formatCurrency(walletBalance)}
-                        </p>
-                      )}
-                      <div className="flex items-center mt-1">
-                        <span className="text-xs text-green-600 font-medium">+12.5%</span>
-                      </div>
-                    </div>
-                    <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
-                      <FaWallet className="w-6 h-6 text-green-600" />
-                    </div>
+                 {/* Current Balance */}
+              <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 relative overflow-hidden">
+                <div className="relative z-10">
+                  <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center mb-4 shadow-lg">
+                    <FaWallet className="h-6 w-6 text-white" />
+                  </div>
+                  <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">CURRENT BALANCE</h3>
+                  {loadingStats ? (
+                    <div className="w-24 h-6 bg-gray-200 animate-pulse rounded"></div>
+                  ) : (
+                    <p className="text-2xl lg:text-3xl font-bold text-gray-900 mb-1">
+                      {formatCurrency(walletBalance)}
+                    </p>
+                  )}
+                  <div className="flex items-center space-x-1">
+                    <TrendingUp className="h-3 w-3 text-emerald-500" />
+                    <span className="text-xs font-medium text-emerald-600">+12.5%</span>
                   </div>
                 </div>
+                <div className="absolute -top-6 -right-6 w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full opacity-20" />
+              </div>
 
                 {/* Total Commission */}
-                <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <p className="text-sm text-gray-500 font-medium mb-1">TOTAL COMMISSION</p>
-                      {loadingCommissions ? (
-                        <div className="w-24 h-6 bg-gray-200 animate-pulse rounded"></div>
-                      ) : (
-                        <p className="text-2xl font-bold text-gray-900">
-                          {formatCurrency(totalCommissionEarned)}
-                        </p>
-                      )}
-                      <div className="flex items-center mt-1">
-                        <span className="text-xs text-green-600 font-medium">+8.2%</span>
-                      </div>
-                    </div>
-                    <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-                      <FaMoneyBillWave className="w-6 h-6 text-blue-600" />
-                    </div>
-                  </div>
-                </div>
+                <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 relative overflow-hidden">
+      <div className="relative z-10">
+        <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mb-4 shadow-lg">
+          <FaMoneyBillWave className="h-6 w-6 text-white" />
+        </div>
+        <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">TOTAL COMMISSION</h3>
+        {loadingCommissions ? (
+          <div className="w-24 h-6 bg-gray-200 animate-pulse rounded"></div>
+        ) : (
+          <p className="text-2xl lg:text-3xl font-bold text-gray-900 mb-1">
+            {formatCurrency(totalCommissionEarned)}
+          </p>
+        )}
+        <div className="flex items-center space-x-1">
+          <TrendingUp className="h-3 w-3 text-emerald-500" />
+          <span className="text-xs font-medium text-emerald-600">+8.2%</span>
+        </div>
+      </div>
+      <div className="absolute -top-6 -right-6 w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full opacity-20" />
+            </div>
 
                 {/* Total Customers */}
-                <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <p className="text-sm text-gray-500 font-medium mb-1">TOTAL CUSTOMERS</p>
-                      {loadingCustomers ? (
-                        <div className="w-16 h-6 bg-gray-200 animate-pulse rounded"></div>
-                      ) : (
-                        <p className="text-2xl font-bold text-gray-900">{totalUsers}</p>
-                      )}
-                      <div className="flex items-center mt-1">
-                        <span className="text-xs text-green-600 font-medium">+100%</span>
-                      </div>
-                    </div>
-                    <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
-                      <FaUsers className="w-6 h-6 text-purple-600" />
-                    </div>
-                  </div>
-                </div>
+               <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 relative overflow-hidden">
+    <div className="relative z-10">
+      <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center mb-4 shadow-lg">
+        <FaUsers className="h-6 w-6 text-white" />
+      </div>
+      <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">TOTAL CUSTOMERS</h3>
+      {loadingCustomers ? (
+        <div className="w-16 h-6 bg-gray-200 animate-pulse rounded"></div>
+      ) : (
+        <p className="text-2xl lg:text-3xl font-bold text-gray-900 mb-1">{totalUsers}</p>
+      )}
+      <div className="flex items-center space-x-1">
+        <TrendingUp className="h-3 w-3 text-emerald-500" />
+        <span className="text-xs font-medium text-emerald-600">+100%</span>
+      </div>
+    </div>
+    <div className="absolute -top-6 -right-6 w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full opacity-20" />
+              </div>
 
                 {/* Total Orders */}
-                <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <p className="text-sm text-gray-500 font-medium mb-1">TOTAL ORDERS</p>
-                      {loadingStats ? (
-                        <div className="w-16 h-6 bg-gray-200 animate-pulse rounded"></div>
-                      ) : (
-                        <p className="text-2xl font-bold text-gray-900">{totalOrders}</p>
-                      )}
-                      <div className="flex items-center mt-1">
-                        <span className="text-xs text-red-600 font-medium">-2.5%</span>
-                      </div>
-                    </div>
-                    <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
-                      <FaChartLine className="w-6 h-6 text-orange-600" />
-                    </div>
-                  </div>
+                <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 relative overflow-hidden">
+    <div className="relative z-10">
+      <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center mb-4 shadow-lg">
+        <FaChartLine className="h-6 w-6 text-white" />
+      </div>
+      <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">TOTAL ORDERS</h3>
+      {loadingStats ? (
+        <div className="w-16 h-6 bg-gray-200 animate-pulse rounded"></div>
+      ) : (
+        <p className="text-2xl lg:text-3xl font-bold text-gray-900 mb-1">{totalOrders}</p>
+      )}
+      <div className="flex items-center space-x-1">
+        <TrendingUp className="h-3 w-3 text-red-500" />
+        <span className="text-xs font-medium text-red-600">-2.5%</span>
+      </div>
+    </div>
+    <div className="absolute -top-6 -right-6 w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full opacity-20" />
                 </div>
               </div>
 
-              {/* Recent Transactions */}
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100">
-                <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
-                  <div>
-                    <h2 className="text-lg font-semibold text-gray-900">Recent Transactions</h2>
-                    <p className="text-gray-500 text-sm">Your latest earnings and transfers</p>
-                  </div>
-                  <div className="w-6 h-6 text-gray-400">
-                    🔔
-                  </div>
-                </div>
-                
-                <div className="p-6">
-                  {loadingCommissions ? (
-                    <div className="space-y-4">
-                      {[1, 2, 3].map(i => (
-                        <div key={i} className="flex items-center space-x-4">
-                          <div className="w-10 h-10 bg-gray-200 animate-pulse rounded-full"></div>
-                          <div className="flex-1">
-                            <div className="w-40 h-4 bg-gray-200 animate-pulse rounded mb-2"></div>
-                            <div className="w-24 h-3 bg-gray-200 animate-pulse rounded"></div>
-                          </div>
-                          <div className="w-20 h-4 bg-gray-200 animate-pulse rounded"></div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : commissionHistory.length === 0 ? (
-                    <div className="text-center py-8">
-                      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <FaMoneyBillWave className="w-8 h-8 text-gray-400" />
-                      </div>
-                      <p className="text-gray-500">No recent transactions found</p>
-                    </div>
+           {/* Recent Transactions */}
+<div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+  <div className="p-6 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
+    <div className="flex items-center justify-between">
+      <div>
+        <h2 className="text-xl font-bold text-gray-900">Recent Transactions</h2>
+        <p className="text-gray-600 text-sm">Your latest earnings and transfers</p>
+      </div>
+      <Bell className="h-5 w-5 text-gray-400" />
+    </div>
+  </div>
+  
+  <div className="p-6">
+    {loadingCommissions ? (
+      <div className="space-y-4">
+        {[1, 2, 3].map(i => (
+          <div key={i} className="flex items-center space-x-4">
+            <div className="w-12 h-12 bg-gray-200 animate-pulse rounded-xl"></div>
+            <div className="flex-1">
+              <div className="w-40 h-4 bg-gray-200 animate-pulse rounded mb-2"></div>
+              <div className="w-24 h-3 bg-gray-200 animate-pulse rounded"></div>
+            </div>
+            <div className="w-20 h-4 bg-gray-200 animate-pulse rounded"></div>
+          </div>
+        ))}
+      </div>
+    ) : commissionHistory.length === 0 ? (
+      <div className="text-center py-8">
+        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <FaMoneyBillWave className="w-8 h-8 text-gray-400" />
+        </div>
+        <p className="text-gray-500">No recent transactions found</p>
+      </div>
+    ) : (
+      <div className="divide-y divide-gray-100">
+        {commissionHistory.map((transaction, index) => (
+          <div 
+            key={transaction._id || index}
+            className="py-6 first:pt-0 last:pb-0 hover:bg-gray-50 -mx-6 px-6 cursor-pointer transition-all duration-150"
+            onClick={() => {
+              setSelectedTransactionDetail(transaction)
+              setShowTransactionDetailModal(true)
+            }}
+          >
+            <div className="flex items-start justify-between">
+              <div className="flex items-start space-x-4 flex-1">
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                  transaction.commissionType === 'Withdrawal Request' 
+                    ? 'bg-red-100 text-red-600' 
+                    : 'bg-emerald-100 text-emerald-600'
+                }`}>
+                  {transaction.commissionType === 'Withdrawal Request' ? (
+                    <ArrowDownLeft className="w-6 h-6" />
                   ) : (
-                    <div className="space-y-4">
-                      {commissionHistory.map((transaction, index) => (
-                        <div 
-                          key={transaction._id || index}
-                          className="flex items-center justify-between p-4 hover:bg-gray-50 rounded-xl cursor-pointer transition-colors"
-                          onClick={() => {
-                            setSelectedTransactionDetail(transaction)
-                            setShowTransactionDetailModal(true)
-                          }}
-                        >
-                          <div className="flex items-center space-x-4">
-                            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                              transaction.commissionType === 'Withdrawal Request' ? 'bg-red-100' : 'bg-green-100'
-                            }`}>
-                              {transaction.commissionType === 'Withdrawal Request' ? 
-                                <span className="text-lg">↗️</span> : 
-                                <span className="text-lg">↗️</span>
-                              }
-                            </div>
-                            <div>
-                              <p className="font-medium text-gray-900">
-                                {transaction.commissionType === 'Withdrawal Request' 
-                                  ? 'Money Transfer Request' 
-                                  : `${transaction.customerName || 'Customer'} purchased ${transaction.serviceName || 'Service'}`
-                                }
-                              </p>
-                              <div className="flex items-center space-x-2 text-sm text-gray-500">
-                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(transaction.status)}`}>
-                                  {getStatusText(transaction)}
-                                </span>
-                                <span>•</span>
-                                <span>{moment(transaction.createdAt).format('MMM DD, YYYY at hh:mm A')}</span>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <p className={`font-bold text-lg ${
-                              transaction.commissionType === 'Withdrawal Request' ? 'text-red-600' : 'text-green-600'
-                            }`}>
-                              {transaction.commissionType === 'Withdrawal Request' ? '-' : '+'}
-                              {formatCurrency(Math.abs(transaction.commissionAmount))}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+                    <ArrowUpRight className="w-6 h-6" />
                   )}
                 </div>
+                
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-semibold text-gray-900 mb-1">
+                    {transaction.commissionType === 'Withdrawal Request' 
+                      ? 'Money Transfer Request' 
+                      : `${transaction.customerName || 'Customer'} purchased ${transaction.serviceName || 'Service'}`
+                    }
+                  </h4>
+                  <div className="flex items-center space-x-2 mb-2">
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                      transaction.commissionType === 'Withdrawal Request'
+                        ? 'bg-red-100 text-red-700'
+                        : transaction.commissionType === 'first_purchase'
+                          ? 'bg-emerald-100 text-emerald-700'
+                          : 'bg-blue-100 text-blue-700'
+                    }`}>
+                      {transaction.commissionType === 'Withdrawal Request' 
+                        ? 'Transfer' 
+                        : formatCommissionType(transaction.commissionType)
+                      }
+                    </span>
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium border ${
+                      transaction.commissionType === 'Withdrawal Request'
+                        ? (transaction.status === 'approved' 
+                            ? 'bg-red-50 text-red-700 border-red-200'
+                            : 'bg-amber-50 text-amber-700 border-amber-200')
+                        : (transaction.status === 'credited'
+                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                            : 'bg-amber-50 text-amber-700 border-amber-200')
+                    }`}>
+                      {/* Status Icons */}
+                      {transaction.commissionType === 'Withdrawal Request' ? (
+                        transaction.status === 'approved' ? (
+                          <>
+                            <CheckCircle className="w-3 h-3 inline mr-1" />
+                            Transferred
+                          </>
+                        ) : (
+                          <>
+                            <Clock className="w-3 h-3 inline mr-1" />
+                            Pending
+                          </>
+                        )
+                      ) : (
+                        transaction.status === 'credited' ? (
+                          <>
+                            <CheckCircle className="w-3 h-3 inline mr-1" />
+                            Credited
+                          </>
+                        ) : (
+                          <>
+                            <Clock className="w-3 h-3 inline mr-1" />
+                            Pending
+                          </>
+                        )
+                      )}
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-500">{moment(transaction.createdAt).format('MMM DD, YYYY')} at {moment(transaction.createdAt).format('hh:mm A')}</p>
+                </div>
               </div>
+              
+              <div className="text-right ml-4">
+                <div className={`text-xl font-bold ${
+                  transaction.commissionType === 'Withdrawal Request' ? 'text-red-600' : 'text-emerald-600'
+                }`}>
+                  {transaction.commissionType === 'Withdrawal Request' ? '-' : '+'}
+                  ₹{Math.floor(Math.abs(transaction.commissionAmount))}
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    )}
+  </div>
+  
+  {commissionHistory.length > 0 && (
+    <div className="p-6 bg-gray-50 border-t border-gray-100">
+      <button className="w-full text-center text-blue-600 font-medium hover:text-blue-700 transition-colors">
+        View All Transactions
+      </button>
+    </div>
+  )}
+</div>
+
             </div>
           )}
 
@@ -794,6 +1142,90 @@ const handleUpdateCustomer = async (customerId) => {
             </div>
           </div>
         )}
+        </div>
+        </main>
+      </div>
+    </div>
+
+     {/* Updated Mobile Bottom Navigation */}
+<div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-gray-200/50 z-50">
+  <div className="flex justify-around items-center px-2 py-3">
+    
+    {/* Dashboard */}
+    <button
+      onClick={() => setActiveTab('dashboard')}
+      className={`flex flex-col items-center space-y-1 px-3 py-2 rounded-lg transition-all duration-200 ${
+        activeTab === 'dashboard' 
+          ? 'text-blue-600' 
+          : 'text-gray-500'
+      }`}
+    >
+      <Home className="w-6 h-6" />
+      <span className="text-xs font-medium">Dashboard</span>
+    </button>
+
+    {/* Customers */}
+    <button
+      onClick={() => setActiveTab('customers')}
+      className={`flex flex-col items-center space-y-1 px-3 py-2 rounded-lg transition-all duration-200 ${
+        activeTab === 'customers' 
+          ? 'text-blue-600' 
+          : 'text-gray-500'
+      }`}
+    >
+      <Users className="w-6 h-6" />
+      <span className="text-xs font-medium">Customers</span>
+    </button>
+
+    {/* Transfer - Center Blue Circle Button (jaise image mein explore hai) */}
+    <button
+      onClick={() => setShowWithdrawalModal(true)}
+      className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4 rounded-full shadow-lg transition-transform duration-200 hover:scale-105"
+    >
+      <ArrowUpRight className="w-6 h-6" />
+    </button>
+
+    {/* Wallet Amount */}
+    <button
+  onClick={() => setActiveTab('analytics')}
+  className={`flex flex-col items-center space-y-1 px-3 py-2 rounded-lg transition-all duration-200 ${
+    activeTab === 'analytics' 
+      ? 'text-blue-600' 
+      : 'text-gray-500'
+  }`}
+>
+  <FaWallet className="w-5 h-5" />
+  <span className="text-xs font-medium">
+    {walletBalance ? formatCurrency(walletBalance) : '₹0'}
+  </span>
+</button>
+
+    {/* Profile */}
+    <button
+      onClick={() => setActiveTab('profile')}
+      className={`flex flex-col items-center space-y-1 px-2 py-2 rounded-lg transition-all duration-200 ${
+        activeTab === 'profile' 
+          ? 'text-blue-600' 
+          : 'text-gray-500'
+      }`}
+    >
+      {user?.profilePic ? (
+        <img 
+          src={user?.profilePic} 
+          alt={user?.name}
+          className="w-6 h-6 rounded-full object-cover border border-gray-300"
+        />
+      ) : (
+        <FaRegCircleUser className="w-6 h-6" />
+      )}
+      <span className="text-xs font-medium truncate max-w-[50px]">
+        {user?.name?.split(' ')[0] || 'Profile'}
+      </span>
+    </button>
+
+  </div>
+</div>
+
 
         {/* Edit Customer Modal */}
 {editingCustomer && (
@@ -1229,8 +1661,7 @@ const handleUpdateCustomer = async (customerId) => {
 )}
 
       </div>
-    </div>
-    </div>
+      </>
   )
 }
 

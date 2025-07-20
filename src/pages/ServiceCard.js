@@ -16,12 +16,24 @@ import {
   TrendingUp,
   Package,
   Home,
-  Bell
+  Bell,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 
 const Dashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [desktopDropdownOpen, setDesktopDropdownOpen] = useState(false);
+  const [mobileDropdownOpen, setMobileDropdownOpen] = useState(false);
+
+  const userProfile = {
+    name: 'Arveet Singh',
+    role: 'Partner',
+    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80'
+  };
+
+  const currentBalance = '₹1,749.85';
 
   const stats = [
     {
@@ -134,8 +146,6 @@ const Dashboard = () => {
   const sidebarItems = [
     { id: 'dashboard', name: 'Dashboard', icon: Home },
     { id: 'customers', name: 'My Customers', icon: Users },
-    // { id: 'settings', name: 'Settings', icon: Settings },
-    // { id: 'profile', name: 'Profile', icon: User }
   ];
 
   const renderContent = () => {
@@ -155,65 +165,6 @@ const Dashboard = () => {
             <button className="bg-gradient-to-r from-purple-500 to-purple-600 text-white px-6 py-3 rounded-xl font-medium hover:from-purple-600 hover:to-purple-700 transition-all duration-200">
               Add New Customers
             </button>
-          </div>
-        </div>
-      );
-    }
-
-    if (activeTab === 'settings') {
-      return (
-        <div className="p-6 max-w-7xl mx-auto">
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Settings</h2>
-            <p className="text-gray-600">Customize your account preferences</p>
-          </div>
-          <div className="grid gap-6">
-            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Account Settings</h3>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                  <span className="font-medium text-gray-900">Email Notifications</span>
-                  <button className="bg-blue-500 relative inline-flex h-6 w-11 items-center rounded-full transition-colors">
-                    <span className="translate-x-6 inline-block h-4 w-4 transform rounded-full bg-white transition-transform" />
-                  </button>
-                </div>
-                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                  <span className="font-medium text-gray-900">SMS Alerts</span>
-                  <button className="bg-gray-300 relative inline-flex h-6 w-11 items-center rounded-full transition-colors">
-                    <span className="translate-x-1 inline-block h-4 w-4 transform rounded-full bg-white transition-transform" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    if (activeTab === 'profile') {
-      return (
-        <div className="p-6 max-w-7xl mx-auto">
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Profile</h2>
-            <p className="text-gray-600">Manage your profile information</p>
-          </div>
-          <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
-            <div className="flex items-center space-x-6 mb-8">
-              <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center text-white text-2xl font-bold shadow-lg">
-                AS
-              </div>
-              <div>
-                <h3 className="text-2xl font-bold text-gray-900">Arveet Singh</h3>
-                <p className="text-blue-600 font-medium">Premium Partner</p>
-                <p className="text-gray-500">Member since Jul 2025</p>
-              </div>
-            </div>
-            <div className="border-t pt-6">
-              <button className="flex items-center space-x-3 text-red-600 hover:text-red-700 font-medium transition-colors">
-                <LogOut className="w-5 h-5" />
-                <span>Logout</span>
-              </button>
-            </div>
           </div>
         </div>
       );
@@ -317,24 +268,56 @@ const Dashboard = () => {
       <div className="bg-white/80 backdrop-blur-xl shadow-lg border-b border-gray-200/50 sticky top-0 z-40">
         <div className="flex items-center justify-between p-4 lg:p-6 max-w-7xl mx-auto">
           <div className="flex items-center space-x-4">
-            <button
-              onClick={() => setSidebarOpen(true)}
-              className="lg:hidden p-2 rounded-xl hover:bg-gray-100 transition-colors"
-            >
-              <Menu className="w-6 h-6 text-gray-700" />
-            </button>
-            <div>
+            {/* Mobile header - simplified */}
+            <div className="lg:hidden">
+              <h1 className="text-lg font-bold text-gray-900">Welcome Arveet</h1>
+              <button 
+                onClick={() => setMobileDropdownOpen(!mobileDropdownOpen)}
+                className="flex items-center space-x-1 text-sm text-blue-600 font-medium relative"
+              >
+                <span>Partner</span>
+                {mobileDropdownOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                
+                {/* Mobile Dropdown */}
+                {mobileDropdownOpen && (
+                  <div className="absolute top-full left-0 mt-2 bg-white rounded-xl shadow-xl border border-gray-200 py-2 z-50 min-w-40">
+                    <button 
+                      onClick={() => {
+                        setMobileDropdownOpen(false);
+                        // Switch to manager panel logic here
+                      }}
+                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                    >
+                      Switch to Manager
+                    </button>
+                  </div>
+                )}
+              </button>
+            </div>
+
+            {/* Desktop header - original */}
+            <div className="hidden lg:block">
               <h1 className="text-xl lg:text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                 Welcome back, Arveet Singh! 👋
               </h1>
               <p className="text-sm text-gray-600 mt-1">Here's what's happening with your partnership</p>
             </div>
           </div>
-          <button className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-4 lg:px-6 py-2 lg:py-3 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 shadow-lg">
-            <ArrowUpRight className="w-4 h-4" />
-            <span className="hidden sm:inline">Request Transfer</span>
-            <span className="sm:hidden">Transfer</span>
-          </button>
+          
+          {/* Request Transfer Button with Balance */}
+            <div className="flex items-center space-x-3">
+            {/* Wallet Balance Display */}
+            <div className="hidden lg:flex items-center space-x-2 bg-gradient-to-r from-emerald-50 to-emerald-100 px-4 py-2 rounded-xl border border-emerald-200">
+              <Wallet className="w-4 h-4 text-emerald-600" />
+              <span className="text-sm font-semibold text-emerald-700">₹1,749.85</span>
+            </div>
+            
+            <button className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-4 lg:px-6 py-2 lg:py-3 rounded-xl font-medium transition-all duration-200 flex items-center space-x-2 shadow-lg">
+              <ArrowUpRight className="w-4 h-4" />
+              <span className="hidden sm:inline">Request Transfer</span>
+              <span className="sm:hidden">Transfer</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -343,6 +326,42 @@ const Dashboard = () => {
         <div className="hidden lg:flex lg:flex-col lg:w-72 lg:fixed lg:inset-y-0 lg:pt-20">
           <div className="flex flex-col flex-1 min-h-0 bg-white/50 backdrop-blur-xl border-r border-gray-200/50 m-4 rounded-2xl shadow-xl">
             <div className="flex flex-col flex-1 pt-8 pb-4">
+              {/* User Profile Section */}
+                <div className=" border-gray-200 px-4">
+                  <div className="text-center mb-4">
+                    <img 
+                      src={userProfile.avatar} 
+                      alt={userProfile.name}
+                      className="w-20 h-20 rounded-full mx-auto mb-3 object-cover border-4 border-white shadow-lg"
+                    />
+                    <h3 className="font-semibold text-gray-900 text-sm">{userProfile.name}</h3>
+                    <div className="relative">
+                      <button 
+                        onClick={() => setDesktopDropdownOpen(!desktopDropdownOpen)}
+                        className="flex items-center justify-center space-x-1 text-xs text-blue-600 font-medium mx-auto mt-1"
+                      >
+                        <span>{userProfile.role}</span>
+                        {desktopDropdownOpen ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                      </button>
+                      
+                      {/* Desktop Dropdown */}
+                      {desktopDropdownOpen && (
+                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 bg-white rounded-xl shadow-xl border border-gray-200 py-2 z-50 min-w-40">
+                          <button 
+                            onClick={() => {
+                              setDesktopDropdownOpen(false);
+                              // Switch to manager panel logic here
+                            }}
+                            className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                          >
+                            Switch to Manager
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
               <nav className="flex-1 px-6 space-y-2">
                 {sidebarItems.map((item) => {
                   const Icon = item.icon;
@@ -361,12 +380,13 @@ const Dashboard = () => {
                     </button>
                   );
                 })}
-                <div className="pt-4 border-t border-gray-200 mt-4">
-                  <button className="w-full text-left group flex items-center px-4 py-3 text-sm font-medium rounded-xl text-red-600 hover:bg-red-50 transition-all duration-200">
-                    <LogOut className="mr-3 h-5 w-5" />
-                    Logout
-                  </button>
-                </div>
+                
+
+                {/* Logout Button */}
+                <button className="w-full text-left group flex items-center px-4 py-3 text-sm font-medium rounded-xl text-red-600 hover:bg-red-50 transition-all duration-200 mt-2">
+                  <LogOut className="mr-3 h-5 w-5" />
+                  Logout
+                </button>
               </nav>
             </div>
           </div>
@@ -429,24 +449,48 @@ const Dashboard = () => {
 
       {/* Mobile Bottom Navigation */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-t border-gray-200/50 px-2 py-2 z-30 shadow-2xl">
-        <div className="flex justify-around items-center max-w-md mx-auto">
-          {sidebarItems.map((item) => {
-            const Icon = item.icon;
-            return (
-              <button
-                key={item.id}
-                onClick={() => setActiveTab(item.id)}
-                className={`flex flex-col items-center space-y-1 p-3 rounded-xl transition-all duration-200 ${
-                  activeTab === item.id 
-                    ? 'bg-gradient-to-t from-blue-500 to-blue-600 text-white shadow-lg transform -translate-y-1' 
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                }`}
-              >
-                <Icon className="h-5 w-5" />
-                <span className="text-xs font-medium">{item.name === 'My Customers' ? 'Customers' : item.name}</span>
-              </button>
-            );
-          })}
+        <div className="flex justify-around items-center">
+          {/* Dashboard */}
+          <button
+            onClick={() => setActiveTab('dashboard')}
+            className={`flex flex-col items-center space-y-1 p-3 rounded-xl transition-all duration-200 ${
+              activeTab === 'dashboard' 
+                ? 'bg-gradient-to-t from-blue-500 to-blue-600 text-white shadow-lg transform -translate-y-1' 
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+            }`}
+          >
+            <Home className="h-5 w-5" />
+            <span className="text-xs font-medium">Dashboard</span>
+          </button>
+
+          {/* My Customers */}
+          <button
+            onClick={() => setActiveTab('customers')}
+            className={`flex flex-col items-center space-y-1 p-3 rounded-xl transition-all duration-200 ${
+              activeTab === 'customers' 
+                ? 'bg-gradient-to-t from-blue-500 to-blue-600 text-white shadow-lg transform -translate-y-1' 
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+            }`}
+          >
+            <Users className="h-5 w-5" />
+            <span className="text-xs font-medium">Customers</span>
+          </button>
+
+          {/* Wallet Balance */}
+          <button className="flex flex-col items-center space-y-1 p-3 rounded-xl text-gray-600">
+            <Wallet className="h-5 w-5" />
+            <span className="text-xs font-medium">{currentBalance}</span>
+          </button>
+
+          {/* User Profile */}
+          <button className="flex flex-col items-center space-y-1 p-3 rounded-xl text-gray-600">
+            <img 
+              src={userProfile.avatar} 
+              alt={userProfile.name}
+              className="w-6 h-6 rounded-full object-cover"
+            />
+            <span className="text-xs font-medium">Profile</span>
+          </button>
         </div>
       </div>
     </div>
