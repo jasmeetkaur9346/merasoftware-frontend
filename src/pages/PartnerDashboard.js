@@ -737,7 +737,7 @@ const handleUpdateCustomer = async (customerId) => {
 
        {/* Main Content */}
       <div className="lg:pl-72 flex flex-col flex-1">
-        <main className="flex-1 pt-20 lg:pt-0 pb-24 lg:pb-8">
+        <main className="flex-1 lg:pt-0 pb-24 lg:pb-8">
           <div className="p-6 max-w-7xl mx-auto">
             {/* Header */}
             {/* <div className="flex justify-between items-start mb-8">
