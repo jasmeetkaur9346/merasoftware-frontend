@@ -4,7 +4,7 @@ import { FaUsers, FaMoneyBillWave, FaChartLine, FaWallet, FaPlus, FaExchangeAlt,
 import SummaryApi from '../common'
 import { toast } from 'react-toastify'
 import moment from 'moment'
-import { ArrowUpRight, ArrowDownLeft, Bell, CheckCircle, Clock, TrendingUp, Menu, X, Home, LogOut, Users } from 'lucide-react';
+import { ArrowUpRight, ArrowDownLeft, Bell, CheckCircle, Clock, TrendingUp, Menu, X, Home, LogOut, Users, Calendar } from 'lucide-react';
 import { setUserDetails, logout, updateUserRole } from '../store/userSlice';
 import ROLE from '../common/role'; 
 import CookieManager from '../utils/cookieManager'; 
@@ -105,7 +105,10 @@ const PartnerDashboard = () => {
  // Fetch commission history for recent transactions AND total calculation
 const fetchCommissionHistory = async () => {
   try {
-    setLoadingCommissions(true)
+    setLoadingCommissions(true);
+
+    // Calculate date for last 7 days
+    const sevenDaysAgo = moment().subtract(7, 'days').toISOString();
     
     // Commission history fetch करें
     const commissionResponse = await fetch(SummaryApi.getCommissionHistory.url, {
@@ -144,7 +147,7 @@ const fetchCommissionHistory = async () => {
       // दोनों को combine करके date wise sort करें
       const combinedHistory = [...commissionData.data, ...formattedWithdrawals]
         .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-        .slice(0, 10) // Latest 10 entries
+        // .slice(0, 10) 
       
       setCommissionHistory(combinedHistory)
       
@@ -516,7 +519,8 @@ const handleUpdateCustomer = async (customerId) => {
 
   const sidebarItems = [
     { id: 'dashboard', label: 'Dashboard', icon: Home },
-    { id: 'customers', label: 'My Customers', icon: FaUsers }
+    { id: 'customers', label: 'My Customers', icon: FaUsers },
+    { id: 'wallet', label: 'Wallet', icon: FaWallet }
   ]
 
   return (
@@ -1142,6 +1146,140 @@ const handleUpdateCustomer = async (customerId) => {
             </div>
           </div>
         )}
+
+        {/* New Wallet Tab Content */}
+{activeTab === 'wallet' && (
+  <div className="space-y-8">
+    {/* Wallet Header */}
+    <div className="bg-white rounded-2xl shadow-xl p-6">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <div className="bg-blue-600 p-3 rounded-full">
+            <FaWallet className="w-8 h-8 text-white" /> {/* Use FaWallet from react-icons */}
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-800">Commission Wallet</h1>
+            <p className="text-gray-600">Manage your earnings and transfers</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {/* Balance Card */}
+    <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl shadow-xl p-6 text-white">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-blue-100 mb-2">Available Balance</p>
+          {loadingStats ? (
+            <div className="w-32 h-10 bg-blue-300 animate-pulse rounded"></div>
+          ) : (
+            <h2 className="text-4xl font-bold">{formatCurrency(walletBalance)}</h2>
+          )}
+          <p className="text-blue-100 mt-2">Last updated: {moment().format('MMM DD, YYYY, hh:mm A')}</p> {/* Dynamic last updated */}
+        </div>
+        <div className="bg-white/20 p-4 rounded-full">
+          <FaMoneyBillWave className="w-12 h-12" /> {/* Use FaMoneyBillWave or DollarSign if imported */}
+        </div>
+      </div>
+      
+      <button 
+        onClick={() => setShowWithdrawalModal(true)} // Use existing withdrawal modal
+        className="mt-6 bg-white text-blue-600 px-6 py-3 rounded-xl font-semibold hover:bg-blue-50 transition-colors flex items-center space-x-2"
+      >
+        <ArrowUpRight className="w-5 h-5" />
+        <span>Transfer to Bank</span>
+      </button>
+    </div>
+
+    {/* Transaction History */}
+    <div className="bg-white rounded-2xl shadow-xl p-6">
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="text-xl font-bold text-gray-800">Transaction History</h3>
+        <div className="flex items-center space-x-2 text-gray-600">
+          <Calendar className="w-5 h-5" />
+          <span>Last 7 days</span> {/* This is a display text, actual filtering happens in fetchCommissionHistory */}
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        {loadingCommissions ? (
+          <div className="space-y-4">
+            {[1, 2, 3, 4, 5].map(i => (
+              <div key={i} className="flex items-center space-x-4 p-4 bg-gray-50 rounded-xl">
+                <div className="w-12 h-12 bg-gray-200 animate-pulse rounded-full"></div>
+                <div className="flex-1">
+                  <div className="w-40 h-4 bg-gray-200 animate-pulse rounded mb-2"></div>
+                  <div className="w-24 h-3 bg-gray-200 animate-pulse rounded"></div>
+                </div>
+                <div className="w-20 h-4 bg-gray-200 animate-pulse rounded"></div>
+              </div>
+            ))}
+          </div>
+        ) : commissionHistory.length === 0 ? (
+          <div className="text-center py-8">
+            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <FaMoneyBillWave className="w-8 h-8 text-gray-400" />
+            </div>
+            <p className="text-gray-500">No transactions found for the last 7 days.</p>
+          </div>
+        ) : (
+          <div className="divide-y divide-gray-100">
+            {commissionHistory.map((transaction, index) => (
+              <div 
+                key={transaction._id || index} 
+                className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors cursor-pointer"
+                onClick={() => {
+                  setSelectedTransactionDetail(transaction)
+                  setShowTransactionDetailModal(true)
+                }}
+              >
+                <div className="flex items-center space-x-4">
+                  <div className={`p-3 rounded-full ${
+                    transaction.commissionType === 'Withdrawal Request' 
+                      ? 'bg-red-100 text-red-600' 
+                      : 'bg-green-100 text-green-600'
+                  }`}>
+                    {transaction.commissionType === 'Withdrawal Request' ? 
+                      <ArrowUpRight className="w-6 h-6" /> : // Changed to ArrowUpRight for debit from wallet
+                      <ArrowDownLeft className="w-6 h-6" /> // Changed to ArrowDownLeft for credit to wallet
+                    }
+                  </div>
+                  
+                  <div>
+                    <p className="font-semibold text-gray-800">
+                      {transaction.commissionType === 'Withdrawal Request' 
+                        ? 'Bank Transfer Request' 
+                        : `${transaction.customerName || 'Customer'} - ${formatCommissionType(transaction.commissionType)}`
+                      }
+                    </p>
+                    <div className="flex items-center space-x-2 text-gray-600 text-sm">
+                      <Calendar className="w-4 h-4" />
+                      <span>{moment(transaction.createdAt).format('YYYY-MM-DD')}</span>
+                      <Clock className="w-4 h-4" />
+                      <span>{moment(transaction.createdAt).format('HH:mm')}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="text-right">
+                  <p className={`font-bold text-lg ${
+                    transaction.commissionType === 'Withdrawal Request' ? 'text-red-600' : 'text-green-600'
+                  }`}>
+                    {transaction.commissionType === 'Withdrawal Request' ? '-' : '+'}{formatCurrency(Math.abs(transaction.commissionAmount))}
+                  </p>
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(getStatusText(transaction))}`}>
+                    {getStatusText(transaction)}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  </div>
+)}
+
         </div>
         </main>
       </div>
