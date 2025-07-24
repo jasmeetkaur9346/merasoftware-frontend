@@ -59,7 +59,9 @@ const Login = () => {
               userId: dataApi.data.userId,
               email: dataApi.data.email,
               name: dataApi.data.name,
-              role: dataApi.data.role
+              role: dataApi.data.role,
+              // ✅ Pass isDetailsCompleted for OTP flow
+          isDetailsCompleted: dataApi.data.isDetailsCompleted
             });
             setRequireOtp(true);
             toast.info(dataApi.message);
@@ -70,7 +72,8 @@ const Login = () => {
               name: dataApi.data.user.name,
               email: dataApi.data.user.email,
               role: dataApi.data.user.role,
-              isDetailsCompleted: dataApi.data.user.userDetails?.isDetailsCompleted || false
+               // ✅ Use backend isDetailsCompleted value
+          isDetailsCompleted: dataApi.data.isDetailsCompleted || false
             });
   
             await fetchUserDetails();
@@ -78,8 +81,8 @@ const Login = () => {
   
             toast.success(dataApi.message);
 
-            // Check if userDetails.isDetailsCompleted is false and role is not customer
-            const isDetailsCompleted = dataApi.data.user.userDetails?.isDetailsCompleted || false;
+           // ✅ Use backend isDetailsCompleted value directly
+        const isDetailsCompleted = dataApi.data.isDetailsCompleted || false;
             const role = dataApi.data.user.role;
             if (!isDetailsCompleted && role !== "customer") {
               navigate("/complete-profile");

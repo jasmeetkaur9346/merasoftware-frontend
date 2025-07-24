@@ -103,7 +103,8 @@ const OtpVerification = ({ userData, onBackToLogin }) => {
             name: data.data.user.name,
             email: data.data.user.email,
             role: data.data.user.role,
-            isDetailsCompleted: data.data.user.userDetails?.isDetailsCompleted || false
+             // ✅ Use backend isDetailsCompleted value
+          isDetailsCompleted: data.data.isDetailsCompleted || false
           });
           dispatch(setUserDetails(data.data.user));
           if (data.data.walletBalance) {
@@ -113,8 +114,8 @@ const OtpVerification = ({ userData, onBackToLogin }) => {
           if (context.fetchUserAddToCart) await context.fetchUserAddToCart();
           toast.success(data.message);
 
-          // Check if userDetails.isDetailsCompleted is false and role is not customer
-          const isDetailsCompleted = data.data.user.userDetails?.isDetailsCompleted || false;
+          // ✅ Use backend isDetailsCompleted value directly
+        const isDetailsCompleted = data.data.isDetailsCompleted || false;
           const role = data.data.user.role;
           if (!isDetailsCompleted && role !== "customer") {
             navigate("/complete-profile");
