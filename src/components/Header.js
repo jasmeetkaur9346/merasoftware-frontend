@@ -259,19 +259,30 @@ const handleRoleChange = async (newRole) => {
     });
     const data = await response.json();
     if(data.success) {
+      // Update Redux state with new role and isDetailsCompleted
+            const updatedUser = { 
+              ...user, 
+              role: newRole,
+              userDetails: {
+                ...user.userDetails, // Preserve other userDetails fields
+                isDetailsCompleted: data.data.isDetailsCompleted // Use the value from backend
+              }
+            };
       // Update Redux state with new role
-      dispatch(updateUserRole(newRole));
-      // Optionally update user details in localStorage
-      const updatedUser = { ...user, role: newRole };
-      StorageService.setUserDetails(updatedUser);
       dispatch(setUserDetails(updatedUser));
+      // Optionally update user details in localStorage
+      StorageService.setUserDetails(updatedUser);
       toast.success("Role switched to " + newRole);
       setRoleDropdownOpen(false);
       // Update user-details cookie to keep in sync
-      CookieManager.setUserDetails({ ...user, role: newRole });
+            CookieManager.setUserDetails({ 
+              ...user, 
+              role: newRole,
+              isDetailsCompleted: data.data.isDetailsCompleted // Update cookie as well
+            });
 
       // Check if userDetails.isDetailsCompleted is false and role is not customer
-      const isDetailsCompleted = user.userDetails?.isDetailsCompleted || false;
+      const isDetailsCompleted = data.data.isDetailsCompleted;
       if (!isDetailsCompleted && newRole !== "customer") {
         setTimeout(() => {
           navigate("/complete-profile");
