@@ -17,8 +17,8 @@ const Login = () => {
        password: "",
        role: "customer"
      })
-     const [requireOtp, setRequireOtp] = useState(false);
-     const [userData, setUserData] = useState(null);
+    //  const [requireOtp, setRequireOtp] = useState(false);
+    //  const [userData, setUserData] = useState(null);
      const [loading, setLoading] = useState(false);
      const [isStaffLogin, setIsStaffLogin] = useState(false);
      const navigate = useNavigate();
@@ -52,28 +52,14 @@ const Login = () => {
   
         const dataApi = await dataResponse.json();
         
-        if (dataApi.success) {
-          if (dataApi.requireOtp) {
-            // OTP verification required
-            setUserData({
-              userId: dataApi.data.userId,
-              email: dataApi.data.email,
-              name: dataApi.data.name,
-              role: dataApi.data.role,
-              // ✅ Pass isDetailsCompleted for OTP flow
-          isDetailsCompleted: dataApi.data.isDetailsCompleted
-            });
-            setRequireOtp(true);
-            toast.info(dataApi.message);
-          } else {
-            // No OTP required, proceed with normal login
+               if (dataApi.success) {
+            // OTP bypass: Direct login flow
             CookieManager.setUserDetails({
               _id: dataApi.data.user._id,
               name: dataApi.data.user.name,
               email: dataApi.data.user.email,
               role: dataApi.data.user.role,
-               // ✅ Use backend isDetailsCompleted value
-          isDetailsCompleted: dataApi.data.isDetailsCompleted || false
+              isDetailsCompleted: dataApi.data.isDetailsCompleted || false
             });
   
             await fetchUserDetails();
@@ -81,27 +67,25 @@ const Login = () => {
   
             toast.success(dataApi.message);
 
-           // ✅ Use backend isDetailsCompleted value directly
-        const isDetailsCompleted = dataApi.data.isDetailsCompleted || false;
+            const isDetailsCompleted = dataApi.data.isDetailsCompleted || false;
             const role = dataApi.data.user.role;
             if (!isDetailsCompleted && role !== "customer") {
               navigate("/complete-profile");
             } else {
-              // ✅ Role-based redirect
               if (role === "admin") {
-                navigate("/admin-panel/all-products"); // 🟢 Admin redirect
+                navigate("/admin-panel/all-products");
               } else if (role === "manager") {
                 navigate("/manager-panel/dashboard");
               } else if (role === "partner") {
                 navigate("/partner-panel/dashboard");
               } else {
-                navigate("/"); // 🟢 Non-admin redirect
+                navigate("/");
               }
             }
-          }
         } else if (dataApi.error) {
           toast.error(dataApi.message);
         }
+    
       } catch (error) {
         console.error("Login error:", error);
         toast.error("Login failed. Please try again.");
@@ -110,10 +94,10 @@ const Login = () => {
       }
     };
 
-    const handleBackToLogin = () => {
-      setRequireOtp(false);
-      setUserData(null);
-    };
+    // const handleBackToLogin = () => {
+    //   setRequireOtp(false);
+    //   setUserData(null);
+    // };
 
     const switchToStaffLogin = () => {
       setIsStaffLogin(true);
@@ -134,16 +118,16 @@ const Login = () => {
     };
   
     // Render OTP verification component if required
-    if (requireOtp && userData) {
-      return (
-        <OtpVerification 
-          userData={userData} 
-          onBackToLogin={handleBackToLogin}
-          contextData={{ fetchUserDetails, fetchUserAddToCart }} 
-          dispatch={dispatch}
-        />
-      );
-    }
+    // if (requireOtp && userData) {
+    //   return (
+    //     <OtpVerification 
+    //       userData={userData} 
+    //       onBackToLogin={handleBackToLogin}
+    //       contextData={{ fetchUserDetails, fetchUserAddToCart }} 
+    //       dispatch={dispatch}
+    //     />
+    //   );
+    // }
 
   return (
     <section id="login">
@@ -284,4 +268,4 @@ const Login = () => {
   )
 }
 
-export default Login
+export default Login;
