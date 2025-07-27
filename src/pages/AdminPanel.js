@@ -330,6 +330,17 @@ const AdminPanel = () => {
                                     >
                                         Partners
                                     </Link>
+                                     <Link 
+                                        to={"all-developers"} 
+                                        className={`block px-3 py-2.5 text-sm rounded-md transition-colors ${
+                                            isActive('partners')
+                                                ? 'bg-blue-600 text-white'
+                                                : 'text-gray-400 hover:bg-slate-700 hover:text-white'
+                                        }`}
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
+                                        All Developers
+                                    </Link>
                                 </div>
                             )}
                         </div>
