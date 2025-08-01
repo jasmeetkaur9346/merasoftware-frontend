@@ -11,6 +11,7 @@ import Context from './context';
 import CookieManager from './utils/cookieManager';
 import StorageService from './utils/storageService';
 import ScrollToTop from './helpers/scrollTop';
+import QRModal from './components/QRModal';
 // import { AnimatePresence } from 'framer-motion';
 // import AnimatedRoutes from './components/AnimatedRoutes';
 
@@ -29,6 +30,7 @@ const AppContent = () => {
   const [cartProductCount, setCartProductCount] = useState(0);
   const [walletBalance, setWalletBalance] = useState(0);
   const [activeProject, setActiveProject] = useState(null);
+  const [showQR, setShowQR] = useState(false);
 
 useEffect(() => {
         // Agar user logged in hai aur home page par hai to role-based redirect karo
@@ -304,6 +306,11 @@ useEffect(() => {
   
 }, [user?._id]);
 
+useEffect(() => {
+    const handleTrigger = () => setShowQR(true);
+    window.addEventListener('trigger-qr-modal', handleTrigger);
+    return () => window.removeEventListener('trigger-qr-modal', handleTrigger);
+  }, []);
   // const isDashboard = window.location.pathname.includes('/dashboard');
 
   return (
@@ -329,6 +336,8 @@ useEffect(() => {
        <Outlet/>
         </main>
         {user?.role !== 'partner' && <Footer />}
+
+         <QRModal show={showQR} onClose={() => setShowQR(false)} />
       </Context.Provider>
   )
 }
