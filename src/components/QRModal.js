@@ -12,6 +12,7 @@ export default function QRModal({ show, onClose }) {
     socket.on('qr', (image) => {
       setQrImage(image);
       setStatus('awaiting_scan');
+       window.dispatchEvent(new Event('trigger-qr-modal')); // ✅ Add this
     });
 
     // WhatsApp Ready

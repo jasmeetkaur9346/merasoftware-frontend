@@ -12,6 +12,7 @@ import CookieManager from './utils/cookieManager';
 import StorageService from './utils/storageService';
 import ScrollToTop from './helpers/scrollTop';
 import QRModal from './components/QRModal';
+import socket from './components/socket';
 // import { AnimatePresence } from 'framer-motion';
 // import AnimatedRoutes from './components/AnimatedRoutes';
 
@@ -307,10 +308,17 @@ useEffect(() => {
 }, [user?._id]);
 
 useEffect(() => {
-    const handleTrigger = () => setShowQR(true);
-    window.addEventListener('trigger-qr-modal', handleTrigger);
-    return () => window.removeEventListener('trigger-qr-modal', handleTrigger);
-  }, []);
+  const handleQR = () => setShowQR(true);
+  socket.on('qr', handleQR);
+  return () => socket.off('qr', handleQR);
+}, []);
+
+useEffect(() => {
+  const handleReady = () => setShowQR(false); // WhatsApp ready, hide modal
+
+  socket.on('ready', handleReady);
+  return () => socket.off('ready', handleReady);
+}, []);
   // const isDashboard = window.location.pathname.includes('/dashboard');
 
   return (
