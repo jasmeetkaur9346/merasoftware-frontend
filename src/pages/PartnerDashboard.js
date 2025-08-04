@@ -603,34 +603,34 @@ const handleUpdateCustomer = async (customerId) => {
             <FaRegCircleUser className="w-20 h-20 rounded-full mx-auto mb-3 text-gray-400" />
           )}
           <h3 className="font-semibold text-gray-900 text-sm">{user?.name}</h3>
-          {user?.roles && user.roles.length > 1 && (
-            <div className="relative role-dropdown-container">
-              <button 
-                onClick={() => setRoleDropdownOpen(!roleDropdownOpen)}
-                className="flex items-center justify-center space-x-1 text-xs text-blue-600 font-medium mx-auto mt-1"
-              >
-                <span>{user?.role?.toUpperCase()}</span>
-                {roleDropdownOpen ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-              </button>
-              
-              {/* Desktop Role Dropdown */}
-              {roleDropdownOpen && !isRoleSwitching && (
-                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 bg-white rounded-xl shadow-xl border border-gray-200 py-2 z-50 min-w-40">
-                  {user.roles.map((roleItem) => (
-                    <button 
-                      key={roleItem}
-                      onClick={() => handleRoleChange(roleItem)}
-                      className={`w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors ${
-                        roleItem === user.role ? 'font-bold bg-blue-100' : ''
-                      }`}
-                    >
-                      {roleItem.toUpperCase()}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+         {user?.roles && user.roles.length > 1 && (
+  <div className="relative role-dropdown-container">
+    <button 
+      onClick={() => setRoleDropdownOpen(!roleDropdownOpen)}
+      className="flex items-center justify-center space-x-1 text-xs text-blue-600 font-medium mx-auto mt-1"
+    >
+      <span>{user?.role?.toUpperCase()}</span>
+      {roleDropdownOpen ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+    </button>
+    
+    {/* Desktop Role Dropdown */}
+    {roleDropdownOpen && !isRoleSwitching && (
+      <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 bg-white rounded-xl shadow-xl border border-gray-200 py-2 z-50 min-w-40">
+        {user.roles.map((roleItem) => (
+          <button 
+            key={roleItem}
+            onClick={() => handleRoleChange(roleItem)}
+            className={`w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors ${
+              roleItem === user.role ? 'font-bold bg-blue-100' : ''
+            }`}
+          >
+            {roleItem.toUpperCase()}
+          </button>
+        ))}
+      </div>
+    )}
+  </div>
+        )}
         </div>
       </div>
 
