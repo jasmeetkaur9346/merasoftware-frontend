@@ -419,7 +419,18 @@ const getFileIcon = (fileType) => {
             {/* Footer */}
             <div className="p-4 border-t">
               <button
-                onClick={() => setShowConfirmation(true)}
+                onClick={() => {
+                  // Agar message field mein kuch hai to pehle usse send kar do
+                if (message.trim()) {
+                  setMessages(prev => [...prev, { 
+                    text: message.trim(),
+                    timestamp: new Date()
+                  }]);
+                  setMessage(''); // Clear the message field
+                }
+                // Phir confirmation screen pe jao
+                 setShowConfirmation(true);
+                }}
                 disabled={files.length === 0 && messages.length === 0}
                 className={`w-full py-2 rounded-lg font-medium ${
                   files.length === 0 && messages.length === 0

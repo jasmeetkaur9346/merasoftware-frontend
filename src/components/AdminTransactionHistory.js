@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
-import { Calendar, Filter, RefreshCw, ExternalLink, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { Calendar, Filter, RefreshCw, Trash2, ExternalLink, CheckCircle, XCircle, Clock } from 'lucide-react';
 import SummaryApi from '../common';
 import displayINRCurrency from '../helpers/displayCurrency';
 
@@ -10,6 +10,12 @@ const AdminTransactionHistory = () => {
   const [filter, setFilter] = useState('all'); // 'all', 'completed', 'failed'
   const [typeFilter, setTypeFilter] = useState('all'); // 'all', 'deposit', 'payment'
   const [showDetails, setShowDetails] = useState(null);
+  const [deleteConfirm, setDeleteConfirm] = useState(null); // For confirmation popup
+  
+  // New states for bulk delete
+  const [selectedTransactions, setSelectedTransactions] = useState([]); // For bulk selection
+  const [selectAll, setSelectAll] = useState(false); // For select all checkbox
+  const [bulkDeleteConfirm, setBulkDeleteConfirm] = useState(false); // For bulk delete confirmation
 
   useEffect(() => {
     fetchTransactionHistory();
@@ -45,6 +51,95 @@ const AdminTransactionHistory = () => {
       toast.error('Failed to load transaction history');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Individual delete function
+  const handleDeleteTransaction = async (transactionId) => {
+    try {
+        const response = await fetch(`${SummaryApi.wallet.deleteTransaction.url}/${transactionId}`, {
+            method: SummaryApi.wallet.deleteTransaction.method,
+            credentials: 'include',
+            headers: {
+                "Content-Type": 'application/json'
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            toast.success('Transaction deleted successfully');
+            fetchTransactionHistory(); // Refresh the list
+            setDeleteConfirm(null);
+        } else {
+            toast.error(data.message);
+        }
+    } catch (error) {
+        console.error('Error deleting transaction:', error);
+        toast.error('Failed to delete transaction');
+    }
+  };
+
+  // Handle individual checkbox selection
+  const handleTransactionSelect = (transactionId) => {
+    if (selectedTransactions.includes(transactionId)) {
+        setSelectedTransactions(selectedTransactions.filter(id => id !== transactionId));
+    } else {
+        setSelectedTransactions([...selectedTransactions, transactionId]);
+    }
+  };
+
+  // Handle select all checkbox
+  const handleSelectAll = () => {
+    if (selectAll) {
+        setSelectedTransactions([]);
+        setSelectAll(false);
+    } else {
+        setSelectedTransactions(filteredTransactions.map(t => t._id));
+        setSelectAll(true);
+    }
+  };
+
+  // Clear selections after operations
+  const clearSelections = () => {
+    setSelectedTransactions([]);
+    setSelectAll(false);
+  };
+
+  // Bulk delete function
+  const handleBulkDelete = async () => {
+    try {
+        // Delete all selected transactions one by one
+        const deletePromises = selectedTransactions.map(transactionId => 
+            fetch(`${SummaryApi.wallet.deleteTransaction.url}/${transactionId}`, {
+                method: SummaryApi.wallet.deleteTransaction.method,
+                credentials: 'include',
+                headers: {
+                    "Content-Type": 'application/json'
+                }
+            })
+        );
+        
+        const responses = await Promise.all(deletePromises);
+        const results = await Promise.all(responses.map(res => res.json()));
+        
+        const successCount = results.filter(result => result.success).length;
+        const failCount = results.length - successCount;
+        
+        if (successCount > 0) {
+            toast.success(`${successCount} transaction(s) deleted successfully`);
+        }
+        if (failCount > 0) {
+            toast.error(`${failCount} transaction(s) failed to delete`);
+        }
+        
+        fetchTransactionHistory(); // Refresh the list
+        clearSelections();
+        setBulkDeleteConfirm(false);
+        
+    } catch (error) {
+        console.error('Error in bulk delete:', error);
+        toast.error('Failed to delete selected transactions');
     }
   };
 
@@ -159,6 +254,17 @@ const AdminTransactionHistory = () => {
           Transaction History
         </h2>
         <div className="flex flex-wrap gap-2">
+          {/* Bulk Delete Button - Show only when selections exist */}
+          {selectedTransactions.length > 0 && (
+            <button 
+              onClick={() => setBulkDeleteConfirm(true)}
+              className="bg-red-500 text-white px-4 py-1 rounded-md hover:bg-red-600 text-sm flex items-center shadow-sm"
+            >
+              <Trash2 size={14} className="mr-1" />
+              Delete Selected ({selectedTransactions.length})
+            </button>
+          )}
+
           {/* Status Filter */}
           <div className="flex border border-gray-300 rounded-md overflow-hidden shadow-sm">
             <button 
@@ -249,6 +355,15 @@ const AdminTransactionHistory = () => {
           <table className="min-w-full bg-white">
             <thead className="bg-gray-100">
               <tr>
+                {/* Checkbox Column */}
+                <th className="py-3 px-4 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <input
+                    type="checkbox"
+                    checked={selectAll}
+                    onChange={handleSelectAll}
+                    className="rounded border-gray-300"
+                  />
+                </th>
                 <th className="py-3 px-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Transaction ID
                 </th>
@@ -267,15 +382,25 @@ const AdminTransactionHistory = () => {
                 <th className="py-3 px-4 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
                 </th>
+                <th className="py-3 px-4 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
               {filteredTransactions.map((transaction) => (
                 <React.Fragment key={transaction._id}>
-                  <tr 
-                    className={`hover:bg-gray-50 cursor-pointer ${showDetails === transaction._id ? 'bg-blue-50' : ''}`}
-                    onClick={() => toggleDetails(transaction._id)}
-                  >
+                  <tr className='hover:bg-gray-50'>
+                    {/* Checkbox Column */}
+                    <td className="py-3 px-4 text-center">
+                      <input
+                        type="checkbox"
+                        checked={selectedTransactions.includes(transaction._id)}
+                        onChange={() => handleTransactionSelect(transaction._id)}
+                        className="rounded border-gray-300"
+                      />
+                    </td>
+                    
                     <td className="py-3 px-4">
                       <div className="font-mono text-sm truncate max-w-[150px]">{transaction.transactionId}</div>
                       {transaction.upiTransactionId && (
@@ -321,12 +446,25 @@ const AdminTransactionHistory = () => {
                         </div>
                       )}
                     </td>
+                    <td className="py-3 px-4 text-center">
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setDeleteConfirm(transaction._id);
+                        }}
+                        className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 text-sm flex items-center mx-auto"
+                      >
+                        <Trash2 size={14} className="mr-1" />
+                        Delete
+                      </button>
+                    </td>
                   </tr>
                   
-                  {/* Expanded Details Row */}
+                  {/* Expanded Details Row - COMMENTED OUT */}
+                  {/* 
                   {showDetails === transaction._id && (
                     <tr>
-                      <td colSpan="6" className="bg-gray-50 border-t border-b border-gray-200">
+                      <td colSpan="8" className="bg-gray-50 border-t border-b border-gray-200">
                         <div className="p-4">
                           <h3 className="font-medium mb-2">Transaction Details</h3>
                           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -377,7 +515,6 @@ const AdminTransactionHistory = () => {
                               className="mt-4 px-3 py-1 text-sm bg-blue-500 text-white rounded-md flex items-center hover:bg-blue-600"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                // Navigate to order details or open in new tab
                                 window.open(`/project-details/${typeof transaction.orderId === 'object' ? 
                                   transaction.orderId._id : transaction.orderId}`, '_blank');
                               }}
@@ -390,10 +527,64 @@ const AdminTransactionHistory = () => {
                       </td>
                     </tr>
                   )}
+                  */}
                 </React.Fragment>
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* Individual Delete Confirmation Popup */}
+      {deleteConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-medium mb-4">Confirm Delete</h3>
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to delete this transaction? This action cannot be undone.
+            </p>
+            <div className="flex justify-end space-x-3">
+              <button 
+                onClick={() => setDeleteConfirm(null)}
+                className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+              >
+                No
+              </button>
+              <button 
+                onClick={() => handleDeleteTransaction(deleteConfirm)}
+                className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
+              >
+                Yes, Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bulk Delete Confirmation Popup */}
+      {bulkDeleteConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-medium mb-4">Confirm Bulk Delete</h3>
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to delete {selectedTransactions.length} selected transaction(s)? 
+              This action cannot be undone.
+            </p>
+            <div className="flex justify-end space-x-3">
+              <button 
+                onClick={() => setBulkDeleteConfirm(false)}
+                className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+              >
+                No
+              </button>
+              <button 
+                onClick={handleBulkDelete}
+                className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
+              >
+                Yes, Delete All
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

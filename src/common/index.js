@@ -521,7 +521,11 @@ const SummaryApi = {
         adminTransactionHistory: {
             url: `${backendDomain}/api/wallet/admin-transaction-history`,
             method: "get"
-        }
+        },
+        deleteTransaction: {
+            url: `${backendDomain}/api/wallet/delete-transaction`,
+            method: "delete"
+        },
     }
 }
 
