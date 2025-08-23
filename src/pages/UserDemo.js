@@ -893,7 +893,7 @@ export default function App() {
   ];
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-gray-50 overflow-auto">
       {/* Sidebar — Role-based */}
       {role === "admin" ? (
         <div className="w-64 bg-white shadow-sm border-r border-gray-200">
