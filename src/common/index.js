@@ -485,6 +485,38 @@ const SummaryApi = {
       url: `${backendDomain}/api/get-order-payment-verification`,
       method: "get"
      },
+     addBankAccount: {
+      url: `${backendDomain}/api/add-bank-account`,
+      method: "post"
+     },
+     updateBankAccount: {
+      url: `${backendDomain}/api/update-bank-account`,
+      method: "post"
+     },
+     deleteBankAccount: {
+      url: `${backendDomain}/api/delete-bank-account`,
+      method: "delete"
+     },
+     getBankAccounts :{
+      url: `${backendDomain}/api/get-bank-accounts`,
+      method: "get"
+     },
+     getUserKycStatus: {
+        url: `${backendDomain}/api/user-kyc-status`,
+        method: "get"
+    },
+    getAllKycSubmissions: {
+        url: `${backendDomain}/api/admin-kyc-submissions`,
+        method: "get"
+    },
+    approveKyc: {
+        url: `${backendDomain}/api/admin-kyc-approve`,
+        method: "post"
+    },
+    rejectKyc: {
+        url: `${backendDomain}/api/admin-kyc-reject`,
+        method: "post"
+    },
     wallet : {
         balance :{
             url : `${backendDomain}/api/wallet/balance`,

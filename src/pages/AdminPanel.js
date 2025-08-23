@@ -45,7 +45,8 @@ const AdminPanel = () => {
             currentPath.includes('partner-withdrawal-requests') ||
             currentPath.includes('wallet-management') ||
             currentPath.includes('update-requests') ||
-            currentPath.includes('projects')) {
+            currentPath.includes('projects') ||
+            currentPath.includes('kyc-verification')) {
             setOpenSection('adminPanel')
         } else if (currentPath.includes('all-categories') || 
                    currentPath.includes('all-products')) {
@@ -215,6 +216,19 @@ const AdminPanel = () => {
                                     >
                                         Website Projects
                                     </Link>
+                                     {/* --- NEW: KYC Verification Link --- */}
+                                    <Link
+                                        to={"kyc-verification"}
+                                        className={`block px-3 py-2.5 text-sm rounded-md transition-colors ${
+                                            isActive('kyc-verification')
+                                                ? 'bg-blue-600 text-white'
+                                                : 'text-gray-400 hover:bg-slate-700 hover:text-white'
+                                        }`}
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
+                                        KYC Verification
+                                    </Link>
+                                    {/* --- END NEW: KYC Verification Link --- */}
                                 </div>
                             )}
                         </div>

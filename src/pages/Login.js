@@ -67,20 +67,17 @@ const Login = () => {
   
             toast.success(dataApi.message);
 
-            const isDetailsCompleted = dataApi.data.isDetailsCompleted || false;
-            const role = dataApi.data.user.role;
-            if (!isDetailsCompleted && role !== "customer") {
-              navigate("/complete-profile");
-            } else {
-              if (role === "admin") {
+             const role = dataApi.data.user.role;
+            if (role === "admin") {
                 navigate("/admin-panel/all-products");
-              } else if (role === "manager") {
+            } else if (role === "manager") {
                 navigate("/manager-panel/dashboard");
-              } else if (role === "partner") {
+            } else if (role === "partner") {
                 navigate("/partner-panel/dashboard");
-              } else {
-                navigate("/");
-              }
+            } else if (role === "developer") { // Add developer role redirection
+                navigate("/developer-panel");
+            } else {
+                navigate("/"); // Default for customer or unhandled roles
             }
         } else if (dataApi.error) {
           toast.error(dataApi.message);

@@ -67,8 +67,10 @@ import PartnerCustomers from "../pages/PartnerCustomers";
 import BusinessCreated from "../pages/BusinessCreated";
 import FirstPurchaseList from "../pages/FirstPurchaseList";
 import Practice from "../pages/Practice"
+import UserDemo from "../pages/UserDemo"
 import CompleteProfile from "../pages/CompleteProfile";
 import AdminWithdrawalManagement from "../pages/AdminWithdrawalManagement";
+import KYCVerification from "../pages/KYCVerification";
 
 // Create a conditional home route
 // const HomeRoute = () => {
@@ -157,6 +159,10 @@ const router = createBrowserRouter([
             {
                 path: "my-updates",
                 element: <UserUpdateDashboard/>
+            },
+            {
+                path: "demo",
+                element: <UserDemo/>
             },
             {
                 path: "dashboard",
@@ -293,6 +299,10 @@ const router = createBrowserRouter([
                     {
                         path: "website-updates",
                         element: <AdminWebsiteUpdates/>
+                    },
+                    {
+                        path: "kyc-verification",
+                        element: <KYCVerification/>
                     },
                     {
                         path: "all-developers",

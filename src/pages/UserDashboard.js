@@ -240,6 +240,52 @@ const Dashboard = () => {
     return Math.max(0, remainingDays);
   };
 
+// --- Demo visibility logic (replace your previous block) ---
+
+// All website project categories (both variants used in your file)
+const WEBSITE_CATS = new Set([
+  'standard_websites',
+  'dynamic_websites',
+  'cloud_software_development', // older naming in your fetch
+  'app_development',            // older naming in your fetch
+  'web_applications',           // newer naming seen later
+  'mobile_apps'                 // newer naming seen later
+]);
+
+const isConsideredOrder = (o) => {
+  // treat 'payment-rejected' as not started; ignore it
+  // keep 'pending-approval' excluded from ongoing/completed checks (same as your file)
+  return o?.orderVisibility !== 'payment-rejected';
+};
+
+// Any update plan/order at all? (active OR completed OR pending)
+// If ANY exists (except payment-rejected), hide the Demo box.
+const hasAnyWebsiteUpdate = websiteProjects.some(o => {
+  const cat = o.productId?.category?.toLowerCase();
+  return cat === 'website_updates' && isConsideredOrder(o);
+});
+
+// Ongoing website project (non-updates)
+const hasOngoingWebsiteProject = websiteProjects.some(p => {
+  const cat = p.productId?.category?.toLowerCase();
+  if (!WEBSITE_CATS.has(cat)) return false;
+  if (!isConsideredOrder(p) || p.orderVisibility === 'pending-approval') return false;
+  return (Number(p.projectProgress || 0) < 100) || (p.currentPhase !== 'completed');
+});
+
+// Completed website project (non-updates)
+const hasCompletedWebsiteProject = websiteProjects.some(p => {
+  const cat = p.productId?.category?.toLowerCase();
+  if (!WEBSITE_CATS.has(cat)) return false;
+  if (!isConsideredOrder(p)) return false;
+  return (Number(p.projectProgress || 0) === 100) && (p.currentPhase === 'completed');
+});
+
+// FINAL: Show Demo only if no projects (ongoing/complete) AND no website_updates exist
+const showDemoBox = !(hasOngoingWebsiteProject || hasCompletedWebsiteProject || hasAnyWebsiteUpdate);
+
+
+
   // Loading state
   if (isLoading) {
     return (
@@ -304,55 +350,87 @@ const Dashboard = () => {
         <main className="flex-1 p-6 overflow-auto">
           <div className="flex justify-between items-center mb-6">
           <div className="">
-        <div className="flex flex-col md:flex-row items-stretch gap-6">
-          {/* Welcome back card */}
-          <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl p-6 flex-1 shadow-sm border border-blue-200">
-            <div className="flex items-center mb-3">
-              <div className="w-10 h-10 bg-blue-500 text-white rounded-full flex items-center justify-center mr-3">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" />
-                </svg>
-              </div>
-              <div>
-                <p className="text-blue-700 font-medium">Welcome back,</p>
-                <h1 className="text-2xl font-bold text-gray-800 capitalize">{user.name}</h1>
-              </div>
-            </div>
-            <div className="mt-3 flex items-center">
-              {/* <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center mr-2">
-                <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </div> */}
-              <p className="text-gray-600">Review your ongoing projects and track their progress</p>
-            </div>
-          </div>
-          
-          {/* Explore More card */}
-          <Link to={"/"} className='hidden md:block'>
-          <div className="bg-gradient-to-r from-pink-50 to-pink-100 rounded-xl p-6 flex-1 shadow-sm border border-pink-200 cursor-pointer group hover:shadow-md transition-all">
-            <div className="flex items-center mb-3">
-              <div className="w-10 h-10 bg-pink-500 text-white rounded-full flex items-center justify-center mr-3 group-hover:bg-pink-600 transition-all">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
-              </div>
-              <div>
-                <p className="text-pink-700 font-medium group-hover:text-pink-800 transition-all">Discover more</p>
-                <h2 className="text-2xl font-bold text-gray-800">Explore Our Services</h2>
-              </div>
-            </div>
-            <div className="mt-3 flex items-center">
-              <div className="h-8 w-8 bg-pink-100 rounded-full flex items-center justify-center mr-2 group-hover:bg-pink-200 transition-all">
-                <svg className="w-4 h-4 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </div>
-              <p className="text-gray-600">Discover exciting features and plans for your project</p>
-            </div>
-          </div>
-          </Link>
+       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
+  {/* Welcome back card */}
+  <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl p-6 shadow-sm border border-blue-200 h-full flex flex-col">
+    <div className="flex items-center mb-3">
+      <div className="w-10 h-10 bg-blue-500 text-white rounded-full flex items-center justify-center mr-3">
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" />
+        </svg>
+      </div>
+      <div>
+        <p className="text-blue-700 font-medium">Welcome back,</p>
+        <h1 className="text-2xl font-bold text-gray-800 capitalize">{user.name}</h1>
+      </div>
+    </div>
+    <p className="text-gray-600">Review your ongoing projects and track their progress</p>
+  </div>
+
+  {/* Explore More card */}
+  <Link to={"/"} className="hidden md:block">
+    <div className="bg-gradient-to-r from-pink-50 to-pink-100 rounded-xl p-6 shadow-sm border border-pink-200 cursor-pointer group hover:shadow-md transition-all h-full flex flex-col">
+      <div className="flex items-center mb-3">
+        <div className="w-10 h-10 bg-pink-500 text-white rounded-full flex items-center justify-center mr-3 group-hover:bg-pink-600 transition-all">
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+          </svg>
         </div>
+        <div>
+          <p className="text-pink-700 font-medium group-hover:text-pink-800 transition-all">Discover more</p>
+          <h2 className="text-2xl font-bold text-gray-800">Explore Our Services</h2>
+        </div>
+      </div>
+      <p className="text-gray-600">Discover exciting features and plans for your project</p>
+    </div>
+  </Link>
+
+  {/* Demo card — only for brand-new users (no ongoing/completed projects) */}
+  {showDemoBox && (
+    <Link to={"/demo"} className="bg-gradient-to-r from-emerald-50 to-emerald-100 rounded-xl p-6 shadow-sm border border-emerald-200 cursor-pointer group hover:shadow-md transition-all h-full flex flex-col">
+      <div className="flex items-center mb-3">
+        <div className="w-10 h-10 bg-emerald-500 text-white rounded-full flex items-center justify-center mr-3">
+          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M8 5v14l11-7z"></path>
+          </svg>
+        </div>
+        <div>
+          <p className="text-emerald-700 font-medium">Demo</p>
+          <h2 className="text-2xl font-bold text-gray-800">See How It Works</h2>
+        </div>
+      </div>
+
+      <div className='flex gap-2'>
+      <p className="text-gray-600">
+        Take a quick demo before starting your first project.
+      </p>
+
+       {/* <button
+          className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 text-sm"
+          onClick={() => navigate('/demo')}
+        >
+          Start Demo
+        </button> */}
+        </div>
+
+      {/* <div className="mt-2 flex gap-2">
+        <button
+          className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 text-sm"
+          onClick={() => navigate('/demo')}
+        >
+          Start Demo
+        </button>
+        <button
+          className="px-4 py-2 bg-white text-emerald-700 border border-emerald-200 rounded-lg hover:bg-emerald-50 text-sm"
+          onClick={() => navigate('/')}
+        >
+          Learn More
+        </button>
+      </div> */}
+    </Link>
+  )}
+</div>
+
       </div>
             
             {/* <div className="flex space-x-2">
