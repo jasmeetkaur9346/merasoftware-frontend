@@ -1,1049 +1,975 @@
-// /src/pages/Practice.js
-import React, { useMemo, useState } from "react";
-import {
-  Users,
-  DollarSign,
-  Package,
-  UserCheck,
-  Headphones,
-  ShoppingCart,
-  FileText,
-  XCircle,
-  Clock,
-  CheckCircle,
-  Truck,
-  Settings,
-  ClipboardList,
-  Archive,
-  Home,
-  Wrench,
-  ListChecks,
-  BadgeCheck,
-  UserPlus,
-} from "lucide-react";
+import React, { useState } from 'react';
+import { ChevronRight, Users, Globe, Smartphone, Database, Code,  UserCheck, Search, Settings, Link, Star, Plus, MapPin, Phone, Mail, Shield, Clock, Award, ArrowRight } from 'lucide-react';
 
-/* ───────────────── Shared Options & Utils ───────────────── */
-const DEVICE_TYPES = ["Laptop", "Projector", "Motherboard", "Mobile"];
-const CONDITIONS = ["Burned", "Dead", "Water Damaged", "Physical Damaged", "Display Problem"];
-const CLOSE_REASONS = ["Customer Refused", "Duplicate Ticket", "Part Not Available", "Other"];
-
-const timeAgo = (dateStr) => {
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const m = Math.floor(diff / 60000);
-  if (m < 60) return `${m} min ago`;
-  const h = Math.floor(m / 60);
-  if (h < 24) return `${h} hr ago`;
-  const d = Math.floor(h / 24);
-  return `${d} day${d > 1 ? "s" : ""} ago`;
-};
-
-function cx(...xs) { return xs.filter(Boolean).join(" "); }
-
-/* ───────────────── Seed Data ───────────────── */
-const initialCustomers = [
+const HomePage = () => {
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [hoveredCard, setHoveredCard] = useState(null);
+  const services = [
   {
-    id: "c1",
-    name: "Arjun Sharma",
-    phone: "9876501234",
-    history: [
-      { date: "2025-08-18", product: "Laptop", issue: "Display flicker" },
-      { date: "2025-07-02", product: "Mobile", issue: "Water damage" },
+    icon: Users,
+    iconBg: 'bg-blue-100/50',
+    iconColor: 'text-blue-600',
+    borderColor: 'border-blue-200',
+    glowColor: 'group-hover:shadow-blue-300/50',
+    title: 'Portfolio Website',
+    specs: [
+      'Responsive Design Branding',
+      'Custom Contact Forms'
     ],
-    jobs: [
-      {
-        id: "r101",
-        date: "2025-08-20",
-        deviceType: "Laptop",
-        barcode: "LAP-2025-0081",
-        condition: "Display Problem",
-        notes: "Seed job",
-        status: "Registered", // Registered | Completed | Closed
-        delivered: false,
-        estimate: "",
-        techNotes: "",
-        closeReason: "",
-      },
-    ],
+    price: '₹6,999',
+    gradientFrom: 'from-blue-50',
+    gradientTo: 'to-blue-100',
+    accentColor: 'bg-blue-600',
   },
   {
-    id: "c2",
-    name: "Simran Kaur",
-    phone: "9988776655",
-    history: [
-      { date: "2025-08-19", product: "Projector", issue: "No power" },
-      { date: "2025-06-28", product: "Motherboard", issue: "Burned IC" },
+    icon: Globe,
+    iconBg: 'bg-green-100/50',
+    iconColor: 'text-green-600',
+    borderColor: 'border-green-200',
+    glowColor: 'group-hover:shadow-green-300/50',
+    title: 'Business Website',
+    specs: [
+      'Multi-page Professional Layout',
+      'Service Showcase Pages'
     ],
-    jobs: [
-      {
-        id: "r202",
-        date: "2025-08-19",
-        deviceType: "Mobile",
-        barcode: "MOB-2025-2211",
-        condition: "Water Damaged",
-        notes: "Seed job",
-        status: "Completed",
-        delivered: false,
-        estimate: "1800",
-        techNotes: "Replaced charging IC + cleaning",
-        closeReason: "",
-      },
-      {
-        id: "r203",
-        date: "2025-08-01",
-        deviceType: "Motherboard",
-        barcode: "MB-5521",
-        condition: "Burned",
-        notes: "Completed example",
-        status: "Completed",
-        delivered: true,
-        estimate: "3200",
-        techNotes: "Reflow + VRM replacement",
-        closeReason: "",
-      },
-    ],
+    price: '₹12,999',
+    gradientFrom: 'from-green-50',
+    gradientTo: 'to-green-100',
+    accentColor: 'bg-green-600',
   },
+  {
+    icon: Smartphone,
+    iconBg: 'bg-purple-100/50',
+    iconColor: 'text-purple-600',
+    borderColor: 'border-purple-200',
+    glowColor: 'group-hover:shadow-purple-300/50',
+    title: 'Mobile App',
+    specs: [
+      'Native App Development',
+      'Payment Gateway Integration'
+    ],
+    price: '₹65,999',
+    gradientFrom: 'from-purple-50',
+    gradientTo: 'to-purple-100',
+    accentColor: 'bg-purple-600',
+  },
+  {
+    icon: Settings,
+    iconBg: 'bg-orange-100/50',
+    iconColor: 'text-orange-600',
+    borderColor: 'border-orange-200',
+    glowColor: 'group-hover:shadow-orange-300/50',
+    title: 'Web Software',
+    specs: [
+      'Custom Business Solutions',
+      'Database System Integration'
+    ],
+    price: '₹45,999',
+    gradientFrom: 'from-orange-50',
+    gradientTo: 'to-orange-100',
+    accentColor: 'bg-orange-600',
+  }
 ];
 
-/* ───────────────── Reusable UI Pieces ───────────────── */
-function StatCard({ icon: Icon, title, value, subtitle, color = "blue" }) {
-  const colorClasses = {
-    blue: "bg-blue-50 border-blue-200 text-blue-700",
-    green: "bg-green-50 border-green-200 text-green-700",
-    purple: "bg-purple-50 border-purple-200 text-purple-700",
-    orange: "bg-orange-50 border-orange-200 text-orange-700",
-    red: "bg-red-50 border-red-200 text-red-700",
-    indigo: "bg-indigo-50 border-indigo-200 text-indigo-700",
-    slate: "bg-slate-50 border-slate-200 text-slate-700",
-  };
   return (
-    <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm font-medium text-gray-600 mb-1">{title}</p>
-          <p className="text-2xl font-bold text-gray-900">{value}</p>
-          {subtitle && <p className="text-xs text-gray-500 mt-1">{subtitle}</p>}
+    <div className="min-h-screen bg-white">
+      {/* Header */}
+      <header className="bg-white shadow-sm px-6 py-4 sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto flex justify-between items-center">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-lg">M</span>
+            </div>
+            <span className="text-2xl font-bold text-gray-800">MeraSoftware</span>
+          </div>
+          <nav className="hidden lg:flex space-x-8">
+            <a href="#" className="text-gray-700 hover:text-blue-600 font-medium transition-colors">Home</a>
+            <a href="#" className="text-gray-700 hover:text-blue-600 font-medium transition-colors">Services</a>
+            <a href="#" className="text-gray-700 hover:text-blue-600 font-medium transition-colors">Solutions</a>
+            <a href="#" className="text-gray-700 hover:text-blue-600 font-medium transition-colors">About</a>
+            <a href="#" className="text-gray-700 hover:text-blue-600 font-medium transition-colors">Contact</a>
+          </nav>
+          <div className="flex items-center space-x-4">
+            <button className="text-gray-700 hover:text-blue-600 font-medium">Sign In</button>
+            <button className="bg-blue-600 text-white px-6 py-2.5 rounded-lg hover:bg-blue-700 font-medium transition-colors">
+              Get Started
+            </button>
+          </div>
         </div>
-        <div className={`p-3 rounded-full ${colorClasses[color]}`}>
-          <Icon size={24} />
+      </header>
+
+      {/* Hero Section */}
+      <section className="relative bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 pt-20 pb-32 overflow-hidden">
+        <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
+        <div className="max-w-7xl mx-auto px-6 relative">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            <div className="space-y-8">
+              <div className="inline-flex items-center bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm font-medium">
+                <Award className="w-4 h-4 mr-2" />
+                Trusted by 500+ Businesses
+              </div>
+              <h1 className="text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
+                We Build Software
+                <span className="block text-blue-600">That Fits Your Needs</span>
+              </h1>
+              <p className="text-xl text-gray-600 leading-relaxed max-w-xl">
+                We start by understanding your business challenges, then design and develop software tailored to your exact requirements.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <button className="bg-blue-600 text-white px-8 py-4 rounded-lg hover:bg-blue-700 font-semibold flex items-center justify-center transition-all transform hover:scale-105">
+                  Start Your Project <ChevronRight className="ml-2 w-5 h-5" />
+                </button>
+                <button className="border-2 border-gray-300 text-gray-700 px-8 py-4 rounded-lg hover:border-blue-600 hover:text-blue-600 font-semibold transition-colors">
+                  View Portfolio
+                </button>
+              </div>
+              <div className="flex items-center space-x-8 pt-4">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-gray-900">500+</div>
+                  <div className="text-sm text-gray-600">Projects Delivered</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-gray-900">98%</div>
+                  <div className="text-sm text-gray-600">Client Retention</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-gray-900">5+</div>
+                  <div className="text-sm text-gray-600">Years Experience</div>
+                </div>
+              </div>
+            </div>
+            <div className="relative">
+              <div className="relative z-10">
+                <img 
+                  src="https://images.unsplash.com/photo-1551434678-e076c223a692?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80" 
+                  alt="Professional team working on software development" 
+                  className="rounded-3xl shadow-3xl border-4 border-blue-600"
+                />
+              </div>
+              <div className="absolute -bottom-6 -left-6 bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+                <div className="flex items-center space-x-4">
+                  <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                    <Shield className="w-6 h-6 text-green-600" />
+                  </div>
+                  <div>
+                    <div className="font-semibold text-gray-900">99.9% Uptime</div>
+                    <div className="text-sm text-gray-600">Enterprise Grade Security</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Existing Customer Section */}
+      <section className="py-20 bg-gradient-to-br from-gray-50 to-blue-50">
+        <div className="max-w-7xl mx-auto px-6">
+          {/* Section Header */}
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm font-medium mb-6">
+              <Shield className="w-4 h-4 mr-2" />
+              For Our Valued Clients
+            </div>
+            <h2 className="text-4xl font-bold text-gray-900 leading-tight mb-3">
+              Your Project,
+              <span className=" text-blue-600"> Always in Your Hands</span>
+            </h2>
+            <p className="text-xl text-gray-600 leading-relaxed max-w-7xl mx-auto">
+              Log in to your client portal to check progress, share updates with your developer, and raise support requests whenever needed.
+            </p>
+          </div>
+
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            {/* Image Side */}
+            <div className="relative">
+              <div className="relative z-10">
+                <img 
+                  src="https://images.unsplash.com/photo-1553877522-43269d4ea984?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80" 
+                  alt="Customer Dashboard Interface" 
+                  className="rounded-2xl shadow-2xl w-full h-full"
+                />
+              </div>
+              {/* Floating Stats Card */}
+              <div className="absolute -bottom-6 -right-6 bg-white p-6 rounded-xl shadow-xl border border-gray-100">
+                <div className="flex items-center space-x-4">
+                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                    <Users className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <div>
+                    <div className="font-bold text-gray-900">500+ Active</div>
+                    <div className="text-sm text-gray-600">Happy Clients</div>
+                  </div>
+                </div>
+              </div>
+              {/* Floating Feature Card */}
+              <div className="absolute -top-4 -left-4 bg-white p-4 rounded-xl shadow-lg border border-gray-100">
+                <div className="flex items-center space-x-3">
+                  <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                  <span className="text-sm font-medium text-gray-700">Live Dashboard</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Information & Directions Side */}
+            <div className="space-y-8">
+
+              {/* Direction Cards */}
+              <div className="space-y-4">
+                <div className="bg-white p-6 rounded-2xl border border-gray-200 hover:border-blue-300 hover:shadow-lg transition-all duration-300 group">
+                  <div className="flex items-center space-x-4">
+                    <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center group-hover:bg-blue-200 transition-colors">
+                      <Database className="w-6 h-6 text-blue-600" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-lg text-gray-900 mb-1">Track Your Project Progress</h3>
+                      <p className="text-gray-600">Access your dashboard to see how much work has been completed.</p>
+                    </div>
+                    <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 font-medium flex items-center transition-colors">
+                      Dashboard<ArrowRight className="ml-2 w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="bg-white p-6 rounded-2xl border border-gray-200 hover:border-emerald-300 hover:shadow-lg transition-all duration-300 group">
+                  <div className="flex items-center space-x-4">
+                    <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center group-hover:bg-emerald-200 transition-colors">
+                      <Plus className="w-6 h-6 text-emerald-600" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-lg text-gray-900 mb-1">Share Data & Updates</h3>
+                      <p className="text-gray-600">Directly connect with your project developer — share files & chat inside the portal.</p>
+                    </div>
+                    <button className="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 font-medium flex items-center transition-colors">
+                      Open Portal <ArrowRight className="ml-2 w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="bg-white p-6 rounded-2xl border border-gray-200 hover:border-purple-300 hover:shadow-lg transition-all duration-300 group">
+                  <div className="flex items-center space-x-4">
+                    <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center group-hover:bg-purple-200 transition-colors">
+                      <Phone className="w-6 h-6 text-purple-600" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-lg text-gray-900 mb-1">Get Help & Support</h3>
+                      <p className="text-gray-600">Submit tickets for any issues and get quick help from our team.</p>
+                    </div>
+                    <button className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 font-medium flex items-center transition-colors">
+                      Support <ArrowRight className="ml-2 w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Quick Stats */}
+              <div className="grid grid-cols-3 gap-4 pt-6">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-blue-600">99.9%</div>
+                  <div className="text-sm text-gray-600">Uptime</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-emerald-600">500+</div>
+                  <div className="text-sm text-gray-600">Projects Managed</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-purple-600">95%</div>
+                  <div className="text-sm text-gray-600">Tickets Resolved on Time</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+   {/* New Customer Section - Merged with What Do You Need boxes */}
+<section className="py-20 bg-gray-50">
+  <div className="max-w-7xl mx-auto px-6">
+    <div className="text-center mb-16">
+      <h2 className="text-4xl font-bold text-gray-900 mb-6">Ready to Transform Your Business?</h2>
+      <p className="text-xl text-gray-600 max-w-6xl mx-auto">Explore the options and choose the solution that matches your need.</p>
+    </div>
+    <div className="bg-white p-10 rounded-3xl shadow-xl max-w-6xl mx-auto border border-gray-100">
+      <h3 className="text-2xl font-bold mb-8 text-center text-gray-900">What's Your Primary Business Goal?</h3>
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="text-center p-6 rounded-xl border border-blue-200 hover:border-blue-600 hover:shadow-lg transition-all cursor-pointer group">
+          <div className="bg-gradient-to-r from-blue-500 to-blue-900 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Globe className="w-8 h-8 text-white" />
+          </div>
+          <h3 className="text-xl font-bold text-gray-900 mb-2">Simple Website</h3>
+          <p className="text-gray-600 mb-4">Professional business website with modern design</p>
+          <div className="text-blue-800 font-medium group-hover:text-blue-600">Starting from ₹5,999</div>
+        </div>
+
+        <div className="text-center p-6 rounded-xl border border-purple-200 hover:border-purple-600 hover:shadow-lg transition-all cursor-pointer group">
+          <div className="bg-gradient-to-r from-purple-500 to-purple-900 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Settings className="w-8 h-8 text-white" />
+          </div>
+          <h3 className="text-xl font-bold text-gray-900 mb-2">Web Software</h3>
+          <p className="text-gray-600 mb-4">Custom business management systems</p>
+          <div className="text-purple-800 font-medium group-hover:text-purple-600">Starting from ₹19,999</div>
+        </div>
+
+        <div className="text-center p-6 rounded-xl border border-teal-200 hover:border-teal-600 hover:shadow-lg transition-all cursor-pointer group">
+          <div className="bg-gradient-to-r from-teal-500 to-teal-900 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Smartphone className="w-8 h-8 text-white" />
+          </div>
+          <h3 className="text-xl font-bold text-gray-900 mb-2">Mobile App</h3>
+          <p className="text-gray-600 mb-4">Native iOS and Android applications</p>
+          <div className="text-teal-800 font-medium group-hover:text-teal-600">Starting from ₹59,999</div>
+        </div>
+
+        <div className="text-center p-6 rounded-xl border border-cyan-200 hover:border-cyan-600 hover:shadow-lg transition-all cursor-pointer group">
+          <div className="bg-gradient-to-r from-cyan-500 to-cyan-900 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Search className="w-8 h-8 text-white" />
+          </div>
+          <h3 className="text-xl font-bold text-gray-900 mb-2">Promote Business on Google</h3>
+          <p className="text-gray-600 mb-4">SEO optimization and Google business promotion</p>
+          <div className="text-cyan-800 font-medium group-hover:text-cyan-600">Starting from ₹4,999</div>
+        </div>
+
+        <div className="text-center p-6 rounded-xl border border-pink-200 hover:border-pink-600 hover:shadow-lg transition-all cursor-pointer group">
+          <div className="bg-gradient-to-r from-pink-500 to-pink-900 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+            <UserCheck className="w-8 h-8 text-white" />
+          </div>
+          <h3 className="text-xl font-bold text-gray-900 mb-2">Hire a Developer</h3>
+          <p className="text-gray-600 mb-4">Dedicated developers for your project needs</p>
+          <div className="text-pink-800 font-medium group-hover:text-pink-600">Lower cost than in-house</div>
+        </div>
+
+        <div className="text-center p-6 rounded-xl border border-indigo-200 hover:border-indigo-600 hover:shadow-lg transition-all cursor-pointer group">
+          <div className="bg-gradient-to-r from-indigo-500 to-indigo-900 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Code className="w-8 h-8 text-white" />
+          </div>
+          <h3 className="text-xl font-bold text-gray-900 mb-2">Update Your Website/App</h3>
+          <p className="text-gray-600 mb-4">Maintenance and updates for existing projects</p>
+          <div className="text-indigo-800 font-medium group-hover:text-indigo-600">Explore our pricing plans</div>
         </div>
       </div>
     </div>
-  );
-}
+  </div>
+</section>
 
-function SidebarItem({ icon: Icon, label, isActive, onClick }) {
-  return (
-    <button
-      onClick={onClick}
-      className={cx(
-        "w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors",
-        isActive ? "bg-blue-50 text-blue-700 border-r-2 border-blue-700" : "text-gray-600 hover:bg-gray-50"
-      )}
-    >
-      <Icon size={20} className="mr-3" />
-      <span className="font-medium">{label}</span>
-    </button>
-  );
-}
-
-function ProgressRow({ label, value, color }) {
-  return (
-    <div className="flex items-center justify-between">
-      <span className="text-gray-600">{label}</span>
-      <div className="flex items-center">
-        <div className="w-32 bg-gray-200 rounded-full h-2 mr-2">
-          <div className={`${color} h-2 rounded-full`} style={{ width: `${value}%` }} />
+      {/* Built Software Solutions */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-gray-900 mb-6">Enterprise-Ready Software Solutions</h2>
+            <p className="text-xl text-gray-600 max-w-7xl mx-auto">Production-tested, scalable solutions built for modern businesses with enterprise-grade security and performance</p>
+          </div>
+          <div className="grid lg:grid-cols-3 gap-8">
+            <div className="bg-white border border-gray-200 rounded-3xl p-8 hover:shadow-2xl transition-all duration-300 group">
+              <div className="mb-8">
+                <img 
+                  src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" 
+                  alt="CRM Dashboard" 
+                  className="w-full h-48 rounded-2xl object-cover mb-6"
+                />
+                <div className="flex items-center mb-4">
+                  <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mr-4">
+                    <Users className="w-6 h-6 text-purple-600" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900">Enterprise CRM</h3>
+                </div>
+                <p className="text-gray-600 text-lg mb-6">Complete customer lifecycle management with AI-powered insights, automation, and advanced analytics</p>
+                <div className="flex items-center justify-between">
+                  <span className="text-blue-600 font-semibold">Starting at ₹50,000</span>
+                  <button className="text-blue-600 font-semibold hover:text-blue-700 flex items-center group-hover:translate-x-1 transition-transform">
+                    Learn More <ArrowRight className="ml-1 w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div className="bg-white border border-gray-200 rounded-3xl p-8 hover:shadow-2xl transition-all duration-300 group">
+              <div className="mb-8">
+                <img 
+                  src="https://images.unsplash.com/photo-1556742111-a301076d9d18?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" 
+                  alt="E-commerce Platform" 
+                  className="w-full h-48 rounded-2xl object-cover mb-6"
+                />
+                <div className="flex items-center mb-4">
+                  <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center mr-4">
+                    <Smartphone className="w-6 h-6 text-emerald-600" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900">E-commerce Suite</h3>
+                </div>
+                <p className="text-gray-600 text-lg mb-6">Full-stack e-commerce platform with payment processing, inventory management, and mobile optimization</p>
+                <div className="flex items-center justify-between">
+                  <span className="text-blue-600 font-semibold">Starting at ₹75,000</span>
+                  <button className="text-blue-600 font-semibold hover:text-blue-700 flex items-center group-hover:translate-x-1 transition-transform">
+                    Learn More <ArrowRight className="ml-1 w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div className="bg-white border border-gray-200 rounded-3xl p-8 hover:shadow-2xl transition-all duration-300 group">
+              <div className="mb-8">
+                <img 
+                  src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" 
+                  alt="Inventory Management" 
+                  className="w-full h-48 rounded-2xl object-cover mb-6"
+                />
+                <div className="flex items-center mb-4">
+                  <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mr-4">
+                    <Database className="w-6 h-6 text-blue-600" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900">Smart Inventory</h3>
+                </div>
+                <p className="text-gray-600 text-lg mb-6">AI-powered inventory management with predictive analytics, automated reordering, and real-time tracking</p>
+                <div className="flex items-center justify-between">
+                  <span className="text-blue-600 font-semibold">Starting at ₹40,000</span>
+                  <button className="text-blue-600 font-semibold hover:text-blue-700 flex items-center group-hover:translate-x-1 transition-transform">
+                    Learn More <ArrowRight className="ml-1 w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-        <span className="text-sm font-medium">{value}%</span>
-      </div>
+      </section>
+
+    {/* Our Popular Development Services */}
+<section className="py-20 bg-gradient-to-br from-gray-50 to-blue-50">
+  <div className="max-w-7xl mx-auto px-6">
+    <div className="text-center mb-16">
+      <h2 className="text-4xl font-bold text-gray-900 mb-6">Our Popular Development Services</h2>
+      <p className="text-xl text-gray-600">These are the services most of our clients choose for their business growth</p>
     </div>
-  );
-}
+    <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+      {services.map((service, index) => (
+        <div 
+          key={index} 
+          className={`
+            relative group cursor-pointer 
+            bg-gradient-to-br ${service.gradientFrom} ${service.gradientTo}
+            rounded-3xl p-6 
+            border ${service.borderColor}
+            shadow-lg hover:shadow-xl 
+            ${service.glowColor}
+            transition-all duration-300 
+            transform hover:-translate-y-2
+            overflow-hidden
+          `}
+          onMouseEnter={() => setHoveredCard(index)}
+          onMouseLeave={() => setHoveredCard(null)}
+          onClick={() => {/* Add navigation or modal logic here */}}
+        >
+          {/* Animated Background Effect */}
+          <div 
+            className={`
+              absolute -inset-px 
+              bg-gradient-to-r 
+              opacity-0 group-hover:opacity-20 
+              transition-opacity duration-300
+              ${service.accentColor}
+            `}
+          ></div>
+          
+          {/* Card Content */}
+          <div className="relative z-10">
+            <div className="flex justify-between items-center mb-6">
+              <div className={`
+                w-16 h-16 ${service.iconBg} 
+                rounded-2xl flex items-center 
+                justify-center
+                border ${service.borderColor}
+              `}>
+                <service.icon className={`w-8 h-8 ${service.iconColor}`} />
+              </div>
+              {hoveredCard === index && (
+                <ArrowRight 
+                  className={`
+                    w-6 h-6 ${service.iconColor} 
+                    transform transition-transform 
+                    group-hover:translate-x-1
+                  `} 
+                />
+              )}
+            </div>
 
-function JobsTable({ title, jobs, onRowClick }) {
-  return (
-    <div className="bg-white rounded-2xl border shadow-sm">
-      <div className="p-4 font-medium">{title}</div>
-      {jobs.length === 0 ? (
-        <p className="px-4 pb-4 text-sm text-gray-500">No items.</p>
-      ) : (
-        <div className="overflow-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-gray-50 text-gray-600">
-                <th className="text-left p-3">Date</th>
-                <th className="text-left p-3">Customer</th>
-                <th className="text-left p-3">Device</th>
-                <th className="text-left p-3">Barcode</th>
-                <th className="text-left p-3">Condition</th>
-                <th className="text-left p-3">Status</th>
-                <th className="text-left p-3">Estimate</th>
-                <th className="text-left p-3">Delivered</th>
-              </tr>
-            </thead>
-            <tbody>
-              {jobs.map((j) => (
-                <tr
-                  key={j.id}
-                  className="border-t hover:bg-gray-50 cursor-pointer"
-                  onClick={() => onRowClick && onRowClick(j)}
-                >
-                  <td className="p-3">{j.date}</td>
-                  <td className="p-3">{j.customerName}</td>
-                  <td className="p-3">{j.deviceType}</td>
-                  <td className="p-3">{j.barcode || "—"}</td>
-                  <td className="p-3">{j.condition}</td>
-                  <td className="p-3">
-                    {j.status}
-                    {j.status === "Closed" && j.closeReason ? ` — ${j.closeReason}` : ""}
-                  </td>
-                  <td className="p-3">{j.estimate ? `₹${j.estimate}` : "—"}</td>
-                  <td className="p-3">{j.status === "Completed" ? (j.delivered ? "✓" : "✗") : "—"}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </div>
-  );
-}
-
-/* ───────────────── Modals ───────────────── */
-function CustomerDetailsModal({ customer, onClose, onRegister }) {
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
-      <div className="relative z-10 w-full max-w-lg bg-white rounded-2xl shadow-xl border p-5">
-        <div className="flex items-start justify-between">
-          <h3 className="text-lg font-semibold">Customer Details</h3>
-          <button onClick={onClose} className="rounded-lg border px-2 py-1 text-sm hover:bg-gray-50">Close</button>
-        </div>
-        <div className="mt-3 space-y-2 text-sm">
-          <div><span className="text-gray-500">Name:</span> <span className="font-medium">{customer.name}</span></div>
-          <div><span className="text-gray-500">Phone:</span> {customer.phone}</div>
-        </div>
-        <div className="mt-4">
-          <div className="font-medium">Last Repairs (max 2)</div>
-          {customer.history.length === 0 ? (
-            <p className="text-sm text-gray-500">No history yet.</p>
-          ) : (
-            <ul className="mt-2 space-y-2">
-              {customer.history.slice(0,2).map((h, idx) => (
-                <li key={idx} className="rounded-xl border p-3">
-                  <div className="text-xs text-gray-500">{h.date}</div>
-                  <div className="font-medium">{h.product}</div>
-                  <div className="text-sm">{h.issue}</div>
+            <h3 className="font-bold text-2xl mb-4 text-gray-900">{service.title}</h3>
+            
+            <ul className="text-xs text-gray-700 space-y-1 mb-6 h-10">
+              {service.specs.map((spec, specIndex) => (
+                <li key={specIndex} className="flex items-center">
+                  <span className={`w-1.5 h-1.5 ${service.accentColor} rounded-full mr-3`}></span>
+                  {spec}
                 </li>
               ))}
             </ul>
-          )}
+
+            <div className="mt-auto">
+              <p className="text-gray-500 text-sm font-semibold uppercase tracking-wide mb-2">Starting from</p>
+              <p className="text-3xl font-bold text-gray-900">{service.price}</p>
+            </div>
+          </div>
         </div>
-        <div className="flex items-center justify-end gap-3 pt-4">
-          <button onClick={onClose} className="rounded-xl border px-4 py-2 text-sm hover:bg-gray-50">Close</button>
-          <button onClick={onRegister} className="rounded-xl bg-blue-600 text-white px-4 py-2 text-sm hover:bg-blue-700">Register New Device</button>
-        </div>
-      </div>
+      ))}
     </div>
-  );
-}
+  </div>
+</section>
 
-function RegisterModal({ customer, onClose, onRegister }) {
-  const [barcode, setBarcode] = useState("");
-  const [deviceType, setDeviceType] = useState(DEVICE_TYPES[0]);
-  const [condition, setCondition] = useState(CONDITIONS[0]);
-  const [notes, setNotes] = useState("");
 
-  function simulateScan() {
-    setBarcode("LAP-2025-0081");
-    setDeviceType("Laptop");
-    setCondition("Display Problem");
-    setNotes("Auto-filled from simulated barcode scan.");
-  }
 
-  function handleSubmit(e) {
-    e.preventDefault();
-    const payload = {
-      customerId: customer.id,
-      customerName: customer.name,
-      barcode: barcode.trim(),
-      deviceType,
-      condition,
-      notes: notes.trim(),
-      date: new Date().toISOString().slice(0, 10),
-    };
-    onRegister(payload);
-  }
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
-      <div className="relative z-10 w-full max-w-lg bg-white rounded-2xl shadow-xl border p-5">
-        <div className="flex items-start justify-between">
-          <h3 className="text-lg font-semibold">Register New Device</h3>
-          <button onClick={onClose} className="rounded-lg border px-2 py-1 text-sm hover:bg-gray-50">Close</button>
-        </div>
-        <form className="mt-4 space-y-4" onSubmit={handleSubmit}>
-          <div className="rounded-xl border p-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="font-medium">Barcode Scanner</div>
-                <div className="text-xs text-gray-500">Use a scanner or paste code below. Click simulate to auto-fill.</div>
-              </div>
-              <button type="button" onClick={simulateScan} className="text-sm rounded-lg border px-3 py-1 hover:bg-gray-50">Simulate Scan</button>
-            </div>
-            <input className="mt-3 w-full rounded-lg border px-3 py-2" placeholder="Scan/Enter Barcode" value={barcode} onChange={(e) => setBarcode(e.target.value)} />
+      {/* Core Services */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-gray-900 mb-6">Our Core Expertise</h2>
+            <p className="text-xl text-gray-600 max-w-6xl mx-auto">End-to-end technology solutions powered by cutting-edge frameworks and industry best practices</p>
           </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="text-sm text-gray-600">Device</label>
-              <select className="mt-1 w-full rounded-lg border px-3 py-2 bg-white" value={deviceType} onChange={(e) => setDeviceType(e.target.value)}>
-                {DEVICE_TYPES.map((d) => <option key={d} value={d}>{d}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="text-sm text-gray-600">Condition (first look)</label>
-              <select className="mt-1 w-full rounded-lg border px-3 py-2 bg-white" value={condition} onChange={(e) => setCondition(e.target.value)}>
-                {CONDITIONS.map((c) => <option key={c} value={c}>{c}</option>)}
-              </select>
-            </div>
-          </div>
-
-          <div>
-            <label className="text-sm text-gray-600">Notes (optional)</label>
-            <textarea className="mt-1 w-full rounded-lg border px-3 py-2" rows={3} placeholder="Any quick notes about the device..." value={notes} onChange={(e) => setNotes(e.target.value)} />
-          </div>
-
-          <div className="flex items-center justify-end gap-3 pt-2">
-            <button type="button" onClick={onClose} className="rounded-xl border px-4 py-2 text-sm hover:bg-gray-50">Cancel</button>
-            <button type="submit" className="rounded-xl bg-blue-600 text-white px-4 py-2 text-sm hover:bg-blue-700">Register</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-}
-
-function JobDetailsModal({ role, job, onClose, onSubmitEstimate, onComplete, onCloseTicket, onDeliver }) {
-  const [estimate, setEstimate] = useState(job.estimate || "");
-  const [techNotes, setTechNotes] = useState(job.techNotes || "");
-  const [closeReason, setCloseReason] = useState(CLOSE_REASONS[0]);
-
-  const isReception = role === "receptionist";
-  const isTech = role === "technician";
-
-  const canEditTech = isTech && job.status === "Registered";
-  const canDeliver = isReception && job.status === "Completed" && !job.delivered;
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
-      <div className="relative z-10 w-full max-w-2xl bg-white rounded-2xl shadow-xl border p-5">
-        <div className="flex items-start justify-between">
-          <h3 className="text-lg font-semibold">Job Details</h3>
-          <button onClick={onClose} className="rounded-lg border px-2 py-1 text-sm hover:bg-gray-50">Close</button>
-        </div>
-
-        <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-sm">
-          <div><span className="text-gray-500">Date:</span> {job.date}</div>
-          <div><span className="text-gray-500">Customer:</span> {job.customerName}</div>
-          <div><span className="text-gray-500">Device:</span> {job.deviceType}</div>
-          <div><span className="text-gray-500">Barcode:</span> {job.barcode || "—"}</div>
-          <div className="sm:col-span-2"><span className="text-gray-500">Condition:</span> {job.condition}</div>
-          {job.notes && <div className="sm:col-span-2"><span className="text-gray-500">Reception Notes:</span> {job.notes}</div>}
-          <div className="sm:col-span-2">
-            <span className="text-gray-500">Status:</span> <span className="font-medium">{job.status}</span>
-            {job.status === "Closed" && job.closeReason ? <span className="ml-1">— {job.closeReason}</span> : null}
-          </div>
-          {job.status === "Completed" && (
-            <div className="sm:col-span-2"><span className="text-gray-500">Delivered:</span> {job.delivered ? "Yes" : "No"}</div>
-          )}
-        </div>
-
-        <div className="mt-4 rounded-xl border p-4 bg-gray-50">
-          <div className="font-medium mb-2">Technician Estimate & Notes</div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="text-sm text-gray-600">Estimated Price (₹)</label>
-              <input
-                type="number"
-                className="mt-1 w-full rounded-lg border px-3 py-2 bg-white"
-                value={estimate}
-                onChange={(e) => setEstimate(e.target.value)}
-                disabled={!canEditTech}
-              />
-            </div>
-            <div className="sm:col-span-1">
-              <label className="text-sm text-gray-600">Technician Notes</label>
-              <input
-                className="mt-1 w-full rounded-lg border px-3 py-2 bg-white"
-                placeholder="Work summary / parts / diagnosis"
-                value={techNotes}
-                onChange={(e) => setTechNotes(e.target.value)}
-                disabled={!canEditTech}
-              />
-            </div>
-          </div>
-          {isTech && job.status === "Registered" && (
-            <p className="text-xs text-gray-500 mt-2">
-              Tip: first click <b>Submit Estimate</b> to save values, then <b>Complete Repair</b> when job is done or <b>Close</b> if customer refused.
-            </p>
-          )}
-        </div>
-
-        <div className="flex flex-wrap items-center justify-end gap-3 pt-4">
-          <button onClick={onClose} className="rounded-xl border px-4 py-2 text-sm hover:bg-gray-50">Close</button>
-
-          {/* Technician Actions */}
-          {isTech && job.status === "Registered" && (
-            <>
-              <button
-                onClick={() => onSubmitEstimate && onSubmitEstimate({ estimate: estimate.trim(), techNotes: techNotes.trim() })}
-                className="rounded-xl border px-4 py-2 text-sm hover:bg-gray-50"
-              >Submit Estimate</button>
-
-              <button
-                onClick={() => onComplete && onComplete({ estimate: estimate.trim(), techNotes: techNotes.trim() })}
-                className="rounded-xl bg-blue-600 text-white px-4 py-2 text-sm hover:bg-blue-700"
-              >Complete Repair</button>
-
-              <div className="inline-flex items-center gap-2">
-                <select className="rounded-lg border px-2 py-2 text-sm bg-white" value={closeReason} onChange={(e) => setCloseReason(e.target.value)}>
-                  {CLOSE_REASONS.map((r) => <option key={r} value={r}>{r}</option>)}
-                </select>
-                <button
-                  onClick={() => onCloseTicket && onCloseTicket(closeReason, { estimate: estimate.trim(), techNotes: techNotes.trim() })}
-                  className="rounded-xl border px-4 py-2 text-sm hover:bg-gray-50"
-                >Close (Refused)</button>
-              </div>
-            </>
-          )}
-
-          {/* Receptionist Action */}
-          {canDeliver && (
-            <button onClick={onDeliver} className="rounded-xl bg-blue-600 text-white px-4 py-2 text-sm hover:bg-blue-700">Mark Delivered</button>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ───────────────── Role: Reception (Sidebar + Content) ───────────────── */
-function ReceptionContent({ active, setActive, customers = [], setCustomers }) {
-  // Shared derivations
-  const allJobs = useMemo(
-    () => (customers || []).flatMap((c) => (c.jobs || []).map((j) => ({ ...j, customerId: c.id, customerName: c.name }))),
-    [customers]
-  );
-  const jobsRegistered = useMemo(() => allJobs.filter((j) => j.status === "Registered").sort((a,b)=> (b.date > a.date ? 1 : -1)), [allJobs]);
-  const jobsCompleted = useMemo(() => allJobs.filter((j) => j.status === "Completed").sort((a,b)=> (b.date > a.date ? 1 : -1)), [allJobs]);
-  const jobsReadyToDeliver = useMemo(() => jobsCompleted.filter((j) => !j.delivered), [jobsCompleted]);
-
-  // Dashboard metrics
-  const metrics = {
-    customers: customers.length,
-    registered: jobsRegistered.length,
-    ready: jobsReadyToDeliver.length,
-    completed: jobsCompleted.length,
-  };
-
-  // State for Customers page & modals
-  const [query, setQuery] = useState("");
-  const [customerForModal, setCustomerForModal] = useState(null);
-  const [showRegisterModal, setShowRegisterModal] = useState(false);
-  const [jobForModal, setJobForModal] = useState(null);
-
-  const filteredCustomers = useMemo(() => {
-    const q = query.replace(/[^0-9]/g, "");
-    if (!q) return customers;
-    return customers.filter((c) => c.phone.includes(q));
-  }, [query, customers]);
-
-  const exactMatch = useMemo(() => {
-    const q = query.replace(/[^0-9]/g, "");
-    if (q.length < 10) return null;
-    return customers.find((c) => c.phone === q) || null;
-  }, [query, customers]);
-
-  function addNewCustomer() {
-    const phone = query.replace(/[^0-9]/g, "");
-    if (phone.length < 10) return;
-    const name = window.prompt("Enter customer name:", "New Customer");
-    if (!name) return;
-    const newCustomer = { id: `c_${Date.now()}`, name, phone, history: [], jobs: [] };
-    setCustomers((prev) => {
-      const next = [...prev, newCustomer];
-      while (next.length > 2) next.shift(); // keep max 2 (prototype)
-      return next;
-    });
-  }
-  function openCustomerModal(c) { setCustomerForModal(c); }
-  function openRegisterModalFor(c) { setCustomerForModal({ ...c, __registerOnly: true }); setShowRegisterModal(true); }
-  function addJobForCustomer(customerId, job) {
-    setCustomers((prev) => prev.map((c) => c.id === customerId ? { ...c, jobs: [job, ...(c.jobs||[])] } : c));
-  }
-
-  // Sidebar items for Reception
-  const sidebar = [
-    { key: "dashboard", label: "Dashboard", icon: Home },
-    { key: "customers", label: "Customers", icon: Users },
-    { key: "registered", label: "Registered Devices", icon: ClipboardList },
-    { key: "ready", label: "Ready to Deliver", icon: BadgeCheck },
-    { key: "completed", label: "Completed Tasks", icon: ListChecks },
-  ];
-
-  /* Content Switch */
-  return (
-    <>
-      {/* Sidebar (left) */}
-      <div className="w-64 bg-white shadow-sm border-r border-gray-200">
-        <div className="p-6 border-b border-gray-200">
-          <h1 className="text-xl font-bold text-gray-800">CRM Dashboard</h1>
-          <p className="text-sm text-gray-500 mt-1">Reception Panel</p>
-        </div>
-        <nav className="p-4 space-y-2">
-          {sidebar.map((s) => (
-            <SidebarItem
-              key={s.key}
-              icon={s.icon}
-              label={s.label}
-              isActive={active === s.key}
-              onClick={() => setActive(s.key)}
-            />
-          ))}
-        </nav>
-      </div>
-
-      {/* Main (right) — header now comes from parent */}
-      <div className="flex-1 overflow-auto">
-        {active === "dashboard" && (
-          <div className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-              <StatCard icon={Users} title="Total Customers" value={metrics.customers} color="blue" />
-              <StatCard icon={ClipboardList} title="Registered Devices" value={metrics.registered} color="indigo" />
-              <StatCard icon={BadgeCheck} title="Ready to Deliver" value={metrics.ready} color="green" />
-              <StatCard icon={ListChecks} title="Completed" value={metrics.completed} color="purple" />
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Quick Actions</h3>
-                <div className="flex flex-wrap gap-3">
-                  <button onClick={() => setActive("customers")} className="px-4 py-2 rounded-lg border hover:bg-gray-50 flex items-center gap-2">
-                    <UserPlus size={18}/> Add / Search Customer
-                  </button>
-                  <button onClick={() => setActive("ready")} className="px-4 py-2 rounded-lg border hover:bg-gray-50 flex items-center gap-2">
-                    <BadgeCheck size={18}/> Ready to Deliver
-                  </button>
-                </div>
-              </div>
-
-              <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Status Overview</h3>
-                <div className="space-y-4">
-                  <ProgressRow label="Registered" value={metrics.registered ? Math.min(100, metrics.registered * 25) : 0} color="bg-orange-500" />
-                  <ProgressRow label="Ready" value={metrics.ready ? Math.min(100, metrics.ready * 50) : 0} color="bg-blue-500" />
-                  <ProgressRow label="Completed" value={metrics.completed ? Math.min(100, metrics.completed * 50) : 0} color="bg-green-500" />
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {active === "customers" && (
-          <div className="p-6 space-y-6">
-            <div className="bg-white rounded-2xl border shadow-sm p-4">
-              <h2 className="text-lg font-medium">Customers</h2>
-              <p className="text-sm text-gray-500">Search by phone. Enter full number to add if no match appears.</p>
-              <div className="mt-3 flex gap-2">
-                <input
-                  type="tel"
-                  inputMode="numeric"
-                  placeholder="Enter phone number"
-                  className="w-full rounded-xl border px-3 py-2 focus:outline-none focus:ring"
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="text-center group">
+              <div className="relative mb-6">
+                <img 
+                  src="https://images.unsplash.com/photo-1467232004584-a241de8bcf5d?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" 
+                  alt="Web Development" 
+                  className="w-40 h-30 rounded-2xl object-cover mx-auto mb-4 group-hover:scale-110 transition-transform"
                 />
-                <button className="rounded-xl border px-3 py-2 text-sm hover:bg-gray-50" onClick={() => setQuery("")}>Clear</button>
-                {!exactMatch && query.replace(/[^0-9]/g, "").length >= 10 && (
-                  <button onClick={addNewCustomer} className="rounded-xl bg-blue-600 text-white px-4 py-2 text-sm hover:bg-blue-700">Add New Customer</button>
-                )}
+                
               </div>
+              <h3 className="font-bold text-xl mb-3 text-gray-900">Web Development</h3>
+              <p className="text-gray-600">Full-stack web applications with modern frameworks and cloud deployment</p>
             </div>
-
-            <div className="bg-white rounded-2xl border shadow-sm">
-              <div className="p-4 font-medium">Customers List</div>
-              <div className="overflow-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="bg-gray-50 text-gray-600">
-                      <th className="text-left p-3">Name</th>
-                      <th className="text-left p-3">Phone</th>
-                      <th className="text-left p-3 w-36">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredCustomers.map((c) => (
-                      <tr key={c.id} className="border-t">
-                        <td className="p-3">{c.name}</td>
-                        <td className="p-3">{c.phone}</td>
-                        <td className="p-3">
-                          <div className="flex gap-2">
-                            <button onClick={() => setCustomerForModal(c)} className="rounded border px-3 py-1 hover:bg-gray-50">View</button>
-                            <button onClick={() => openRegisterModalFor(c)} className="rounded border px-3 py-1 hover:bg-gray-50">Register Device</button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                    {filteredCustomers.length === 0 && (
-                      <tr><td colSpan={3} className="p-6 text-center text-gray-500">No customers found.</td></tr>
-                    )}
-                  </tbody>
-                </table>
+            <div className="text-center group">
+              <div className="relative mb-6">
+                <img 
+                  src="https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" 
+                  alt="Mobile Development" 
+                  className="w-40 h-30 rounded-2xl object-cover mx-auto mb-4 group-hover:scale-110 transition-transform"
+                />
+                
               </div>
+              <h3 className="font-bold text-xl mb-3 text-gray-900">Mobile Development</h3>
+              <p className="text-gray-600">Native iOS and Android apps with cross-platform compatibility</p>
             </div>
-          </div>
-        )}
-
-        {active === "registered" && (
-          <div className="p-6">
-            <JobsTable title="Registered Devices" jobs={jobsRegistered} onRowClick={setJobForModal} />
-          </div>
-        )}
-
-        {active === "ready" && (
-          <div className="p-6">
-            <JobsTable title="Ready to Deliver" jobs={jobsReadyToDeliver} onRowClick={setJobForModal} />
-          </div>
-        )}
-
-        {active === "completed" && (
-          <div className="p-6">
-            <JobsTable title="Completed Tasks" jobs={jobsCompleted} onRowClick={setJobForModal} />
-          </div>
-        )}
-
-        {/* Modals */}
-        {customerForModal && !customerForModal.__registerOnly && (
-          <CustomerDetailsModal
-            customer={customerForModal}
-            onClose={() => setCustomerForModal(null)}
-            onRegister={() => { const c = customerForModal; setCustomerForModal(null); openRegisterModalFor(c); }}
-          />
-        )}
-        {showRegisterModal && customerForModal && customerForModal.__registerOnly && (
-          <RegisterModal
-            customer={customerForModal}
-            onClose={() => { setShowRegisterModal(false); setCustomerForModal(null); }}
-            onRegister={(payload) => {
-              const job = { id: `r_${Date.now()}`, status: "Registered", delivered: false, estimate: "", techNotes: "", closeReason: "", ...payload };
-              addJobForCustomer(customerForModal.id, job);
-              setShowRegisterModal(false);
-              setCustomerForModal(null);
-              setActive("registered");
-            }}
-          />
-        )}
-        {jobForModal && (
-          <JobDetailsModal
-            role="receptionist"
-            job={jobForModal}
-            onClose={() => setJobForModal(null)}
-            onDeliver={() => {
-              const j = jobForModal;
-              setCustomers((prev) =>
-                prev.map((c) =>
-                  c.id === j.customerId
-                    ? { ...c, jobs: c.jobs.map((x) => x.id === j.id ? { ...x, delivered: true } : x) }
-                    : c
-                )
-              );
-              setJobForModal(null);
-            }}
-          />
-        )}
-      </div>
-    </>
-  );
-}
-
-/* ───────────────── Role: Technician (Sidebar + Content) ───────────────── */
-function TechnicianContent({ active, setActive, customers = [], setCustomers }) {
-  const allJobs = useMemo(
-    () => (customers || []).flatMap((c) => (c.jobs || []).map((j) => ({ ...j, customerId: c.id, customerName: c.name }))),
-    [customers]
-  );
-  const jobsRegistered = useMemo(() => allJobs.filter((j) => j.status === "Registered").sort((a,b)=> (b.date > a.date ? 1 : -1)), [allJobs]);
-  const jobsCompleted = useMemo(() => allJobs.filter((j) => j.status === "Completed").sort((a,b)=> (b.date > a.date ? 1 : -1)), [allJobs]);
-
-  const metrics = {
-    registered: jobsRegistered.length,
-    completed: jobsCompleted.length,
-    closed: allJobs.filter((j) => j.status === "Closed").length,
-  };
-
-  const [jobForModal, setJobForModal] = useState(null);
-
-  function upsertJob(jobId, customerId, updater) {
-    setCustomers((prev) => prev.map((c) => c.id !== customerId ? c : { ...c, jobs: c.jobs.map((j) => j.id === jobId ? updater(j) : j) }));
-  }
-
-  const sidebar = [
-    { key: "dashboard", label: "Dashboard", icon: Home },
-    { key: "registered", label: "Registered Devices", icon: Wrench },
-    { key: "completed", label: "Completed Tasks", icon: ListChecks },
-  ];
-
-  return (
-    <>
-      {/* Sidebar */}
-      <div className="w-64 bg-white shadow-sm border-r border-gray-200">
-        <div className="p-6 border-b border-gray-200">
-          <h1 className="text-xl font-bold text-gray-800">CRM Dashboard</h1>
-          <p className="text-sm text-gray-500 mt-1">Technician Panel</p>
-        </div>
-        <nav className="p-4 space-y-2">
-          {sidebar.map((s) => (
-            <SidebarItem
-              key={s.key}
-              icon={s.icon}
-              label={s.label}
-              isActive={active === s.key}
-              onClick={() => setActive(s.key)}
-            />
-          ))}
-        </nav>
-      </div>
-
-      {/* Main — header now comes from parent */}
-      <div className="flex-1 overflow-auto">
-        {active === "dashboard" && (
-          <div className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-              <StatCard icon={Wrench} title="Registered" value={metrics.registered} color="orange" />
-              <StatCard icon={ListChecks} title="Completed" value={metrics.completed} color="green" />
-              <StatCard icon={XCircle} title="Closed / Refused" value={metrics.closed} color="red" />
+            <div className="text-center group">
+              <div className="relative mb-6">
+                <img 
+                  src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" 
+                  alt="Enterprise Software" 
+                  className="w-40 h-30 rounded-2xl object-cover mx-auto mb-4 group-hover:scale-110 transition-transform"
+                />
+               
+              </div>
+              <h3 className="font-bold text-xl mb-3 text-gray-900">Enterprise Solutions</h3>
+              <p className="text-gray-600">Scalable business systems with enterprise-grade security and performance</p>
             </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Quick Tips</h3>
-                <ul className="list-disc pl-5 text-sm text-gray-600 space-y-2">
-                  <li>Open a job to add an estimate and notes.</li>
-                  <li>Complete Repair to move it to Completed.</li>
-                  <li>Close (Refused) when customer declines.</li>
-                </ul>
+            <div className="text-center group">
+              <div className="relative mb-6">
+                <img 
+                  src="https://images.unsplash.com/photo-1556740758-90de374c12ad?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" 
+                  alt="Consulting" 
+                  className="w-40 h-30 rounded-2xl object-cover mx-auto mb-4 group-hover:scale-110 transition-transform"
+                />
+                
               </div>
-
-              <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Recent Registered</h3>
-                <ul className="space-y-3">
-                  {jobsRegistered.slice(0,3).map((job) => (
-                    <li key={job.id} className="rounded-xl border p-3 flex items-center justify-between">
-                      <div>
-                        <div className="text-sm text-gray-500">{timeAgo(job.date)}</div>
-                        <div className="font-medium">{job.deviceType} {job.barcode ? `(${job.barcode})` : ""}</div>
-                        <div className="text-sm">Owner: {job.customerName}</div>
-                      </div>
-                      <button className="rounded-lg border px-3 py-1 text-sm hover:bg-gray-50" onClick={() => setActive("registered")}>Open</button>
-                    </li>
-                  ))}
-                  {jobsRegistered.length === 0 && <li className="text-sm text-gray-500">No registered devices.</li>}
-                </ul>
-              </div>
+              <h3 className="font-bold text-xl mb-3 text-gray-900">Strategic Consulting</h3>
+              <p className="text-gray-600">Technology strategy, digital transformation, and architecture consulting</p>
             </div>
           </div>
-        )}
-
-        {active === "registered" && (
-          <div className="p-6">
-            <JobsTable title="Registered Devices" jobs={jobsRegistered} onRowClick={setJobForModal} />
-          </div>
-        )}
-
-        {active === "completed" && (
-          <div className="p-6">
-            <JobsTable title="Completed Tasks" jobs={jobsCompleted} onRowClick={setJobForModal} />
-          </div>
-        )}
-
-        {jobForModal && (
-          <JobDetailsModal
-            role="technician"
-            job={jobForModal}
-            onClose={() => setJobForModal(null)}
-            onSubmitEstimate={(data) => {
-              upsertJob(jobForModal.id, jobForModal.customerId, (j) => ({ ...j, estimate: data.estimate, techNotes: data.techNotes }));
-              setJobForModal(null);
-            }}
-            onComplete={(data) => {
-              upsertJob(jobForModal.id, jobForModal.customerId, (j) => ({ ...j, status: "Completed", estimate: data.estimate ?? j.estimate, techNotes: data.techNotes ?? j.techNotes }));
-              setJobForModal(null);
-            }}
-            onCloseTicket={(reason, data) => {
-              upsertJob(jobForModal.id, jobForModal.customerId, (j) => ({ ...j, status: "Closed", closeReason: reason, estimate: data?.estimate ?? j.estimate, techNotes: data?.techNotes ?? j.techNotes }));
-              setJobForModal(null);
-            }}
-          />
-        )}
-      </div>
-    </>
-  );
-}
-
-/* ───────────────── Top Header (shared for all roles) ───────────────── */
-function TopHeader({ role, adminSection, receptionSection, technicianSection, setRole }) {
-  function getTitle() {
-    if (role === "admin") {
-      return adminSection === "dashboard" ? "Dashboard Overview" :
-             adminSection === "users" ? "User Management" :
-             adminSection === "workorders" ? "Work Orders" :
-             adminSection === "inventory" ? "Inventory Management" : "Management";
-    }
-    if (role === "receptionist") {
-      return receptionSection === "dashboard" ? "Dashboard Overview" :
-             receptionSection === "customers" ? "Customers" :
-             receptionSection === "registered" ? "Registered Devices" :
-             receptionSection === "ready" ? "Ready to Deliver" :
-             "Completed Tasks";
-    }
-    // technician
-    return technicianSection === "dashboard" ? "Dashboard Overview" :
-           technicianSection === "registered" ? "Registered Devices" :
-           "Completed Tasks";
-  }
-
-  const subtitle = role === "admin"
-    ? "Welcome back, Admin"
-    : role === "receptionist"
-      ? "Reception Panel"
-      : "Technician Panel";
-
-  return (
-    <div className="bg-white shadow-sm border-b border-gray-200 p-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-800">{getTitle()}</h2>
-          <p className="text-gray-600 mt-1">{subtitle}</p>
         </div>
-        <div className="flex items-center gap-4">
-          <div className="text-right">
-            <p className="text-sm text-gray-500">Today</p>
-            <p className="text-lg font-semibold text-gray-800">{new Date().toLocaleDateString('en-IN')}</p>
+      </section>
+
+      {/* Customer Testimonials */}
+      <section className="py-20 bg-gradient-to-br from-blue-50 to-indigo-100">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-gray-900 mb-6">Trusted by Industry Leaders</h2>
+            <p className="text-xl text-gray-600 max-w-6xl mx-auto">Real success stories from businesses that have transformed with our solutions</p>
           </div>
-          <div className="flex items-center rounded-xl border bg-white p-1 shadow-sm">
-            <RoleButton label="Admin" active={role === 'admin'} onClick={() => setRole('admin')} />
-            <RoleButton label="Reception" active={role === 'receptionist'} onClick={() => setRole('receptionist')} />
-            <RoleButton label="Technician" active={role === 'technician'} onClick={() => setRole('technician')} />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ───────────────── Root App (Admin Layout + Role Switch) ───────────────── */
-export default function App() {
-  const [role, setRole] = useState("admin"); // admin | receptionist | technician
-  const [adminSection, setAdminSection] = useState("dashboard"); // admin's left sidebar
-  const [receptionSection, setReceptionSection] = useState("dashboard");
-  const [technicianSection, setTechnicianSection] = useState("dashboard");
-  const [customers, setCustomers] = useState(initialCustomers);
-
-  // Derived metrics for Admin (from jobs)
-  const jobs = (customers || []).flatMap((c) => c.jobs || []);
-  const counts = jobs.reduce(
-    (acc, j) => {
-      const s = j.status;
-      acc.total += 1;
-      acc[s] = (acc[s] || 0) + 1;
-      if (s === "Completed" && j.delivered) acc.delivered = (acc.delivered || 0) + 1;
-      if (s === "Completed" && !j.delivered) acc.ready = (acc.ready || 0) + 1;
-      return acc;
-    },
-    { total: 0, delivered: 0, ready: 0 }
-  );
-
-  const adminMetrics = {
-    totalCustomers: (customers || []).length,
-    monthlyRevenue: 85420,
-    inventoryItems: 342,
-    activeTechnicians: { active: 8, total: 12 },
-    activeReceptionists: 3,
-    newOrders: counts["Registered"] || 0,
-    totalEstimates: 45,
-    customerRefused: counts["Closed"] || 0,
-    inProgress: counts["Registered"] || 0,
-    readyForDelivery: counts.ready || 0,
-    totalDelivered: counts.delivered || 0,
-    completedPct: counts.total ? Math.round(((counts["Completed"] || 0) / counts.total) * 100) : 0,
-    inProgressPct: counts.total ? Math.round(((counts["Registered"] || 0) / counts.total) * 100) : 0,
-    readyPct: counts.total ? Math.round((counts.ready / counts.total) * 100) : 0,
-  };
-
-  // Admin sidebar items
-  const adminSidebar = [
-    { key: "dashboard", label: "Dashboard", icon: Home },
-    { key: "users", label: "User Management", icon: Users },
-    { key: "workorders", label: "Work Orders", icon: ClipboardList },
-    { key: "inventory", label: "Inventory", icon: Archive },
-    { key: "management", label: "Management", icon: Settings },
-  ];
-
-  return (
-    <div className="flex h-screen bg-gray-50">
-      {/* Sidebar — Role-based */}
-      {role === "admin" ? (
-        <div className="w-64 bg-white shadow-sm border-r border-gray-200">
-          <div className="p-6 border-b border-gray-200">
-            <h1 className="text-xl font-bold text-gray-800">CRM Dashboard</h1>
-            <p className="text-sm text-gray-500 mt-1">Admin Panel</p>
-          </div>
-          <nav className="p-4 space-y-2">
-            {adminSidebar.map((s) => (
-              <SidebarItem
-                key={s.key}
-                icon={s.icon}
-                label={s.label}
-                isActive={adminSection === s.key}
-                onClick={() => setAdminSection(s.key)}
-              />
-            ))}
-          </nav>
-        </div>
-      ) : null}
-
-      {/* Main Content Wrapper */}
-      <div className={`${role === "admin" ? "flex-1" : ""} flex flex-col w-full`}>
-        {/* 🔹 Top Header now shown for ALL roles */}
-        <TopHeader
-          role={role}
-          adminSection={adminSection}
-          receptionSection={receptionSection}
-          technicianSection={technicianSection}
-          setRole={setRole}
-        />
-
-        {/* Body area below header */}
-        <div className="flex flex-1">
-          {/* Admin main */}
-          <div className={`${role === "admin" ? "flex-1 overflow-auto" : "hidden"}`}>
-            {adminSection === "dashboard" && (
-              <div className="p-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
-                  <StatCard icon={Users} title="Total Customers" value={adminMetrics.totalCustomers.toLocaleString()} color="blue" />
-                  <StatCard icon={DollarSign} title="This Month Revenue" value={`₹${adminMetrics.monthlyRevenue.toLocaleString()}`} color="green" />
-                  <StatCard icon={Package} title="Inventory Items" value={adminMetrics.inventoryItems} color="purple" />
-                  <StatCard icon={UserCheck} title="Active Technicians" value={`${adminMetrics.activeTechnicians.active}/${adminMetrics.activeTechnicians.total}`} subtitle="Currently working" color="indigo" />
-                  <StatCard icon={Headphones} title="Active Receptionists" value={adminMetrics.activeReceptionists} color="blue" />
-                  <StatCard icon={ShoppingCart} title="New Orders" value={adminMetrics.newOrders} color="green" />
-                  <StatCard icon={FileText} title="Total Estimates" value={adminMetrics.totalEstimates} color="purple" />
-                  <StatCard icon={XCircle} title="Customer Refused" value={adminMetrics.customerRefused} color="red" />
-                  <StatCard icon={Clock} title="In Progress Projects" value={adminMetrics.inProgress} color="orange" />
-                  <StatCard icon={CheckCircle} title="Ready for Delivery" value={adminMetrics.readyForDelivery} color="green" />
-                  <StatCard icon={Truck} title="Total Delivered" value={adminMetrics.totalDelivered} color="blue" />
+          <div className="grid lg:grid-cols-3 gap-8">
+            <div className="bg-white p-8 rounded-3xl shadow-xl border border-gray-100">
+              <div className="flex items-center mb-6">
+                <img 
+                  src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" 
+                  alt="Raj Patel" 
+                  className="w-16 h-16 rounded-full object-cover mr-4"
+                />
+                <div>
+                  <div className="font-bold text-lg text-gray-900">Raj Patel</div>
+                  <div className="text-gray-600">CEO, TechVenture Inc.</div>
                 </div>
+              </div>
+              <div className="flex mb-6">
+                {[1,2,3,4,5].map((star) => (
+                  <Star key={star} className="w-5 h-5 text-yellow-400 fill-current" />
+                ))}
+              </div>
+              <p className="text-gray-700 text-lg leading-relaxed">"MeraSoftware transformed our business operations completely. Their ongoing support and innovative approach have been instrumental in our 300% growth over the past two years."</p>
+            </div>
+            <div className="bg-white p-8 rounded-3xl shadow-xl border border-gray-100">
+              <div className="flex items-center mb-6">
+                <img 
+                  src="https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" 
+                  alt="Priya Sharma" 
+                  className="w-16 h-16 rounded-full object-cover mr-4"
+                />
+                <div>
+                  <div className="font-bold text-lg text-gray-900">Priya Sharma</div>
+                  <div className="text-gray-600">Founder, Digital Solutions</div>
+                </div>
+              </div>
+              <div className="flex mb-6">
+                {[1,2,3,4,5].map((star) => (
+                  <Star key={star} className="w-5 h-5 text-yellow-400 fill-current" />
+                ))}
+              </div>
+              <p className="text-gray-700 text-lg leading-relaxed">"The enterprise-grade solutions and exceptional support team make MeraSoftware our trusted technology partner. Their expertise in modern frameworks is unmatched."</p>
+            </div>
+            <div className="bg-white p-8 rounded-3xl shadow-xl border border-gray-100">
+              <div className="flex items-center mb-6">
+                <img 
+                  src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" 
+                  alt="Amit Kumar" 
+                  className="w-16 h-16 rounded-full object-cover mr-4"
+                />
+                <div>
+                  <div className="font-bold text-lg text-gray-900">Amit Kumar</div>
+                  <div className="text-gray-600">CTO, E-commerce Pro</div>
+                </div>
+              </div>
+              <div className="flex mb-6">
+                {[1,2,3,4,5].map((star) => (
+                  <Star key={star} className="w-5 h-5 text-yellow-400 fill-current" />
+                ))}
+              </div>
+              <p className="text-gray-700 text-lg leading-relaxed">"Working with MeraSoftware has been a game-changer. Their scalable solutions and proactive approach to technology challenges have exceeded all our expectations."</p>
+            </div>
+          </div>
+          <div className="text-center mt-12">
+            <button 
+              onClick={() => setShowLoginModal(true)}
+              className="bg-white text-blue-600 px-8 py-4 rounded-xl hover:bg-gray-50 font-semibold flex items-center mx-auto shadow-lg border border-gray-100 transition-all transform hover:scale-105"
+            >
+              <Plus className="w-5 h-5 mr-2" />
+              Share Your Experience
+            </button>
+          </div>
+        </div>
+      </section>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-4">Recent Orders</h3>
-                    <div className="space-y-3">
-                      {[1, 2, 3].map((item) => (
-                        <div key={item} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
-                          <div>
-                            <p className="font-medium text-gray-800">Order #ORD-{1000 + item}</p>
-                            <p className="text-sm text-gray-500">Customer: Rajesh Kumar</p>
-                          </div>
-                          <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">New</span>
-                        </div>
-                      ))}
+            {/* Portfolio Section */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-6">
+          {/* Section Header */}
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-gray-900 mb-6">Our Work</h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              A glimpse of the projects we’ve delivered for businesses across different industries.
+            </p>
+          </div>
+
+          {/* Portfolio Grid */}
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            
+            {/* Portfolio Item 1 */}
+            <div className="bg-gray-50 rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all">
+              <img 
+                src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=800&q=80" 
+                alt="Business Website" 
+                className="w-full h-52 object-cover"
+              />
+              <div className="p-6">
+                <h3 className="font-bold text-xl text-gray-900 mb-2">Corporate Website</h3>
+                <p className="text-gray-600 text-sm mb-4">Multi-page business website with responsive design and service showcase pages.</p>
+                <button className="text-blue-600 font-semibold hover:underline">View Project</button>
+              </div>
+            </div>
+
+            {/* Portfolio Item 2 */}
+            <div className="bg-gray-50 rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all">
+              <img 
+                src="https://images.unsplash.com/photo-1551434678-e076c223a692?auto=format&fit=crop&w=800&q=80" 
+                alt="CRM Software" 
+                className="w-full h-52 object-cover"
+              />
+              <div className="p-6">
+                <h3 className="font-bold text-xl text-gray-900 mb-2">Custom CRM</h3>
+                <p className="text-gray-600 text-sm mb-4">End-to-end customer management system with advanced reporting and analytics.</p>
+                <button className="text-blue-600 font-semibold hover:underline">View Project</button>
+              </div>
+            </div>
+
+            {/* Portfolio Item 3 */}
+            <div className="bg-gray-50 rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all">
+              <img 
+                src="https://images.unsplash.com/photo-1556761175-129418cb2dfe?auto=format&fit=crop&w=800&q=80" 
+                alt="E-commerce Platform" 
+                className="w-full h-52 object-cover"
+              />
+              <div className="p-6">
+                <h3 className="font-bold text-xl text-gray-900 mb-2">E-commerce Platform</h3>
+                <p className="text-gray-600 text-sm mb-4">Online shopping system with payment integration and mobile optimization.</p>
+                <button className="text-blue-600 font-semibold hover:underline">View Project</button>
+              </div>
+            </div>
+
+            {/* Portfolio Item 4 */}
+            <div className="bg-gray-50 rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all">
+              <img 
+                src="https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=800&q=80" 
+                alt="Mobile App" 
+                className="w-full h-52 object-cover"
+              />
+              <div className="p-6">
+                <h3 className="font-bold text-xl text-gray-900 mb-2">Mobile Application</h3>
+                <p className="text-gray-600 text-sm mb-4">Cross-platform native mobile app with user-friendly design and push notifications.</p>
+                <button className="text-blue-600 font-semibold hover:underline">View Project</button>
+              </div>
+            </div>
+
+            {/* Portfolio Item 5 */}
+            <div className="bg-gray-50 rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all">
+              <img 
+                src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=800&q=80" 
+                alt="Inventory Software" 
+                className="w-full h-52 object-cover"
+              />
+              <div className="p-6">
+                <h3 className="font-bold text-xl text-gray-900 mb-2">Inventory Management</h3>
+                <p className="text-gray-600 text-sm mb-4">Smart inventory solution with automated tracking and predictive analytics.</p>
+                <button className="text-blue-600 font-semibold hover:underline">View Project</button>
+              </div>
+            </div>
+
+            {/* Portfolio Item 6 */}
+            <div className="bg-gray-50 rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all">
+              <img 
+                src="https://images.unsplash.com/photo-1504691342899-9ea1d155a4be?auto=format&fit=crop&w=800&q=80" 
+                alt="SEO Project" 
+                className="w-full h-52 object-cover"
+              />
+              <div className="p-6">
+                <h3 className="font-bold text-xl text-gray-900 mb-2">SEO & Google Promotion</h3>
+                <p className="text-gray-600 text-sm mb-4">Local SEO and Google Business Profile optimization for higher visibility.</p>
+                <button className="text-blue-600 font-semibold hover:underline">View Project</button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+
+      {/* Contact Section */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-bold text-gray-900 mb-6">Let's Build Something Amazing Together</h2>
+            <p className="text-xl text-gray-600 max-w-7xl mx-auto">Ready to transform your business with cutting-edge technology? Get in touch with our expert team</p>
+          </div>
+          <div className="grid lg:grid-cols-2 gap-16">
+            {/* Contact Form */}
+            <div className="bg-gradient-to-br from-blue-50 to-indigo-100 p-10 rounded-3xl">
+              <h3 className="text-2xl font-bold text-gray-900 mb-8">Start Your Project</h3>
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">Full Name</label>
+                  <input 
+                    type="text" 
+                    className="w-full px-6 py-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                    placeholder="Enter your full name"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">Business Email</label>
+                  <input 
+                    type="email" 
+                    className="w-full px-6 py-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                    placeholder="your.email@company.com"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-3">Project Details</label>
+                  <textarea 
+                    rows={5} 
+                    className="w-full px-6 py-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white resize-none"
+                    placeholder="Tell us about your project requirements and goals..."
+                  ></textarea>
+                </div>
+                <button className="w-full bg-blue-600 text-white py-4 rounded-xl hover:bg-blue-700 font-semibold text-lg transition-colors transform hover:scale-105">
+                  Send Project Inquiry
+                </button>
+              </div>
+            </div>
+            
+            {/* Map and Contact Info */}
+            <div className="space-y-8">
+              <div className="bg-gray-100 rounded-3xl h-80 flex items-center justify-center relative overflow-hidden">
+                <img 
+                  src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" 
+                  alt="Office Location" 
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-blue-600 bg-opacity-80 flex items-center justify-center">
+                  <div className="text-center text-white">
+                    <MapPin className="w-16 h-16 mx-auto mb-4" />
+                    <h4 className="text-xl font-bold mb-2">Visit Our Office</h4>
+                    <p>Interactive map integration available</p>
+                  </div>
+                </div>
+              </div>
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="bg-gray-50 p-6 rounded-2xl">
+                  <div className="flex items-center mb-4">
+                    <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mr-4">
+                      <MapPin className="w-6 h-6 text-blue-600" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-gray-900">Head Office</h4>
+                      <p className="text-gray-600 text-sm">Tech Hub, Innovation District</p>
                     </div>
                   </div>
-
-                  <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-4">Project Status</h3>
-                    <div className="space-y-4">
-                      <ProgressRow label="Completed" value={adminMetrics.completedPct} color="bg-green-500" />
-                      <ProgressRow label="In Progress" value={adminMetrics.inProgressPct} color="bg-orange-500" />
-                      <ProgressRow label="Ready" value={adminMetrics.readyPct} color="bg-blue-500" />
+                  <p className="text-gray-700">123 Business Street, Tech City, TC 12345</p>
+                </div>
+                <div className="bg-gray-50 p-6 rounded-2xl">
+                  <div className="flex items-center mb-4">
+                    <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mr-4">
+                      <Phone className="w-6 h-6 text-green-600" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-gray-900">Call Us</h4>
+                      <p className="text-gray-600 text-sm">Business Hours: 9 AM - 7 PM</p>
                     </div>
                   </div>
+                  <p className="text-gray-700">+91 98765 43210</p>
                 </div>
-              </div>
-            )}
-
-            {adminSection !== "dashboard" && (
-              <div className="p-6">
-                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
-                  <div className="mb-4">
-                    {adminSection === 'users' && <Users size={48} className="mx-auto text-gray-400" />}
-                    {adminSection === 'workorders' && <ClipboardList size={48} className="mx-auto text-gray-400" />}
-                    {adminSection === 'inventory' && <Archive size={48} className="mx-auto text-gray-400" />}
-                    {adminSection === 'management' && <Settings size={48} className="mx-auto text-gray-400" />}
+                <div className="bg-gray-50 p-6 rounded-2xl">
+                  <div className="flex items-center mb-4">
+                    <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mr-4">
+                      <Mail className="w-6 h-6 text-purple-600" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-gray-900">Email Us</h4>
+                      <p className="text-gray-600 text-sm">Quick Response Guaranteed</p>
+                    </div>
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                    {adminSection === 'users' ? 'User Management' :
-                    adminSection === 'workorders' ? 'Work Orders' :
-                    adminSection === 'inventory' ? 'Inventory Management' : 'Management Settings'}
-                  </h3>
-                  <p className="text-gray-600 mb-6">
-                    This section is ready for development. The layout and navigation are complete.
-                  </p>
-                  <button className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
-                    Get Started
-                  </button>
+                  <p className="text-gray-700">hello@merasoftware.com</p>
+                </div>
+                <div className="bg-gray-50 p-6 rounded-2xl">
+                  <div className="flex items-center mb-4">
+                    <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center mr-4">
+                      <Clock className="w-6 h-6 text-orange-600" />
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-gray-900">Support</h4>
+                      <p className="text-gray-600 text-sm">24/7 Technical Assistance</p>
+                    </div>
+                  </div>
+                  <p className="text-gray-700">support@merasoftware.com</p>
                 </div>
               </div>
-            )}
+            </div>
           </div>
-
-          {/* Reception full layout (sidebar + main) */}
-          {role === "receptionist" && (
-            <div className="flex w-full">
-              <ReceptionContent
-                active={receptionSection}
-                setActive={setReceptionSection}
-                customers={customers}
-                setCustomers={setCustomers}
-              />
-            </div>
-          )}
-
-          {/* Technician full layout (sidebar + main) */}
-          {role === "technician" && (
-            <div className="flex w-full">
-              <TechnicianContent
-                active={technicianSection}
-                setActive={setTechnicianSection}
-                customers={customers}
-                setCustomers={setCustomers}
-              />
-            </div>
-          )}
         </div>
-      </div>
+      </section>
 
-      {/* Floating role switch still available */}
-      <div className="fixed top-3 right-3 z-40">
-        <div className="flex items-center rounded-xl border bg-white p-1 shadow-sm">
-          <RoleButton label="Admin" active={role === 'admin'} onClick={() => setRole('admin')} />
-          <RoleButton label="Reception" active={role === 'receptionist'} onClick={() => setRole('receptionist')} />
-          <RoleButton label="Technician" active={role === 'technician'} onClick={() => setRole('technician')} />
+      {/* Footer */}
+      <footer className="bg-gray-900 text-white py-16">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="grid lg:grid-cols-5 gap-8">
+            <div className="lg:col-span-2">
+              <div className="flex items-center space-x-3 mb-6">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl flex items-center justify-center">
+                  <span className="text-white font-bold text-xl">M</span>
+                </div>
+                <span className="text-2xl font-bold">MeraSoftware</span>
+              </div>
+              <p className="text-gray-300 text-lg mb-6 max-w-md">Building enterprise-grade software solutions that drive business growth and digital transformation for forward-thinking companies.</p>
+              <div className="flex space-x-4">
+                <a href="#" className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-blue-600 transition-colors">
+                  <span className="text-sm font-bold">f</span>
+                </a>
+                <a href="#" className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-blue-600 transition-colors">
+                  <span className="text-sm font-bold">t</span>
+                </a>
+                <a href="#" className="w-10 h-10 bg-gray-800 rounded-lg flex items-center justify-center hover:bg-blue-600 transition-colors">
+                  <span className="text-sm font-bold">in</span>
+                </a>
+              </div>
+            </div>
+            <div>
+              <h3 className="font-bold text-lg mb-6">Services</h3>
+              <ul className="space-y-3 text-gray-300">
+                <li><a href="#" className="hover:text-white transition-colors">Web Development</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Mobile Apps</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Enterprise Software</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Cloud Solutions</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Consulting</a></li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="font-bold text-lg mb-6">Solutions</h3>
+              <ul className="space-y-3 text-gray-300">
+                <li><a href="#" className="hover:text-white transition-colors">CRM Systems</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">E-commerce Platforms</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Portfolio Websites</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Business Automation</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Custom Development</a></li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="font-bold text-lg mb-6">Company</h3>
+              <ul className="space-y-3 text-gray-300">
+                <li><a href="#" className="hover:text-white transition-colors">About Us</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Our Team</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Careers</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Case Studies</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Contact</a></li>
+              </ul>
+            </div>
+          </div>
+          <div className="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
+            <p className="text-gray-400">&copy; 2025 MeraSoftware. All rights reserved.</p>
+            <div className="flex space-x-6 mt-4 md:mt-0">
+              <a href="#" className="text-gray-400 hover:text-white transition-colors">Privacy Policy</a>
+              <a href="#" className="text-gray-400 hover:text-white transition-colors">Terms of Service</a>
+              <a href="#" className="text-gray-400 hover:text-white transition-colors">Cookie Policy</a>
+            </div>
+          </div>
         </div>
-      </div>
+      </footer>
+
+      {/* Login Modal */}
+      {showLoginModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white p-8 rounded-3xl max-w-md w-full shadow-2xl">
+            <div className="text-center mb-8">
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Users className="w-8 h-8 text-blue-600" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">Welcome Back</h3>
+              <p className="text-gray-600">Sign in to share your experience with our community</p>
+            </div>
+            <div className="space-y-4">
+              <input 
+                type="email" 
+                placeholder="Enter your email address" 
+                className="w-full px-6 py-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+              />
+              <input 
+                type="password" 
+                placeholder="Enter your password" 
+                className="w-full px-6 py-4 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+              />
+              <div className="flex space-x-4 pt-4">
+                <button 
+                  onClick={() => setShowLoginModal(false)}
+                  className="flex-1 px-6 py-3 border-2 border-gray-200 rounded-xl hover:bg-gray-50 font-semibold transition-colors"
+                >
+                  Cancel
+                </button>
+                <button className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 font-semibold transition-colors">
+                  Sign In
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
-}
+};
 
-function RoleButton({ label, active, onClick }) {
-  return (
-    <button
-      onClick={onClick}
-      className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${active ? 'bg-blue-600 text-white' : 'text-gray-700 hover:bg-gray-50'}`}
-    >
-      {label}
-    </button>
-  );
-}
+export default HomePage;

@@ -16,6 +16,8 @@ const KYCVerification = () => {
     customReason: ''
   });
   const [showRejectModal, setShowRejectModal] = useState(false);
+  const [showApprovalModal, setShowApprovalModal] = useState(false);
+  const [userToApprove, setUserToApprove] = useState(null);
   const [users, setUsers] = useState([]); // This will hold data fetched from API
   const [loading, setLoading] = useState(true);
   const [submittingAction, setSubmittingAction] = useState(false); // For approve/reject buttons
@@ -77,31 +79,37 @@ const KYCVerification = () => {
     return matchesSearch && matchesStatus;
   });
 
+  // Show approval confirmation modal
+  const handleApproveClick = (userId) => {
+    setUserToApprove(userId);
+    setShowApprovalModal(true);
+  };
+
   // Handle Approve KYC
-  const handleApprove = async (userId) => {
-    if (window.confirm("Are you sure you want to approve this user's KYC?")) {
-      setSubmittingAction(true);
-      try {
-        const response = await fetch(SummaryApi.approveKyc.url, {
-          method: SummaryApi.approveKyc.method,
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ userId })
-        });
-        const data = await response.json();
-        if (data.success) {
-          toast.success(data.message);
-          fetchKycSubmissions(); // Re-fetch data to update list
-          setSelectedUser(null); // Close detail view
-        } else {
-          toast.error(data.message || "Failed to approve KYC.");
-        }
-      } catch (error) {
-        console.error("Error approving KYC:", error);
-        toast.error("An error occurred while approving KYC.");
-      } finally {
-        setSubmittingAction(false);
+  const handleApprove = async () => {
+    setSubmittingAction(true);
+    try {
+      const response = await fetch(SummaryApi.approveKyc.url, {
+        method: SummaryApi.approveKyc.method,
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ userId: userToApprove })
+      });
+      const data = await response.json();
+      if (data.success) {
+        toast.success(data.message);
+        fetchKycSubmissions(); // Re-fetch data to update list
+        setSelectedUser(null); // Close detail view
+        setShowApprovalModal(false);
+        setUserToApprove(null);
+      } else {
+        toast.error(data.message || "Failed to approve KYC.");
       }
+    } catch (error) {
+      console.error("Error approving KYC:", error);
+      toast.error("An error occurred while approving KYC.");
+    } finally {
+      setSubmittingAction(false);
     }
   };
 
@@ -342,7 +350,7 @@ const KYCVerification = () => {
                   {selectedUser.userDetails.kycStatus === 'pending' && (
                     <div className="mt-6 flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
                       <button
-                        onClick={() => handleApprove(selectedUser._id)}
+                        onClick={() => handleApproveClick(selectedUser._id)}
                         disabled={submittingAction}
                         className="flex-1 bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
@@ -435,6 +443,58 @@ const KYCVerification = () => {
               >
                 {submittingAction ? 'Sending...' : 'Send Rejection'}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Approval Confirmation Modal */}
+      {showApprovalModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-8 w-full max-w-md mx-4 shadow-2xl border-0">
+            <div className="text-center">
+              {/* Icon */}
+              <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-6">
+                <Check className="h-8 w-8 text-green-600" />
+              </div>
+              
+              {/* Title */}
+              <h3 className="text-xl font-semibold text-gray-900 mb-3">
+                Approve KYC Documents?
+              </h3>
+              
+              {/* Message */}
+              <p className="text-gray-600 mb-8 leading-relaxed">
+                Are you sure you want to approve this user's KYC submission? This action will verify their identity and grant them full account access.
+              </p>
+              
+              {/* Buttons */}
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button
+                  onClick={() => {
+                    setShowApprovalModal(false);
+                    setUserToApprove(null);
+                  }}
+                  className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                  disabled={submittingAction}
+                >
+                  No, Cancel
+                </button>
+                <button
+                  onClick={handleApprove}
+                  className="flex-1 px-6 py-3 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={submittingAction}
+                >
+                  {submittingAction ? (
+                    <div className="flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
+                      Approving...
+                    </div>
+                  ) : (
+                    'Yes, Approve'
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         </div>
