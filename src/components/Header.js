@@ -79,7 +79,7 @@ const Header = () => {
   };
 
   // Handle protected navigation
-  const handleProtectedNavigation = (e) => {
+  const handleProtectedNavigation = (e, targetPath) => {
     e.preventDefault();
 
     // Check if user is authenticated
@@ -87,8 +87,8 @@ const Header = () => {
       // Show login popup
       setShowLoginPopup(true);
     } else {
-      // User is authenticated, navigate to the path
-      window.location.href = e.currentTarget.href;
+      // User is authenticated, navigate to the path using React Router
+      navigate(targetPath || e.currentTarget.getAttribute('href'));
     }
   };
 
@@ -267,14 +267,10 @@ const Header = () => {
       });
       const data = await response.json();
       if (data.success) {
-        // Update Redux state with new role and isDetailsCompleted
+        // Update Redux state with new role only
         const updatedUser = {
           ...user,
           role: newRole,
-          userDetails: {
-            ...user.userDetails, // Preserve other userDetails fields
-            isDetailsCompleted: data.data.isDetailsCompleted, // Use the value from backend
-          },
         };
         // Update Redux state with new role
         dispatch(setUserDetails(updatedUser));
@@ -286,7 +282,6 @@ const Header = () => {
         CookieManager.setUserDetails({
           ...user,
           role: newRole,
-          isDetailsCompleted: data.data.isDetailsCompleted, // Update cookie as well
         });
 
         let redirectPath = "/";
@@ -523,7 +518,7 @@ const Header = () => {
                 <li>
                   <a
                     href="/dashboard"
-                    onClick={handleProtectedNavigation}
+                    onClick={(e) => handleProtectedNavigation(e, '/dashboard')}
                     className="text-gray-800 font-medium whitespace-nowrap hover:text-blue-600 px-3"
                   >
                     My Dashboard
@@ -532,7 +527,7 @@ const Header = () => {
                 <li>
                   <a
                     href="/order"
-                    onClick={handleProtectedNavigation}
+                    onClick={(e) => handleProtectedNavigation(e, '/order')}
                     className="text-gray-800 font-medium whitespace-nowrap hover:text-blue-600 px-3"
                   >
                     My Orders
@@ -541,7 +536,12 @@ const Header = () => {
                 <li>
                   <Link
                     to={getProjectLink()}
-                    onClick={handleProtectedNavigation}
+                    onClick={(e) => {
+                      if (isInitialized && !userDetails) {
+                        e.preventDefault();
+                        setShowLoginPopup(true);
+                      }
+                    }}
                     className="text-gray-800 font-medium whitespace-nowrap hover:text-blue-600 px-3"
                   >
                     My Projects
@@ -550,7 +550,7 @@ const Header = () => {
                 <li>
                   <a
                     href="/wallet"
-                    onClick={handleProtectedNavigation}
+                    onClick={(e) => handleProtectedNavigation(e, '/wallet')}
                     className="text-gray-800 font-medium whitespace-nowrap hover:text-blue-600 px-3"
                   >
                     My Wallet
@@ -559,7 +559,7 @@ const Header = () => {
                 <li>
                   <a
                     href="/support"
-                    onClick={handleProtectedNavigation}
+                    onClick={(e) => handleProtectedNavigation(e, '/support')}
                     className="text-gray-800 font-medium whitespace-nowrap hover:text-blue-600 px-3"
                   >
                     Contact Support
