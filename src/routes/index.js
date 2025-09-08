@@ -134,7 +134,11 @@ const router = createBrowserRouter([
             },
             {
                 path : "order",
-                element : <OrderPage/>
+                element : (
+                    <ProtectedRoute>
+                        <OrderPage/>
+                    </ProtectedRoute>
+                )
             },
             {
                 path : "order-detail/:orderId",
@@ -146,11 +150,19 @@ const router = createBrowserRouter([
             },
             {
                 path : "project-details/:orderId",
-                element : <ProjectDetails/>
+                element : (
+                    <ProtectedRoute>
+                        <ProjectDetails/>
+                    </ProtectedRoute>
+                )
             },
             {
                 path : "wallet",
-                element : <WalletDetails/>
+                element : (
+                    <ProtectedRoute>
+                        <WalletDetails/>
+                    </ProtectedRoute>
+                )
             },
             {
                 path: "/service-card",
@@ -158,7 +170,11 @@ const router = createBrowserRouter([
             },
             {
                 path: "my-updates",
-                element: <UserUpdateDashboard/>
+                element: (
+                    <ProtectedRoute>
+                        <UserUpdateDashboard/>
+                    </ProtectedRoute>
+                )
             },
             {
                 path: "demo",
@@ -166,7 +182,11 @@ const router = createBrowserRouter([
             },
             {
                 path: "dashboard",
-                element: <UserDashboard/>
+                element: (
+                    <ProtectedRoute>
+                        <UserDashboard/>
+                    </ProtectedRoute>
+                )
             },
             {
                 path: "direct-payment",
@@ -174,7 +194,11 @@ const router = createBrowserRouter([
             },
             {
                 path: "support",
-                element : <ContactSupport/>
+                element : (
+                    <ProtectedRoute>
+                        <ContactSupport/>
+                    </ProtectedRoute>
+                )
             },
             {
                 path: "installment-payment/:orderId/:installmentNumber",
