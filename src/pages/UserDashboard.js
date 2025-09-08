@@ -530,7 +530,7 @@ const showDemoBox = !(hasOngoingWebsiteProject || hasCompletedWebsiteProject || 
       <div className="flex justify-start mb-1">
         <div className="px-2 py-0.5 bg-white rounded-full shadow-sm flex items-center">
           <div className="w-1.5 h-1.5 bg-blue-400 rounded-full mr-1 animate-pulse"></div>
-          <span className="text-xs font-medium text-blue-600">Support Portal</span>
+          <span className="text-xs font-medium text-blue-600">Active Support Portal</span>
         </div>
       </div>
       
