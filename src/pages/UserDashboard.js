@@ -530,7 +530,7 @@ const showDemoBox = !(hasOngoingWebsiteProject || hasCompletedWebsiteProject || 
       <div className="flex justify-start mb-1">
         <div className="px-2 py-0.5 bg-white rounded-full shadow-sm flex items-center">
           <div className="w-1.5 h-1.5 bg-blue-400 rounded-full mr-1 animate-pulse"></div>
-          <span className="text-xs font-medium text-blue-600">Active Plan</span>
+          <span className="text-xs font-medium text-blue-600">Support Portal</span>
         </div>
       </div>
       
@@ -538,7 +538,7 @@ const showDemoBox = !(hasOngoingWebsiteProject || hasCompletedWebsiteProject || 
       <div className="flex justify-between items-center mb-3">
         <div className="flex flex-col justify-center">
           <h2 className="text-lg font-bold text-gray-800">{activeUpdatePlan.productId?.serviceName || "Website Updates"}</h2>
-          <span className="text-xs text-gray-500">Purchased: {formatDate(activeUpdatePlan.createdAt)}</span>
+          {/* <span className="text-xs text-gray-500">Purchased: {formatDate(activeUpdatePlan.createdAt)}</span> */}
         </div>
         
         {/* Updates circle indicator (now on right) */}
