@@ -10,6 +10,7 @@ import {
 import SummaryApi from '../common';
 import Context from '../context';
 import UpdateRequestModal from '../components/UpdateRequestModal';
+import RenewalModal from '../components/RenewalModal';
 import DashboardLayout from '../components/DashboardLayout';
 import displayINRCurrency from '../helpers/displayCurrency';
 
@@ -31,6 +32,7 @@ const Dashboard = () => {
   const [cartCount, setCartCount] = useState(0);
   const [showUpdateRequestModal, setShowUpdateRequestModal] = useState(false);
   const [showAllProjectsModal, setShowAllProjectsModal] = useState(false);
+  const [showRenewalModal, setShowRenewalModal] = useState(false);
   const [rejectedPayments, setRejectedPayments] = useState([]);
   const [pendingApprovalProjects, setPendingApprovalProjects] = useState([]);
 
@@ -132,16 +134,40 @@ const Dashboard = () => {
           const rejectedProjects = websiteProjects.filter(project => project.orderVisibility === 'payment-rejected');
           setRejectedPayments(rejectedProjects);
           
-          // Find active update plan
-          const updatePlan = allOrders.find(order => 
-            order.productId?.category === 'website_updates' && 
+          // Find active update plan (including yearly renewable plans)
+          const updatePlan = allOrders.find(order =>
+            order.productId?.category === 'website_updates' &&
             order.isActive &&
-            order.updatesUsed < order.productId?.updateCount &&
-            calculateRemainingDays(order) > 0 &&
-            order.orderVisibility !== 'pending-approval' && 
-            order.orderVisibility !== 'payment-rejected'
+            order.orderVisibility !== 'pending-approval' &&
+            order.orderVisibility !== 'payment-rejected' &&
+            (
+              // Regular update plans
+              (!order.productId?.isMonthlyRenewablePlan &&
+               order.updatesUsed < order.productId?.updateCount &&
+               calculateRemainingDays(order) > 0) ||
+              // Yearly renewable plans
+              (order.productId?.isMonthlyRenewablePlan &&
+               order.totalYearlyDaysRemaining > 0)
+            )
           );
           setActiveUpdatePlan(updatePlan || null);
+
+          // Debug yearly plan data
+          if (updatePlan && updatePlan.productId?.isMonthlyRenewablePlan) {
+            console.log('🎯 YEARLY PLAN DEBUG:', {
+              planId: updatePlan._id,
+              serviceName: updatePlan.productId?.serviceName,
+              isMonthlyRenewablePlan: updatePlan.productId?.isMonthlyRenewablePlan,
+              yearlyPlanDuration: updatePlan.productId?.yearlyPlanDuration,
+              monthlyRenewalCost: updatePlan.productId?.monthlyRenewalCost,
+              isUnlimitedUpdates: updatePlan.productId?.isUnlimitedUpdates,
+              totalYearlyDaysRemaining: updatePlan.totalYearlyDaysRemaining,
+              currentMonthExpiryDate: updatePlan.currentMonthExpiryDate,
+              currentMonthUpdatesUsed: updatePlan.currentMonthUpdatesUsed,
+              updatesUsed: updatePlan.updatesUsed,
+              updateCount: updatePlan.productId?.updateCount
+            });
+          }
           
           // Determine if "Start New Project" button should be shown
           // Show only if no active project AND (no update plan OR update plan with no updates left)
@@ -192,6 +218,15 @@ const Dashboard = () => {
     setShowUpdateRequestModal(true);
   };
 
+  const handleRenewPlan = () => {
+    setShowRenewalModal(true);
+  };
+
+  const handleRenewalSuccess = (renewalData) => {
+    // Refresh the dashboard data after successful renewal
+    window.location.reload(); // Simple refresh - you can make this more elegant
+  };
+
   const handleUpdateRequestCompletion = () => {
     // Update activeUpdatePlan state
     if (activeUpdatePlan) {
@@ -226,65 +261,30 @@ const Dashboard = () => {
   
   // Calculate remaining days for an update plan
   const calculateRemainingDays = (plan) => {
-    if (!plan || !plan.createdAt || !plan.productId?.validityPeriod) return 0;
-    
+    if (!plan) return 0;
+
+    // For yearly renewable plans, use currentMonthExpiryDate
+    if (plan.productId?.isMonthlyRenewablePlan && plan.currentMonthExpiryDate) {
+      const today = new Date();
+      const expiryDate = new Date(plan.currentMonthExpiryDate);
+      const remainingDays = Math.ceil((expiryDate - today) / (1000 * 60 * 60 * 24));
+      return Math.max(0, remainingDays);
+    }
+
+    // For regular update plans
+    if (!plan.createdAt || !plan.productId?.validityPeriod) return 0;
+
     const validityInDays = plan.productId.validityPeriod;
-    
+
     const startDate = new Date(plan.createdAt);
     const endDate = new Date(startDate);
     endDate.setDate(endDate.getDate() + validityInDays);
-    
+
     const today = new Date();
     const remainingDays = Math.ceil((endDate - today) / (1000 * 60 * 60 * 24));
-    
+
     return Math.max(0, remainingDays);
   };
-
-// --- Demo visibility logic (replace your previous block) ---
-
-// All website project categories (both variants used in your file)
-const WEBSITE_CATS = new Set([
-  'standard_websites',
-  'dynamic_websites',
-  'cloud_software_development', // older naming in your fetch
-  'app_development',            // older naming in your fetch
-  'web_applications',           // newer naming seen later
-  'mobile_apps'                 // newer naming seen later
-]);
-
-const isConsideredOrder = (o) => {
-  // treat 'payment-rejected' as not started; ignore it
-  // keep 'pending-approval' excluded from ongoing/completed checks (same as your file)
-  return o?.orderVisibility !== 'payment-rejected';
-};
-
-// Any update plan/order at all? (active OR completed OR pending)
-// If ANY exists (except payment-rejected), hide the Demo box.
-const hasAnyWebsiteUpdate = websiteProjects.some(o => {
-  const cat = o.productId?.category?.toLowerCase();
-  return cat === 'website_updates' && isConsideredOrder(o);
-});
-
-// Ongoing website project (non-updates)
-const hasOngoingWebsiteProject = websiteProjects.some(p => {
-  const cat = p.productId?.category?.toLowerCase();
-  if (!WEBSITE_CATS.has(cat)) return false;
-  if (!isConsideredOrder(p) || p.orderVisibility === 'pending-approval') return false;
-  return (Number(p.projectProgress || 0) < 100) || (p.currentPhase !== 'completed');
-});
-
-// Completed website project (non-updates)
-const hasCompletedWebsiteProject = websiteProjects.some(p => {
-  const cat = p.productId?.category?.toLowerCase();
-  if (!WEBSITE_CATS.has(cat)) return false;
-  if (!isConsideredOrder(p)) return false;
-  return (Number(p.projectProgress || 0) === 100) && (p.currentPhase === 'completed');
-});
-
-// FINAL: Show Demo only if no projects (ongoing/complete) AND no website_updates exist
-const showDemoBox = !(hasOngoingWebsiteProject || hasCompletedWebsiteProject || hasAnyWebsiteUpdate);
-
-
 
   // Loading state
   if (isLoading) {
@@ -350,87 +350,55 @@ const showDemoBox = !(hasOngoingWebsiteProject || hasCompletedWebsiteProject || 
         <main className="flex-1 p-6 overflow-auto">
           <div className="flex justify-between items-center mb-6">
           <div className="">
-       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
-  {/* Welcome back card */}
-  <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl p-6 shadow-sm border border-blue-200 h-full flex flex-col">
-    <div className="flex items-center mb-3">
-      <div className="w-10 h-10 bg-blue-500 text-white rounded-full flex items-center justify-center mr-3">
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" />
-        </svg>
-      </div>
-      <div>
-        <p className="text-blue-700 font-medium">Welcome back,</p>
-        <h1 className="text-2xl font-bold text-gray-800 capitalize">{user.name}</h1>
-      </div>
-    </div>
-    <p className="text-gray-600">Review your ongoing projects and track their progress</p>
-  </div>
-
-  {/* Explore More card */}
-  <Link to={"/"} className="hidden md:block">
-    <div className="bg-gradient-to-r from-pink-50 to-pink-100 rounded-xl p-6 shadow-sm border border-pink-200 cursor-pointer group hover:shadow-md transition-all h-full flex flex-col">
-      <div className="flex items-center mb-3">
-        <div className="w-10 h-10 bg-pink-500 text-white rounded-full flex items-center justify-center mr-3 group-hover:bg-pink-600 transition-all">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-          </svg>
+        <div className="flex flex-col md:flex-row items-stretch gap-6">
+          {/* Welcome back card */}
+          <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl p-6 flex-1 shadow-sm border border-blue-200">
+            <div className="flex items-center mb-3">
+              <div className="w-10 h-10 bg-blue-500 text-white rounded-full flex items-center justify-center mr-3">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-blue-700 font-medium">Welcome back,</p>
+                <h1 className="text-2xl font-bold text-gray-800 capitalize">{user.name}</h1>
+              </div>
+            </div>
+            <div className="mt-3 flex items-center">
+              {/* <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center mr-2">
+                <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </div> */}
+              <p className="text-gray-600">Review your ongoing projects and track their progress</p>
+            </div>
+          </div>
+          
+          {/* Explore More card */}
+          <Link to={"/"} className='hidden md:block'>
+          <div className="bg-gradient-to-r from-pink-50 to-pink-100 rounded-xl p-6 flex-1 shadow-sm border border-pink-200 cursor-pointer group hover:shadow-md transition-all">
+            <div className="flex items-center mb-3">
+              <div className="w-10 h-10 bg-pink-500 text-white rounded-full flex items-center justify-center mr-3 group-hover:bg-pink-600 transition-all">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-pink-700 font-medium group-hover:text-pink-800 transition-all">Discover more</p>
+                <h2 className="text-2xl font-bold text-gray-800">Explore Our Services</h2>
+              </div>
+            </div>
+            <div className="mt-3 flex items-center">
+              <div className="h-8 w-8 bg-pink-100 rounded-full flex items-center justify-center mr-2 group-hover:bg-pink-200 transition-all">
+                <svg className="w-4 h-4 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
+              <p className="text-gray-600">Discover exciting features and plans for your project</p>
+            </div>
+          </div>
+          </Link>
         </div>
-        <div>
-          <p className="text-pink-700 font-medium group-hover:text-pink-800 transition-all">Discover more</p>
-          <h2 className="text-2xl font-bold text-gray-800">Explore Our Services</h2>
-        </div>
-      </div>
-      <p className="text-gray-600">Discover exciting features and plans for your project</p>
-    </div>
-  </Link>
-
-  {/* Demo card — only for brand-new users (no ongoing/completed projects) */}
-  {showDemoBox && (
-    <Link to={"/demo"} className="bg-gradient-to-r from-emerald-50 to-emerald-100 rounded-xl p-6 shadow-sm border border-emerald-200 cursor-pointer group hover:shadow-md transition-all h-full flex flex-col">
-      <div className="flex items-center mb-3">
-        <div className="w-10 h-10 bg-emerald-500 text-white rounded-full flex items-center justify-center mr-3">
-          <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <path d="M8 5v14l11-7z"></path>
-          </svg>
-        </div>
-        <div>
-          <p className="text-emerald-700 font-medium">Demo</p>
-          <h2 className="text-2xl font-bold text-gray-800">See How It Works</h2>
-        </div>
-      </div>
-
-      <div className='flex gap-2'>
-      <p className="text-gray-600">
-        Take a quick demo before starting your first project.
-      </p>
-
-       {/* <button
-          className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 text-sm"
-          onClick={() => navigate('/demo')}
-        >
-          Start Demo
-        </button> */}
-        </div>
-
-      {/* <div className="mt-2 flex gap-2">
-        <button
-          className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 text-sm"
-          onClick={() => navigate('/demo')}
-        >
-          Start Demo
-        </button>
-        <button
-          className="px-4 py-2 bg-white text-emerald-700 border border-emerald-200 rounded-lg hover:bg-emerald-50 text-sm"
-          onClick={() => navigate('/')}
-        >
-          Learn More
-        </button>
-      </div> */}
-    </Link>
-  )}
-</div>
-
       </div>
             
             {/* <div className="flex space-x-2">
@@ -520,92 +488,240 @@ const showDemoBox = !(hasOngoingWebsiteProject || hasCompletedWebsiteProject || 
 
               {/* Active Update Plan or Active Project Card - Should always be first if exists */}
               {activeUpdatePlan && (
-  <div className="flex-shrink-0 bg-gray-50 border border-blue-200 rounded-xl overflow-hidden shadow-md relative">
+  <div className={`flex-shrink-0 ${
+    activeUpdatePlan.productId?.isMonthlyRenewablePlan
+      ? calculateRemainingDays(activeUpdatePlan) <= 0
+        ? 'bg-red-50 border-red-200'
+        : 'bg-blue-50 border-blue-200'
+      : 'bg-gray-50 border-blue-200'
+  } border rounded-xl overflow-hidden shadow-md relative`}>
     {/* Card background with highlight effect */}
-    <div className="h-2 bg-blue-600"></div>
-    
+    <div className={`h-2 ${
+      activeUpdatePlan.productId?.isMonthlyRenewablePlan
+        ? calculateRemainingDays(activeUpdatePlan) <= 0
+          ? 'bg-red-600'
+          : 'bg-blue-600'
+        : 'bg-blue-600'
+    }`}></div>
+
     {/* Main content container */}
     <div className="relative z-10 p-4">
-      {/* Status indicator pill - Now inside main content */}
+      {/* Status indicator pill */}
       <div className="flex justify-start mb-1">
         <div className="px-2 py-0.5 bg-white rounded-full shadow-sm flex items-center">
-          <div className="w-1.5 h-1.5 bg-blue-400 rounded-full mr-1 animate-pulse"></div>
-          <span className="text-xs font-medium text-blue-600">Active Support Portal</span>
+          <div className={`w-1.5 h-1.5 rounded-full mr-1 animate-pulse ${
+            activeUpdatePlan.productId?.isMonthlyRenewablePlan
+              ? calculateRemainingDays(activeUpdatePlan) <= 0
+                ? 'bg-red-500'
+                : 'bg-blue-400'
+              : 'bg-blue-400'
+          }`}></div>
+          <span className={`text-xs font-medium ${
+            activeUpdatePlan.productId?.isMonthlyRenewablePlan
+              ? calculateRemainingDays(activeUpdatePlan) <= 0
+                ? 'text-red-600'
+                : 'text-blue-600'
+              : 'text-blue-600'
+          }`}>
+            {activeUpdatePlan.productId?.isMonthlyRenewablePlan
+              ? calculateRemainingDays(activeUpdatePlan) <= 0
+                ? 'Needs Renewal'
+                : 'Yearly Plan Active'
+              : 'Active Plan'}
+          </span>
         </div>
       </div>
-      
-      {/* Plan name and updates indicator side by side */}
+
+      {/* Plan name and updates indicator */}
       <div className="flex justify-between items-center mb-3">
         <div className="flex flex-col justify-center">
-          <h2 className="text-lg font-bold text-gray-800">{activeUpdatePlan.productId?.serviceName || "Website Updates"}</h2>
-          {/* <span className="text-xs text-gray-500">Purchased: {formatDate(activeUpdatePlan.createdAt)}</span> */}
+          <h2 className="text-lg font-bold text-gray-800">
+            {activeUpdatePlan.productId?.serviceName || "Website Updates"}
+          </h2>
+          <span className="text-xs text-gray-500">
+            Purchased: {formatDate(activeUpdatePlan.createdAt)}
+          </span>
+          {activeUpdatePlan.productId?.isMonthlyRenewablePlan && (
+            <span className="text-xs text-purple-600 font-medium mt-1">
+              Yearly Plan ({activeUpdatePlan.totalYearlyDaysRemaining || 0} days left)
+            </span>
+          )}
         </div>
-        
-        {/* Updates circle indicator (now on right) */}
-        <div className="relative w-16 h-16 rounded-full bg-white shadow-md flex items-center justify-center">
-          <svg viewBox="0 0 100 100" width="64" height="64">
-            {/* Background ring */}
-            <circle
-              cx="50"
-              cy="50"
-              r="42"
-              fill="none"
-              stroke="#e2e8f0"
-              strokeWidth="8"
-            />
-            
-            {/* Progress arc */}
-            <circle
-              cx="50"
-              cy="50"
-              r="42"
-              fill="none"
-              stroke="#3b82f6"
-              strokeWidth="8"
-              strokeLinecap="round"
-              strokeDasharray={`${((activeUpdatePlan.productId?.updateCount - (activeUpdatePlan.updatesUsed || 0)) / activeUpdatePlan.productId?.updateCount) * 264} 264`}
-              transform="rotate(-90 50 50)"
-            />
-            
-            {/* Inner text */}
-            <text x="50" y="62" textAnchor="middle" fontSize="40" fontWeight="bold" fill="#3b82f6">
-              {activeUpdatePlan.productId?.updateCount - (activeUpdatePlan.updatesUsed || 0)}
-            </text>
-          </svg>
+
+        {/* Updates indicator */}
+        <div className="relative w-12 h-12 rounded-full bg-white shadow-md flex items-center justify-center">
+          {activeUpdatePlan.productId?.isMonthlyRenewablePlan ? (
+            <div className="text-center flex flex-col items-center">
+              {/* Loop/Refresh icon for yearly renewable plans */}
+              <svg
+                className="w-6 h- text-blue-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                style={{
+                  animation: calculateRemainingDays(activeUpdatePlan) > 0 ? 'spin 3s linear infinite' : 'none'
+                }}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2.5}
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                />
+              </svg>
+              {/* <div className="text-xs text-blue-600 font-medium mt-1">Yearly</div> */}
+            </div>
+          ) : activeUpdatePlan.productId?.isUnlimitedUpdates ? (
+            <div className="text-center">
+              <div className="text-lg font-bold text-blue-600">∞</div>
+              <div className="text-xs text-gray-500">Unlimited</div>
+            </div>
+          ) : (
+            <svg viewBox="0 0 100 100" width="64" height="64">
+              <circle cx="50" cy="50" r="42" fill="none" stroke="#e2e8f0" strokeWidth="8" />
+              <circle
+                cx="50" cy="50" r="42" fill="none" stroke="#3b82f6" strokeWidth="8" strokeLinecap="round"
+                strokeDasharray={`${((activeUpdatePlan.productId?.updateCount - (activeUpdatePlan.updatesUsed || 0)) / activeUpdatePlan.productId?.updateCount) * 264} 264`}
+                transform="rotate(-90 50 50)"
+              />
+              <text x="50" y="62" textAnchor="middle" fontSize="40" fontWeight="bold" fill="#3b82f6">
+                {activeUpdatePlan.productId?.updateCount - (activeUpdatePlan.updatesUsed || 0)}
+              </text>
+            </svg>
+          )}
         </div>
       </div>
-      
-      {/* Days left bar */}
-      <div className="mb-5">
-        <div className="flex items-center justify-between mb-1">
-          <div className="flex items-center">
-            <Clock size={12} className="text-gray-400 mr-1" />
-            <span className="text-xs text-gray-600">Days Left</span>
+
+      {/* Days left and additional info */}
+      <div className="mb-5 space-y-3">
+        {activeUpdatePlan.productId?.isMonthlyRenewablePlan ? (
+          <>
+            {/* Current Month Progress for Yearly Plans */}
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center">
+                  <Clock size={12} className="text-blue-500 mr-1" />
+                  <span className="text-xs text-blue-600 font-medium">Current Month</span>
+                </div>
+                <span className="text-xs font-bold text-blue-700">
+                  {calculateRemainingDays(activeUpdatePlan)} days left
+                </span>
+              </div>
+              <div className="w-full h-2 bg-white rounded-full shadow-inner overflow-hidden">
+                <div
+                  className={`h-full rounded-full ${
+                    calculateRemainingDays(activeUpdatePlan) <= 3
+                      ? 'bg-gradient-to-r from-red-500 to-red-600'
+                      : 'bg-gradient-to-r from-blue-500 to-blue-600'
+                  }`}
+                  style={{
+                    width: `${Math.max(5, (calculateRemainingDays(activeUpdatePlan) / 30) * 100)}%`
+                  }}
+                ></div>
+              </div>
+            </div>
+
+            {/* Yearly Plan Progress */}
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center">
+                  <svg className="w-3 h-3 text-purple-500 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
+                  </svg>
+                  <span className="text-xs text-purple-600 font-medium">Yearly Plan</span>
+                </div>
+                <span className="text-xs font-bold text-purple-700">
+                  {activeUpdatePlan.totalYearlyDaysRemaining || 365} days remaining
+                </span>
+              </div>
+              <div className="w-full h-2 bg-white rounded-full shadow-inner overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-purple-400 to-purple-600"
+                  style={{
+                    width: `${Math.max(5, ((activeUpdatePlan.totalYearlyDaysRemaining || 365) / 365) * 100)}%`
+                  }}
+                ></div>
+              </div>
+            </div>
+
+            {/* Monthly Updates Usage */}
+            <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-lg p-3 border border-green-200">
+              <div className="flex justify-between items-center mb-2">
+                <div className="flex items-center">
+                  <svg className="w-4 h-4 text-green-600 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
+                  </svg>
+                  <span className="text-xs font-medium text-green-700">This Month Updates</span>
+                </div>
+                <div className="text-right">
+                  <span className="text-sm font-bold text-green-800">
+                    {activeUpdatePlan.currentMonthUpdatesUsed || 0}
+                  </span>
+                  <span className="text-xs text-green-600 ml-1">Used</span>
+                </div>
+              </div>
+              <div className="flex justify-between text-xs">
+                <span className="text-green-600">Updates Available:</span>
+                <span className="text-green-700 font-medium">∞ Unlimited</span>
+              </div>
+            </div>
+          </>
+        ) : (
+          /* Regular Plans - Original Logic */
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <div className="flex items-center">
+                <Clock size={12} className="text-gray-400 mr-1" />
+                <span className="text-xs text-gray-600">Days Left</span>
+              </div>
+              <span className="text-xs font-medium text-gray-700">
+                {calculateRemainingDays(activeUpdatePlan)} days
+              </span>
+            </div>
+            <div className="w-full h-2 bg-white rounded-full shadow-inner overflow-hidden">
+              <div
+                className={`h-full rounded-full ${
+                  calculateRemainingDays(activeUpdatePlan) <= 3
+                    ? 'bg-gradient-to-r from-red-500 to-red-600'
+                    : 'bg-gradient-to-r from-blue-500 to-blue-600'
+                }`}
+                style={{
+                  width: `${Math.max(5, (calculateRemainingDays(activeUpdatePlan) / activeUpdatePlan.productId?.validityPeriod) * 100)}%`
+                }}
+              ></div>
+            </div>
           </div>
-          <span className="text-xs font-medium text-gray-700">{calculateRemainingDays(activeUpdatePlan)} days</span>
-        </div>
-        <div className="w-full h-2 bg-white rounded-full shadow-inner overflow-hidden">
-          <div
-            className="h-full bg-gradient-to-r from-blue-500 to-blue-600 rounded-full"
-            style={{ width: `${(calculateRemainingDays(activeUpdatePlan) / activeUpdatePlan.productId?.validityPeriod) * 100}%` }}
-          ></div>
-        </div>
+        )}
       </div>
-      
+
       {/* Action buttons */}
-      <div className="flex justify-between gap-2">
-        <button 
-          onClick={handleRequestUpdate}
-          disabled={(activeUpdatePlan.updatesUsed || 0) >= activeUpdatePlan.productId?.updateCount || calculateRemainingDays(activeUpdatePlan) <= 0}
-          className={`flex-1 py-2 rounded-md flex items-center justify-center text-sm font-medium transition-all ${
-            (activeUpdatePlan.updatesUsed || 0) >= activeUpdatePlan.productId?.updateCount || calculateRemainingDays(activeUpdatePlan) <= 0
-              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-              : 'bg-blue-600 text-white shadow-sm hover:shadow-md'
-          }`}
-        >
-          <RefreshCw size={14} className="mr-1" /> 
-          Request Update
-        </button>
+      <div className="flex gap-2">
+        {activeUpdatePlan.productId?.isMonthlyRenewablePlan && calculateRemainingDays(activeUpdatePlan) <= 0 ? (
+          <button
+            onClick={handleRenewPlan}
+            className="flex-1 py-2 rounded-md flex items-center justify-center text-sm font-medium bg-red-600 text-white shadow-sm hover:shadow-md transition-all"
+          >
+            <RefreshCw size={14} className="mr-1" />
+            Recharge Plan (₹{activeUpdatePlan.productId?.monthlyRenewalCost || 8000})
+          </button>
+        ) : (
+          <button
+            onClick={handleRequestUpdate}
+            disabled={
+              !activeUpdatePlan.productId?.isUnlimitedUpdates &&
+              ((activeUpdatePlan.updatesUsed || 0) >= activeUpdatePlan.productId?.updateCount || calculateRemainingDays(activeUpdatePlan) <= 0)
+            }
+            className={`flex-1 py-2 rounded-md flex items-center justify-center text-sm font-medium transition-all ${
+              !activeUpdatePlan.productId?.isUnlimitedUpdates &&
+              ((activeUpdatePlan.updatesUsed || 0) >= activeUpdatePlan.productId?.updateCount || calculateRemainingDays(activeUpdatePlan) <= 0)
+                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                : 'bg-blue-600 text-white shadow-sm hover:shadow-md'
+            }`}
+          >
+            <RefreshCw size={14} className="mr-1" />
+            Request Update
+          </button>
+        )}
       </div>
     </div>
   </div>
@@ -998,10 +1114,19 @@ const showDemoBox = !(hasOngoingWebsiteProject || hasCompletedWebsiteProject || 
   </div>
 )}
 
+      {/* Renewal Modal */}
+      {showRenewalModal && activeUpdatePlan && (
+        <RenewalModal
+          plan={activeUpdatePlan}
+          onClose={() => setShowRenewalModal(false)}
+          onRenewalSuccess={handleRenewalSuccess}
+        />
+      )}
+
       {/* Update Request Modal */}
       {showUpdateRequestModal && activeUpdatePlan && (
-  <UpdateRequestModal 
-    plan={activeUpdatePlan} 
+  <UpdateRequestModal
+    plan={activeUpdatePlan}
     onClose={() => setShowUpdateRequestModal(false)}
     onSubmitSuccess={() => {
       // First update the local state immediately

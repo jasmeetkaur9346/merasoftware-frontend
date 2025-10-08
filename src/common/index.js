@@ -193,6 +193,10 @@ const SummaryApi = {
         url : `${backendDomain}/api/toggle-update-plan`,
         method: "post"
     },
+    renewMonthlyPlan: {
+        url : `${backendDomain}/api/renew-monthly-plan`,
+        method: "post"
+    },
     adminProjects : {
         url : `${backendDomain}/api/get-projects`,
         method : "get"
