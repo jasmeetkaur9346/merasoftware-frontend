@@ -11,6 +11,7 @@ import SummaryApi from '../common';
 import Context from '../context';
 import UpdateRequestModal from '../components/UpdateRequestModal';
 import RenewalModal from '../components/RenewalModal';
+import YearlyPlanDetailsModal from '../components/YearlyPlanDetailsModal';
 import DashboardLayout from '../components/DashboardLayout';
 import displayINRCurrency from '../helpers/displayCurrency';
 
@@ -33,6 +34,7 @@ const Dashboard = () => {
   const [showUpdateRequestModal, setShowUpdateRequestModal] = useState(false);
   const [showAllProjectsModal, setShowAllProjectsModal] = useState(false);
   const [showRenewalModal, setShowRenewalModal] = useState(false);
+  const [showYearlyPlanDetailsModal, setShowYearlyPlanDetailsModal] = useState(false);
   const [rejectedPayments, setRejectedPayments] = useState([]);
   const [pendingApprovalProjects, setPendingApprovalProjects] = useState([]);
 
@@ -533,63 +535,56 @@ const Dashboard = () => {
       </div>
 
       {/* Plan name and updates indicator */}
-      <div className="flex justify-between items-center mb-3">
-        <div className="flex flex-col justify-center">
-          <h2 className="text-lg font-bold text-gray-800">
-            {activeUpdatePlan.productId?.serviceName || "Website Updates"}
-          </h2>
-          <span className="text-xs text-gray-500">
-            Purchased: {formatDate(activeUpdatePlan.createdAt)}
-          </span>
+      <div className="mb-3">
+        <h2 className="text-lg font-bold text-gray-800 mb-2">
+          {activeUpdatePlan.productId?.serviceName || "Website Updates"}
+        </h2>
+        <div className="flex items-center gap-2">
           {activeUpdatePlan.productId?.isMonthlyRenewablePlan && (
-            <span className="text-xs text-purple-600 font-medium mt-1">
-              Yearly Plan ({activeUpdatePlan.totalYearlyDaysRemaining || 0} days left)
-            </span>
+            <div className="text-2xl font-bold text-blue-600">∞</div>
           )}
+          <div className="flex flex-col">
+            <span className="text-xs text-gray-500">
+              Purchased: {formatDate(activeUpdatePlan.createdAt)}
+            </span>
+            {activeUpdatePlan.productId?.isMonthlyRenewablePlan && (
+              <span className="text-xs text-purple-600 font-medium mt-1">
+                Yearly Plan ({(() => {
+                  const startDate = new Date(activeUpdatePlan.createdAt);
+                  const today = new Date();
+                  const totalDays = 365;
+                  const daysPassed = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
+                  const daysLeft = Math.max(0, totalDays - daysPassed);
+                  return daysLeft;
+                })()} days left)
+              </span>
+            )}
+          </div>
         </div>
 
-        {/* Updates indicator */}
-        <div className="relative w-12 h-12 rounded-full bg-white shadow-md flex items-center justify-center">
-          {activeUpdatePlan.productId?.isMonthlyRenewablePlan ? (
-            <div className="text-center flex flex-col items-center">
-              {/* Loop/Refresh icon for yearly renewable plans */}
-              <svg
-                className="w-6 h- text-blue-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                style={{
-                  animation: calculateRemainingDays(activeUpdatePlan) > 0 ? 'spin 3s linear infinite' : 'none'
-                }}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2.5}
-                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+        {/* Updates indicator for non-yearly plans */}
+        {!activeUpdatePlan.productId?.isMonthlyRenewablePlan && (
+          <div className="relative w-12 h-12 rounded-full bg-white shadow-md flex items-center justify-center mt-3">
+            {activeUpdatePlan.productId?.isUnlimitedUpdates ? (
+              <div className="text-center">
+                <div className="text-lg font-bold text-blue-600">∞</div>
+                <div className="text-xs text-gray-500">Unlimited</div>
+              </div>
+            ) : (
+              <svg viewBox="0 0 100 100" width="64" height="64">
+                <circle cx="50" cy="50" r="42" fill="none" stroke="#e2e8f0" strokeWidth="8" />
+                <circle
+                  cx="50" cy="50" r="42" fill="none" stroke="#3b82f6" strokeWidth="8" strokeLinecap="round"
+                  strokeDasharray={`${((activeUpdatePlan.productId?.updateCount - (activeUpdatePlan.updatesUsed || 0)) / activeUpdatePlan.productId?.updateCount) * 264} 264`}
+                  transform="rotate(-90 50 50)"
                 />
+                <text x="50" y="62" textAnchor="middle" fontSize="40" fontWeight="bold" fill="#3b82f6">
+                  {activeUpdatePlan.productId?.updateCount - (activeUpdatePlan.updatesUsed || 0)}
+                </text>
               </svg>
-              {/* <div className="text-xs text-blue-600 font-medium mt-1">Yearly</div> */}
-            </div>
-          ) : activeUpdatePlan.productId?.isUnlimitedUpdates ? (
-            <div className="text-center">
-              <div className="text-lg font-bold text-blue-600">∞</div>
-              <div className="text-xs text-gray-500">Unlimited</div>
-            </div>
-          ) : (
-            <svg viewBox="0 0 100 100" width="64" height="64">
-              <circle cx="50" cy="50" r="42" fill="none" stroke="#e2e8f0" strokeWidth="8" />
-              <circle
-                cx="50" cy="50" r="42" fill="none" stroke="#3b82f6" strokeWidth="8" strokeLinecap="round"
-                strokeDasharray={`${((activeUpdatePlan.productId?.updateCount - (activeUpdatePlan.updatesUsed || 0)) / activeUpdatePlan.productId?.updateCount) * 264} 264`}
-                transform="rotate(-90 50 50)"
-              />
-              <text x="50" y="62" textAnchor="middle" fontSize="40" fontWeight="bold" fill="#3b82f6">
-                {activeUpdatePlan.productId?.updateCount - (activeUpdatePlan.updatesUsed || 0)}
-              </text>
-            </svg>
-          )}
-        </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Days left and additional info */}
@@ -621,50 +616,6 @@ const Dashboard = () => {
               </div>
             </div>
 
-            {/* Yearly Plan Progress */}
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <div className="flex items-center">
-                  <svg className="w-3 h-3 text-purple-500 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
-                  </svg>
-                  <span className="text-xs text-purple-600 font-medium">Yearly Plan</span>
-                </div>
-                <span className="text-xs font-bold text-purple-700">
-                  {activeUpdatePlan.totalYearlyDaysRemaining || 365} days remaining
-                </span>
-              </div>
-              <div className="w-full h-2 bg-white rounded-full shadow-inner overflow-hidden">
-                <div
-                  className="h-full rounded-full bg-gradient-to-r from-purple-400 to-purple-600"
-                  style={{
-                    width: `${Math.max(5, ((activeUpdatePlan.totalYearlyDaysRemaining || 365) / 365) * 100)}%`
-                  }}
-                ></div>
-              </div>
-            </div>
-
-            {/* Monthly Updates Usage */}
-            <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-lg p-3 border border-green-200">
-              <div className="flex justify-between items-center mb-2">
-                <div className="flex items-center">
-                  <svg className="w-4 h-4 text-green-600 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
-                  </svg>
-                  <span className="text-xs font-medium text-green-700">This Month Updates</span>
-                </div>
-                <div className="text-right">
-                  <span className="text-sm font-bold text-green-800">
-                    {activeUpdatePlan.currentMonthUpdatesUsed || 0}
-                  </span>
-                  <span className="text-xs text-green-600 ml-1">Used</span>
-                </div>
-              </div>
-              <div className="flex justify-between text-xs">
-                <span className="text-green-600">Updates Available:</span>
-                <span className="text-green-700 font-medium">∞ Unlimited</span>
-              </div>
-            </div>
           </>
         ) : (
           /* Regular Plans - Original Logic */
@@ -704,7 +655,26 @@ const Dashboard = () => {
             <RefreshCw size={14} className="mr-1" />
             Recharge Plan (₹{activeUpdatePlan.productId?.monthlyRenewalCost || 8000})
           </button>
+        ) : activeUpdatePlan.productId?.isMonthlyRenewablePlan ? (
+          /* Yearly Plan - Two buttons side by side */
+          <>
+            <button
+              onClick={handleRequestUpdate}
+              className="flex-1 py-2 rounded-md flex items-center justify-center text-sm font-medium bg-blue-600 text-white shadow-sm hover:shadow-md transition-all"
+            >
+              <RefreshCw size={14} className="mr-1" />
+              Request Update
+            </button>
+            <button
+              onClick={() => setShowYearlyPlanDetailsModal(true)}
+              className="flex-1 py-2 rounded-md flex items-center justify-center text-sm font-medium bg-purple-600 text-white shadow-sm hover:shadow-md transition-all"
+            >
+              <FileText size={14} className="mr-1" />
+              View Details
+            </button>
+          </>
         ) : (
+          /* Regular Plan - Single Request Update button */
           <button
             onClick={handleRequestUpdate}
             disabled={
@@ -1131,7 +1101,7 @@ const Dashboard = () => {
     onSubmitSuccess={() => {
       // First update the local state immediately
       handleUpdateRequestCompletion();
-      
+
       // Then fetch the updated data from the server
       const fetchUpdatedOrders = async () => {
         try {
@@ -1139,83 +1109,91 @@ const Dashboard = () => {
             method: SummaryApi.ordersList.method,
             credentials: 'include'
           });
-          
+
           const data = await response.json();
           if (data.success) {
             // Update orders
             const allOrders = data.data || [];
             allOrders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
             setOrders(allOrders.slice(0, 2));
-            
+
             // Reprocess all data
             const websiteProjects = allOrders.filter(order => {
               const category = order.productId?.category?.toLowerCase();
               return ['standard_websites', 'dynamic_websites', 'web_applications', 'mobile_apps'].includes(category) ||
                      (category === 'website_updates');
             });
-            
+
             websiteProjects.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
             setWebsiteProjects(websiteProjects);
-            
+
             // Re-check if there's an active update plan
-            const updatePlan = allOrders.find(order => 
-              order.productId?.category === 'website_updates' && 
+            const updatePlan = allOrders.find(order =>
+              order.productId?.category === 'website_updates' &&
               order.isActive &&
               order.updatesUsed < order.productId?.updateCount &&
               calculateRemainingDays(order) > 0 &&
-              order.orderVisibility !== 'pending-approval' && 
+              order.orderVisibility !== 'pending-approval' &&
               order.orderVisibility !== 'payment-rejected'
             );
-            
+
             // Set active update plan (could be null if all updates used)
             setActiveUpdatePlan(updatePlan || null);
-            
+
             // Find active (in-progress) project
             const activeProj = websiteProjects.find(project => {
               const category = project.productId?.category?.toLowerCase();
               if (!category) return false;
-              
+
               if (['standard_websites', 'dynamic_websites', 'web_applications', 'mobile_apps'].includes(category)) {
                 return project.projectProgress < 100 || project.currentPhase !== 'completed';
               }
               return false;
             });
             setActiveProject(activeProj || null);
-            
+
             // Find completed projects
             const completed = websiteProjects.filter(project => {
               const category = project.productId?.category?.toLowerCase();
               if (!category) return false;
-              
+
               if (['standard_websites', 'dynamic_websites', 'web_applications', 'mobile_apps'].includes(category)) {
                 return project.projectProgress === 100 && project.currentPhase === 'completed';
               } else if (category === 'website_updates') {
-                return !project.isActive || 
-                       (project.updatesUsed >= project.productId?.updateCount) || 
+                return !project.isActive ||
+                       (project.updatesUsed >= project.productId?.updateCount) ||
                        (calculateRemainingDays(project) <= 0);
               }
               return false;
             });
             setCompletedProjects(completed);
-            
+
             // Determine whether to show "Start New Project" button
-            const showNewProj = !activeProj && 
-              (!updatePlan || 
+            const showNewProj = !activeProj &&
+              (!updatePlan ||
                (updatePlan.updatesUsed >= updatePlan.productId?.updateCount) ||
                (calculateRemainingDays(updatePlan) <= 0)
               );
-            
+
             setShowNewProjectButton(showNewProj);
           }
         } catch (error) {
           console.error('Error fetching updated orders:', error);
         }
       };
-      
+
       fetchUpdatedOrders();
     }}
   />
 )}
+
+      {/* Yearly Plan Details Modal */}
+      {showYearlyPlanDetailsModal && activeUpdatePlan && (
+        <YearlyPlanDetailsModal
+          plan={activeUpdatePlan}
+          onClose={() => setShowYearlyPlanDetailsModal(false)}
+        />
+      )}
      </DashboardLayout>
   );
 };
