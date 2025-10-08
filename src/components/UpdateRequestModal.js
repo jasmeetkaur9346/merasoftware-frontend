@@ -20,8 +20,8 @@ const UpdateRequestModal = ({ plan, onClose, onSubmitSuccess }) => {
   const handleFileUpload = async (e) => {
     const uploadedFiles = Array.from(e.target.files);
     const maxFileSize = 5 * 1024 * 1024; // 5MB in bytes
-    const maxFileCount = 2; // Maximum 2 files allowed
-    
+    const maxFileCount = 20; // Maximum 20 files allowed
+
     // Check if adding these files would exceed the limit
     if (files.length + uploadedFiles.length > maxFileCount) {
       toast.error(`Maximum ${maxFileCount} files allowed. You already have ${files.length} file${files.length !== 1 ? 's' : ''} uploaded.`);
@@ -314,22 +314,22 @@ const getFileIcon = (fileType) => {
               <div className="mb-6">
                 <h4 className="font-medium mb-3">Upload Files</h4>
                 <p className="text-sm text-gray-600 mb-4">
-                Only JPG images, PDF, DOC, TXT and RTF documents are supported. Max file size: 5MB. Maximum 2 files allowed. Images will be automatically compressed.
+                Only JPG images, PDF, DOC, TXT and RTF documents are supported. Max file size: 5MB. Maximum 20 files allowed. Images will be automatically compressed.
                 </p>
-                
+
                 {/* File upload button */}
                 <div className="flex items-center justify-center w-full">
                   <label
                     htmlFor="file-upload"
                     className={`border-2 border-dashed rounded-lg w-full p-6 flex flex-col items-center justify-center cursor-pointer ${
-                      files.length >= 2 
-                        ? 'border-gray-200 bg-gray-100 cursor-not-allowed' 
+                      files.length >= 20
+                        ? 'border-gray-200 bg-gray-100 cursor-not-allowed'
                         : 'border-gray-300 hover:bg-gray-50'
                     }`}
                   >
-                    <Upload className={`w-10 h-10 mb-2 ${files.length >= 2 ? 'text-gray-300' : 'text-gray-400'}`} />
-                    <p className={`text-sm ${files.length >= 2 ? 'text-gray-400' : 'text-gray-600'}`}>
-                      {files.length >= 2 ? 'Maximum files reached (2/2)' : `Click to upload or drag and drop (${files.length}/2)`}
+                    <Upload className={`w-10 h-10 mb-2 ${files.length >= 20 ? 'text-gray-300' : 'text-gray-400'}`} />
+                    <p className={`text-sm ${files.length >= 20 ? 'text-gray-400' : 'text-gray-600'}`}>
+                      {files.length >= 20 ? 'Maximum files reached (20/20)' : `Click to upload or drag and drop (${files.length}/20)`}
                     </p>
                     <input
                       id="file-upload"
@@ -339,7 +339,7 @@ const getFileIcon = (fileType) => {
                       accept=".jpg,.jpeg,.txt,.rtf,.pdf,.doc,.docx"
                       className="hidden"
                       onChange={handleFileUpload}
-                      disabled={files.length >= 2}
+                      disabled={files.length >= 20}
                     />
                   </label>
                 </div>
