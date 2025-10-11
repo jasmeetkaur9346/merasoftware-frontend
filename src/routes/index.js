@@ -71,6 +71,7 @@ import UserDemo from "../pages/UserDemo"
 import CompleteProfile from "../pages/CompleteProfile";
 import AdminWithdrawalManagement from "../pages/AdminWithdrawalManagement";
 import KYCVerification from "../pages/KYCVerification";
+import PendingRenewals from "../pages/PendingRenewals";
 
 // Create a conditional home route
 // const HomeRoute = () => {
@@ -303,6 +304,10 @@ const router = createBrowserRouter([
                     {
                         path: "payment-verification",
                         element : <AdminPaymentVerification/>
+                    },
+                    {
+                        path: "pending-renewals",
+                        element : <PendingRenewals/>
                     },
                     {
                         path: "coupon-management",

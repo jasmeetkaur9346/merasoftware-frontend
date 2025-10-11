@@ -37,6 +37,7 @@ const Dashboard = () => {
   const [showYearlyPlanDetailsModal, setShowYearlyPlanDetailsModal] = useState(false);
   const [rejectedPayments, setRejectedPayments] = useState([]);
   const [pendingApprovalProjects, setPendingApprovalProjects] = useState([]);
+  const [pendingRenewalInfo, setPendingRenewalInfo] = useState(null);
 
   useEffect(() => {
     // Fetch user orders
@@ -154,6 +155,13 @@ const Dashboard = () => {
           );
           setActiveUpdatePlan(updatePlan || null);
 
+          // Check for pending renewal if there's an active yearly renewable plan
+          if (updatePlan && updatePlan.productId?.isMonthlyRenewablePlan) {
+            checkPendingRenewal(updatePlan._id);
+          } else {
+            setPendingRenewalInfo(null);
+          }
+
           // Debug yearly plan data
           if (updatePlan && updatePlan.productId?.isMonthlyRenewablePlan) {
             console.log('🎯 YEARLY PLAN DEBUG:', {
@@ -225,8 +233,12 @@ const Dashboard = () => {
   };
 
   const handleRenewalSuccess = (renewalData) => {
-    // Refresh the dashboard data after successful renewal
-    window.location.reload(); // Simple refresh - you can make this more elegant
+    // Check for pending renewal and refresh the dashboard data
+    if (activeUpdatePlan && activeUpdatePlan.productId?.isMonthlyRenewablePlan) {
+      checkPendingRenewal(activeUpdatePlan._id);
+    }
+    // Refresh the page to show updated state
+    window.location.reload();
   };
 
   const handleUpdateRequestCompletion = () => {
@@ -260,7 +272,29 @@ const Dashboard = () => {
       year: 'numeric'
     });
   };
-  
+
+  // Check if a plan has pending renewal
+  const checkPendingRenewal = async (planId) => {
+    try {
+      const response = await fetch(
+        `${SummaryApi.checkPendingRenewal.url}?planId=${planId}`,
+        {
+          method: SummaryApi.checkPendingRenewal.method,
+          credentials: 'include'
+        }
+      );
+      const data = await response.json();
+      if (data.success && data.hasPendingRenewal) {
+        setPendingRenewalInfo(data.data);
+      } else {
+        setPendingRenewalInfo(null);
+      }
+    } catch (error) {
+      console.error('Error checking pending renewal:', error);
+      setPendingRenewalInfo(null);
+    }
+  };
+
   // Calculate remaining days for an update plan
   const calculateRemainingDays = (plan) => {
     if (!plan) return 0;
@@ -648,13 +682,30 @@ const Dashboard = () => {
       {/* Action buttons */}
       <div className="flex gap-2">
         {activeUpdatePlan.productId?.isMonthlyRenewablePlan && calculateRemainingDays(activeUpdatePlan) <= 0 ? (
-          <button
-            onClick={handleRenewPlan}
-            className="flex-1 py-2 rounded-md flex items-center justify-center text-sm font-medium bg-red-600 text-white shadow-sm hover:shadow-md transition-all"
-          >
-            <RefreshCw size={14} className="mr-1" />
-            Recharge Plan (₹{activeUpdatePlan.productId?.monthlyRenewalCost || 8000})
-          </button>
+          pendingRenewalInfo ? (
+            /* Show Pending Approval Card */
+            <div className="w-full bg-yellow-50 border border-yellow-300 rounded-md p-3">
+              <div className="flex items-center mb-2">
+                <Clock size={16} className="text-yellow-600 mr-2" />
+                <span className="text-sm font-semibold text-yellow-800">Awaiting Approval</span>
+              </div>
+              <p className="text-xs text-gray-600 mb-2">
+                Your renewal payment of {displayINRCurrency(pendingRenewalInfo.amount)} via {pendingRenewalInfo.paymentMethod} is pending admin approval.
+              </p>
+              <p className="text-xs text-gray-500">
+                Submitted: {formatDate(pendingRenewalInfo.submittedAt)}
+              </p>
+            </div>
+          ) : (
+            /* Show Recharge Button */
+            <button
+              onClick={handleRenewPlan}
+              className="flex-1 py-2 rounded-md flex items-center justify-center text-sm font-medium bg-red-600 text-white shadow-sm hover:shadow-md transition-all"
+            >
+              <RefreshCw size={14} className="mr-1" />
+              Recharge Plan (₹{activeUpdatePlan.productId?.monthlyRenewalCost || 8000})
+            </button>
+          )
         ) : activeUpdatePlan.productId?.isMonthlyRenewablePlan ? (
           /* Yearly Plan - Two buttons side by side */
           <>

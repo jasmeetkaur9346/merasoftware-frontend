@@ -37,8 +37,9 @@ const AdminPanel = () => {
     useEffect(() => {
         const currentPath = location.pathname
         
-        if (currentPath.includes('coupon-management') || 
-            currentPath.includes('payment-verification') || 
+        if (currentPath.includes('coupon-management') ||
+            currentPath.includes('payment-verification') ||
+            currentPath.includes('pending-renewals') ||
             currentPath.includes('order-approval') ||
             currentPath.includes('admin-settings') ||
             currentPath.includes('admin-tickets') ||
@@ -128,8 +129,8 @@ const AdminPanel = () => {
                                     >
                                         Coupon Codes
                                     </Link>
-                                    <Link 
-                                        to={"payment-verification"} 
+                                    <Link
+                                        to={"payment-verification"}
                                         className={`block px-3 py-2.5 text-sm rounded-md transition-colors ${
                                             isActive('payment-verification')
                                                 ? 'bg-blue-600 text-white'
@@ -138,6 +139,17 @@ const AdminPanel = () => {
                                         onClick={(e) => e.stopPropagation()}
                                     >
                                         Payment Verification
+                                    </Link>
+                                    <Link
+                                        to={"pending-renewals"}
+                                        className={`block px-3 py-2.5 text-sm rounded-md transition-colors ${
+                                            isActive('pending-renewals')
+                                                ? 'bg-blue-600 text-white'
+                                                : 'text-gray-400 hover:bg-slate-700 hover:text-white'
+                                        }`}
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
+                                        Pending Renewals
                                     </Link>
                                     <Link 
                                         to={"partner-withdrawal-requests"} 

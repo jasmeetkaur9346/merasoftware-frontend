@@ -193,8 +193,35 @@ const SummaryApi = {
         url : `${backendDomain}/api/toggle-update-plan`,
         method: "post"
     },
+    // OLD RENEWAL - DEPRECATED
     renewMonthlyPlan: {
         url : `${backendDomain}/api/renew-monthly-plan`,
+        method: "post"
+    },
+    // NEW RENEWAL SYSTEM (Approval-based flow)
+    createRenewalOrder: {
+        url: `${backendDomain}/api/create-renewal`,
+        method: "post"
+    },
+    checkPendingRenewal: {
+        url: `${backendDomain}/api/check-pending-renewal`,
+        method: "get"
+    },
+    getUserRenewalStatus: {
+        url: `${backendDomain}/api/user-renewal-status`,
+        method: "get"
+    },
+    // Admin renewal management
+    getPendingRenewals: {
+        url: `${backendDomain}/api/pending-renewals`,
+        method: "get"
+    },
+    approveRenewal: {
+        url: `${backendDomain}/api/approve-renewal`,
+        method: "post"
+    },
+    rejectRenewal: {
+        url: `${backendDomain}/api/reject-renewal`,
         method: "post"
     },
     adminProjects : {
