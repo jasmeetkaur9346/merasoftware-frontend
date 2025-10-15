@@ -54,12 +54,18 @@ const AppConvertingBanner = () => {
       new Date(b.createdAt) - new Date(a.createdAt)
     );
   
-    // If there's an active update plan, show it first
-    const activeUpdatePlan = sortedOrders.find(order => 
-      order.productId?.category === 'website_updates' && 
-      order.isActive
-    );
-  
+    // If there's an active update plan, show it first (handles yearly renewable plans)
+    const activeUpdatePlan = sortedOrders.find(order => {
+      if (!isUpdatePlan(order.productId?.category)) return false;
+
+      if (isYearlyRenewablePlan(order)) {
+        return calculateYearlyRemainingDays(order) > 0;
+      }
+
+      const remainingDays = calculateStandardRemainingDays(order);
+      return order.isActive && remainingDays > 0;
+    });
+
     if (activeUpdatePlan) {
       return [activeUpdatePlan];
     }
@@ -261,27 +267,77 @@ const AppConvertingBanner = () => {
 
   // Helper functions remain the same
   const isWebsiteService = (category = '') => {
-    return [ 'standard_websites', 'cloud_software_development', 'app_development'].includes(category?.toLowerCase());
+    return ['standard_websites', 'cloud_software_development', 'app_development'].includes(category?.toLowerCase());
   };
 
   const isUpdatePlan = (category = '') => {
     return category?.toLowerCase() === 'website_updates';
   };
 
-  const calculateRemainingDays = (order) => {
-    if (!order.createdAt || !order.productId?.validityPeriod) return 0;
-    
-    // No need to convert months to days anymore
+  const isYearlyRenewablePlan = (order = {}) => {
+    return (
+      !!order?.productId?.isMonthlyRenewablePlan &&
+      isUpdatePlan(order?.productId?.category)
+    );
+  };
+
+  const calculateStandardRemainingDays = (order = {}) => {
+    if (!order?.createdAt || !order?.productId?.validityPeriod) return 0;
+
     const validityInDays = order.productId.validityPeriod;
-    
     const startDate = new Date(order.createdAt);
     const endDate = new Date(startDate);
     endDate.setDate(endDate.getDate() + validityInDays);
-    
+
     const today = new Date();
     const remainingDays = Math.ceil((endDate - today) / (1000 * 60 * 60 * 24));
-    
     return Math.max(0, remainingDays);
+  };
+
+  const calculateMonthlyCycleRemainingDays = (order = {}) => {
+    if (!isYearlyRenewablePlan(order)) {
+      return calculateStandardRemainingDays(order);
+    }
+
+    if (order.currentMonthExpiryDate) {
+      const today = new Date();
+      const expiry = new Date(order.currentMonthExpiryDate);
+      const remainingDays = Math.ceil((expiry - today) / (1000 * 60 * 60 * 24));
+      return Math.max(0, remainingDays);
+    }
+
+    // Fallback to 30 days if no expiry date is available
+    return 0;
+  };
+
+  const calculateYearlyRemainingDays = (order = {}) => {
+    if (!isYearlyRenewablePlan(order)) return 0;
+
+    const yearlyDuration = Number(order?.productId?.yearlyPlanDuration) || 365;
+    const rawStartDate = order?.currentPlanStartDate || order?.createdAt;
+    if (!rawStartDate) return yearlyDuration;
+
+    const startDate = new Date(rawStartDate);
+    if (Number.isNaN(startDate.getTime())) {
+      return yearlyDuration;
+    }
+
+    // Align with dashboard: compare whole days (midnight-to-midnight)
+    const today = new Date();
+    const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const startOfPlan = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+
+    const msPerDay = 1000 * 60 * 60 * 24;
+    const daysPassed = Math.floor((startOfToday - startOfPlan) / msPerDay);
+    const daysLeft = yearlyDuration - daysPassed;
+    return Math.max(0, Math.min(yearlyDuration, daysLeft));
+  };
+
+  const calculatePlanRemainingDays = (order = {}) => {
+    if (isYearlyRenewablePlan(order)) {
+      return calculateMonthlyCycleRemainingDays(order);
+    }
+    return calculateStandardRemainingDays(order);
   };
 
   const handleOrderClick = (orderId) => {
@@ -329,28 +385,24 @@ const AppConvertingBanner = () => {
   
   // Orders Desktop View - New UI that matches UpdateCardUnique
   const OrdersDesktopView = ({ order }) => {
-    const remainingDays = calculateRemainingDays(order);
     const isUpdate = isUpdatePlan(order.productId?.category);
-    
-    // Calculate validity percentage for update plans
-    let validityPercentage = 0;
-    if (isUpdate && order.productId?.validityPeriod) {
-      const validityInDays = order.productId.validityPeriod;
-      const startDate = new Date(order.createdAt);
-      const endDate = new Date(startDate);
-      endDate.setDate(endDate.getDate() + validityInDays);
-      const today = new Date();
-      const totalDuration = endDate - startDate;
-      const elapsed = today - startDate;
-      validityPercentage = Math.max(0, Math.min(100, ((totalDuration - elapsed) / totalDuration) * 100));
-    }
-    
+    const isYearlyPlan = isYearlyRenewablePlan(order);
+    const remainingDays = calculatePlanRemainingDays(order);
+    const yearlyDaysLeft = isYearlyPlan ? calculateYearlyRemainingDays(order) : 0;
+    const monthlyDaysLeft = remainingDays;
+
     // Website project progress
     const projectProgress = order.projectProgress || 0;
-    
-    // For updates - calculate used/total
-    const totalUpdates = isUpdate ? (order.productId?.updateCount || 0) : 0;
-    const usedUpdates = isUpdate ? (order.updatesUsed || 0) : 0;
+
+    // Update-plan metrics
+    const totalUpdates = isUpdate && !isYearlyPlan ? (order.productId?.updateCount || 0) : 0;
+    const usedUpdates = isUpdate && !isYearlyPlan ? (order.updatesUsed || 0) : 0;
+    const currentMonthUpdatesUsed = isYearlyPlan ? (order.currentMonthUpdatesUsed || 0) : 0;
+    const isUnlimitedUpdates = !!order.productId?.isUnlimitedUpdates;
+    const planStatusLabel = isYearlyPlan
+      ? (monthlyDaysLeft <= 0 ? 'Needs Renewal' : 'Yearly Plan Active')
+      : null;
+    const planStatusClass = monthlyDaysLeft <= 0 ? 'text-red-600' : 'text-purple-600';
   
     return (
       <div className="bg-gradient-to-r from-gray-50 to-white rounded-xl shadow-lg overflow-hidden">
@@ -385,26 +437,53 @@ const AppConvertingBanner = () => {
               
               {/* Progress Section */}
               {isUpdate ? (
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-gray-600">Updates Progress</span>
-                  <span className="text-sm font-medium text-orange-600">{usedUpdates} of {totalUpdates}</span>
-                </div>
-                <div className="relative h-2 bg-gray-100 rounded-full overflow-hidden">
-                  <div className="absolute top-0 left-0 h-full w-full bg-gradient-to-r from-orange-400 via-red-500 to-purple-500 opacity-20"></div>
-                  <div className="relative flex gap-1">
-                    {Array.from({ length: totalUpdates }).map((_, index) => (
-                      <div
-                        key={index}
-                        className={`flex-1 h-2 border-r-2 border-white last:border-r-0 ${
-                          index < usedUpdates ? 'bg-gradient-to-r from-orange-400 via-red-500 to-purple-500' : ''
-                        }`}
-                      ></div>
-                    ))}
+                isYearlyPlan ? (
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium text-gray-600">Yearly Update Plan</span>
+                      <span className={`text-sm font-semibold ${planStatusClass}`}>
+                        {planStatusLabel}
+                      </span>
+                    </div>
+                    <div>
+                      <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
+                        <span>Current Month Cycle</span>
+                        <span>{monthlyDaysLeft > 0 ? `${monthlyDaysLeft} days left` : 'Expired'}</span>
+                      </div>
+                      <div className="relative h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full ${monthlyDaysLeft <= 3 ? 'bg-gradient-to-r from-red-500 to-red-600' : 'bg-gradient-to-r from-blue-500 to-blue-600'}`}
+                          style={{ width: `${Math.max(5, Math.min(100, (monthlyDaysLeft / 30) * 100))}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between text-xs text-gray-500">
+                      <span>Total Year Access</span>
+                      <span className="font-semibold text-purple-600">{yearlyDaysLeft} days left</span>
+                    </div>
                   </div>
-                </div>
-              </div>
-            )  : (
+                ) : (
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium text-gray-600">Updates Progress</span>
+                      <span className="text-sm font-medium text-orange-600">{usedUpdates} of {totalUpdates}</span>
+                    </div>
+                    <div className="relative h-2 bg-gray-100 rounded-full overflow-hidden">
+                      <div className="absolute top-0 left-0 h-full w-full bg-gradient-to-r from-orange-400 via-red-500 to-purple-500 opacity-20"></div>
+                      <div className="relative flex gap-1">
+                        {Array.from({ length: totalUpdates }).map((_, index) => (
+                          <div
+                            key={index}
+                            className={`flex-1 h-2 border-r-2 border-white last:border-r-0 ${
+                              index < usedUpdates ? 'bg-gradient-to-r from-orange-400 via-red-500 to-purple-500' : ''
+                            }`}
+                          ></div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )
+              ) : (
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-medium text-gray-600">Project Progress</span>
@@ -422,23 +501,44 @@ const AppConvertingBanner = () => {
               
               {/* Status and Time Section */}
               {isUpdate ? (
-              <div className="flex gap-8 py-4 border-y border-gray-100">
-                <div className="flex flex-col">
-                  <span className="text-sm font-medium text-gray-500">Plan Expires In</span>
-                  <div className="flex items-baseline gap-1 mt-1">
-                    <span className="text-2xl font-bold text-orange-600">{remainingDays}</span>
-                    <span className="text-sm text-gray-500">days</span>
+                isYearlyPlan ? (
+                  <div className="flex gap-8 py-4 border-y border-gray-100">
+                    <div className="flex flex-col">
+                      <span className="text-sm font-medium text-gray-500">Year Access Left</span>
+                      <div className="flex items-baseline gap-1 mt-1">
+                        <span className="text-2xl font-bold text-purple-600">{yearlyDaysLeft}</span>
+                        <span className="text-sm text-gray-500">days</span>
+                      </div>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-sm font-medium text-gray-500">Current Month Updates</span>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-2xl font-bold text-green-600">{currentMonthUpdatesUsed}</span>
+                        <span className="text-sm text-gray-500">
+                          {isUnlimitedUpdates ? 'used (Unlimited)' : `of ${(order.productId?.updateCount || 0)} used`}
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-sm font-medium text-gray-500">Updates Remaining</span>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="text-2xl font-bold text-green-600">{totalUpdates - usedUpdates}</span>
-                    <span className="text-sm text-gray-500">updates</span>
+                ) : (
+                  <div className="flex gap-8 py-4 border-y border-gray-100">
+                    <div className="flex flex-col">
+                      <span className="text-sm font-medium text-gray-500">Plan Expires In</span>
+                      <div className="flex items-baseline gap-1 mt-1">
+                        <span className="text-2xl font-bold text-orange-600">{remainingDays}</span>
+                        <span className="text-sm text-gray-500">days</span>
+                      </div>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-sm font-medium text-gray-500">Updates Remaining</span>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-2xl font-bold text-green-600">{totalUpdates - usedUpdates}</span>
+                        <span className="text-sm text-gray-500">updates</span>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-            ) : (
+                )
+              ) : (
               // Regular website project time display
               <div className="flex gap-8 py-4 border-y border-gray-100">
                 <div className="flex flex-col">
@@ -468,13 +568,13 @@ const AppConvertingBanner = () => {
               </div>
               <div className="relative group">
                 <div className="absolute inset-0 bg-gradient-to-r from-orange-400 via-red-500 to-purple-500 rounded-lg blur-sm opacity-50 group-hover:opacity-75 transition-opacity"></div>
-                <button 
+                {/* <button 
                   className="relative flex items-center gap-2 bg-white text-gray-700 px-4 py-2 rounded-lg hover:text-gray-900 transition-colors"
                   onClick={() => handleOrderClick(order._id)}
                 >
                   <span>{isUpdate ? 'View Update Plan' : 'View Project'}</span>
                   <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                </button>
+                </button> */}
               </div>
             </div>
           </div>
@@ -498,6 +598,14 @@ const AppConvertingBanner = () => {
   // Orders Mobile View - Keep the existing design
   const OrdersMobileView = ({ order }) => {
     const isUpdate = isUpdatePlan(order.productId?.category);
+    const isYearlyPlan = isYearlyRenewablePlan(order);
+    const remainingDays = calculatePlanRemainingDays(order);
+    const yearlyDaysLeft = isYearlyPlan ? calculateYearlyRemainingDays(order) : 0;
+    const monthlyDaysLeft = remainingDays;
+    const isUnlimitedUpdates = !!order.productId?.isUnlimitedUpdates;
+    const currentMonthUpdatesUsed = isYearlyPlan ? (order.currentMonthUpdatesUsed || 0) : 0;
+    const totalUpdates = isUpdate && !isYearlyPlan ? (order.productId?.updateCount || 0) : 0;
+    const usedUpdates = isUpdate && !isYearlyPlan ? (order.updatesUsed || 0) : 0;
 
     return (
        <div className="px-4 mt-4">
@@ -521,62 +629,103 @@ const AppConvertingBanner = () => {
           </div>
           
           {isUpdate ? (
-            // Updates plan mobile view
-            <div className="mt-5 grid grid-cols-3 gap-3">
-              <div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Validity</span>
-                  <span className="text-sm font-bold text-teal-600">
-                    {calculateRemainingDays(order)}d left
-                  </span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-1.5 mt-2">
-                  <div 
-                    className="h-full bg-teal-500 rounded-full transition-all duration-1000"
-                    style={{ 
-                      width: `${(calculateRemainingDays(order) / order.productId.validityPeriod) * 100}%` 
-                    }}
-                  />
-                </div>
-              </div>
+            <div className="mt-5 space-y-4">
+              {isYearlyPlan ? (
+                <>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-semibold text-gray-700">Yearly Update Plan</span>
+                    <span className={`text-xs font-semibold ${monthlyDaysLeft <= 0 ? 'text-red-600' : 'text-purple-600'}`}>
+                      {monthlyDaysLeft <= 0 ? 'Needs Renewal' : `${yearlyDaysLeft}d left`}
+                    </span>
+                  </div>
 
-              <div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Updates</span>
-                  <span className="text-sm font-bold text-teal-600">
-                    {`${order.updatesUsed || 0}/${order.productId?.updateCount || 0}`}
-                  </span>
-                </div>
-                <div className="flex items-end h-6 space-x-1">
-                  {Array.from({ length: order.productId?.updateCount || 0 }).map((_, i) => (
-                    <div 
-                      key={i} 
-                      className={`w-1 rounded-t ${i < (order.updatesUsed || 0) ? 'bg-teal-500' : 'bg-gray-200'}`}
-                      style={{ height: `${((i + 1) / (order.productId?.updateCount || 1)) * 100}%` }}
-                    />
-                  ))}
-                </div>
-              </div>
+                  <div>
+                    <div className="flex justify-between text-xs text-gray-500 mb-1">
+                      <span>Current Month</span>
+                      <span>{monthlyDaysLeft > 0 ? `${monthlyDaysLeft} days left` : 'Renew now'}</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
+                      <div
+                        className={`h-full ${monthlyDaysLeft <= 3 ? 'bg-red-500' : 'bg-blue-500'} rounded-full`}
+                        style={{ width: `${Math.max(5, Math.min(100, (monthlyDaysLeft / 30) * 100))}%` }}
+                      ></div>
+                    </div>
+                  </div>
 
-              <div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-600">Status</span>
-                  <span className="text-sm font-bold text-teal-600">
-                    {order.isActive ? 'Active' : 'Inactive'}
-                  </span>
-                </div>
-                <div className="relative h-6 flex items-center">
-                  <div 
-                    className={`w-full py-1 px-2 text-xs text-center rounded ${
-                      order.isActive 
-                        ? 'bg-green-100 text-green-700' 
-                        : 'bg-gray-100 text-gray-700'
-                    }`}
-                  >
-                    {order.isActive ? 'Plan Active' : 'Plan Inactive'}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-purple-50 border border-purple-100 rounded-md p-3">
+                      <p className="text-xs text-purple-600 uppercase tracking-wide mb-1">Year Access</p>
+                      <p className="text-base font-semibold text-purple-700">{yearlyDaysLeft} days</p>
+                    </div>
+                    <div className="bg-blue-50 border border-blue-100 rounded-md p-3">
+                      <p className="text-xs text-blue-600 uppercase tracking-wide mb-1">Monthly Updates</p>
+                      <p className="text-base font-semibold text-blue-700">
+                        {currentMonthUpdatesUsed}
+                        <span className="text-xs text-gray-500 ml-1">
+                          {isUnlimitedUpdates ? 'used (Unlimited)' : `of ${(order.productId?.updateCount || 0)}`}
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="grid grid-cols-3 gap-3">
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">Validity</span>
+                      <span className="text-sm font-bold text-teal-600">
+                        {remainingDays}d left
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-1.5 mt-2">
+                      <div 
+                        className="h-full bg-teal-500 rounded-full transition-all duration-1000"
+                        style={{ 
+                          width: `${totalUpdates ? ((totalUpdates - usedUpdates) / totalUpdates) * 100 : 0}%` 
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">Updates</span>
+                      <span className="text-sm font-bold text-teal-600">
+                        {`${usedUpdates}/${totalUpdates}`}
+                      </span>
+                    </div>
+                    <div className="flex items-end h-6 space-x-1">
+                      {Array.from({ length: totalUpdates }).map((_, i) => (
+                        <div 
+                          key={i} 
+                          className={`w-1 rounded-t ${i < usedUpdates ? 'bg-teal-500' : 'bg-gray-200'}`}
+                          style={{ height: `${((i + 1) / (totalUpdates || 1)) * 100}%` }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">Status</span>
+                      <span className="text-sm font-bold text-teal-600">
+                        {order.isActive ? 'Active' : 'Inactive'}
+                      </span>
+                    </div>
+                    <div className="relative h-6 flex items-center">
+                      <div 
+                        className={`w-full py-1 px-2 text-xs text-center rounded ${
+                          order.isActive 
+                            ? 'bg-green-100 text-green-700' 
+                            : 'bg-gray-100 text-gray-700'
+                        }`}
+                      >
+                        {order.isActive ? 'Plan Active' : 'Plan Inactive'}
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
             </div>
           ) : (
             // Regular website project mobile view - your existing code

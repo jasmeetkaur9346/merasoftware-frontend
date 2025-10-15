@@ -100,11 +100,24 @@ const Dashboard = () => {
           // console.log("Setting active project in Dashboard:", activeProj);
           setActiveProject(activeProj || null);
 
-         // Make sure your context has the updateActiveProject method
-          if (activeProj) {
-  // console.log("Dashboard updating active project in context");
-  context.updateActiveProject(activeProj);
-}
+          // Synchronize active project with context while preventing redundant updates
+          if (typeof context?.updateActiveProject === 'function') {
+            if (activeProj) {
+              const contextProject = context.activeProject;
+              const isSameProject =
+                contextProject &&
+                contextProject._id === activeProj._id &&
+                contextProject.updatedAt === activeProj.updatedAt &&
+                contextProject.projectProgress === activeProj.projectProgress &&
+                contextProject.currentPhase === activeProj.currentPhase;
+
+              if (!isSameProject) {
+                context.updateActiveProject(activeProj);
+              }
+            } else if (context?.activeProject) {
+              context.updateActiveProject(null);
+            }
+          }
           
           // Find completed projects including expired update plans
           const completedAndRejected = websiteProjects.filter(project => {

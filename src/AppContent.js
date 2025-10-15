@@ -11,8 +11,8 @@ import Context from './context';
 import CookieManager from './utils/cookieManager';
 import StorageService from './utils/storageService';
 import ScrollToTop from './helpers/scrollTop';
-import QRModal from './components/QRModal';
-import socket from './components/socket';
+// import QRModal from './components/QRModal';
+// import socket from './components/socket';
 // import { AnimatePresence } from 'framer-motion';
 // import AnimatedRoutes from './components/AnimatedRoutes';
 
@@ -307,18 +307,18 @@ useEffect(() => {
   
 }, [user?._id]);
 
-useEffect(() => {
-  const handleQR = () => setShowQR(true);
-  socket.on('qr', handleQR);
-  return () => socket.off('qr', handleQR);
-}, []);
+// useEffect(() => {
+//   const handleQR = () => setShowQR(true);
+//   socket.on('qr', handleQR);
+//   return () => socket.off('qr', handleQR);
+// }, []);
 
-useEffect(() => {
-  const handleReady = () => setShowQR(false); // WhatsApp ready, hide modal
+// useEffect(() => {
+//   const handleReady = () => setShowQR(false);
 
-  socket.on('ready', handleReady);
-  return () => socket.off('ready', handleReady);
-}, []);
+//   socket.on('ready', handleReady);
+//   return () => socket.off('ready', handleReady);
+// }, []);
   // const isDashboard = window.location.pathname.includes('/dashboard');
 
   return (
@@ -345,7 +345,7 @@ useEffect(() => {
         </main>
         {user?.role !== 'partner' && <Footer />}
 
-         <QRModal show={showQR} onClose={() => setShowQR(false)} />
+         {/* <QRModal show={showQR} onClose={() => setShowQR(false)} /> */}
       </Context.Provider>
   )
 }
