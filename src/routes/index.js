@@ -72,6 +72,8 @@ import CompleteProfile from "../pages/CompleteProfile";
 import AdminWithdrawalManagement from "../pages/AdminWithdrawalManagement";
 import KYCVerification from "../pages/KYCVerification";
 import PendingRenewals from "../pages/PendingRenewals";
+import UserInvoices from "../pages/UserInvoices";
+import AdminInvoiceManagement from "../pages/AdminInvoiceManagement";
 
 // Create a conditional home route
 // const HomeRoute = () => {
@@ -186,6 +188,14 @@ const router = createBrowserRouter([
                 element: (
                     <ProtectedRoute>
                         <UserDashboard/>
+                    </ProtectedRoute>
+                )
+            },
+            {
+                path: "my-invoices",
+                element: (
+                    <ProtectedRoute>
+                        <UserInvoices/>
                     </ProtectedRoute>
                 )
             },
@@ -308,6 +318,10 @@ const router = createBrowserRouter([
                     {
                         path: "pending-renewals",
                         element : <PendingRenewals/>
+                    },
+                    {
+                        path: "invoice-management",
+                        element : <AdminInvoiceManagement/>
                     },
                     {
                         path: "coupon-management",

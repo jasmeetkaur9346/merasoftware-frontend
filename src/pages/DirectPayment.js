@@ -340,7 +340,7 @@ if (paymentData.selectedFeatures && paymentData.selectedFeatures.length > 0) {
           percentage: 30,
           amount: currentPaymentAmount,
           paid: paymentMethod === 'wallet',
-          paymentStatus: paymentMethod === 'wallet' ? 'none' : 'pending-approval',
+          paymentStatus: 'pending-approval', // Always pending-approval initially
           paidDate: paymentMethod === 'wallet' ? new Date() : null
         },
         {
@@ -348,7 +348,7 @@ if (paymentData.selectedFeatures && paymentData.selectedFeatures.length > 0) {
           percentage: 30,
           amount: paymentData.totalPrice * 0.3,
           paid: false,
-          paymentStatus: 'none',
+          paymentStatus: null, // Use null instead of 'none'
           dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
         },
         {
@@ -356,7 +356,7 @@ if (paymentData.selectedFeatures && paymentData.selectedFeatures.length > 0) {
           percentage: 40,
           amount: paymentData.totalPrice * 0.4,
           paid: false,
-          paymentStatus: 'none',
+          paymentStatus: null, // Use null instead of 'none'
           dueDate: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000)
         }
       ];

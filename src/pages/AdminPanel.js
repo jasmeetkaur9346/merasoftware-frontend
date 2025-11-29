@@ -40,6 +40,7 @@ const AdminPanel = () => {
         if (currentPath.includes('coupon-management') ||
             currentPath.includes('payment-verification') ||
             currentPath.includes('pending-renewals') ||
+            currentPath.includes('invoice-management') ||
             currentPath.includes('order-approval') ||
             currentPath.includes('admin-settings') ||
             currentPath.includes('admin-tickets') ||
@@ -151,7 +152,18 @@ const AdminPanel = () => {
                                     >
                                         Pending Renewals
                                     </Link>
-                                    <Link 
+                                    <Link
+                                        to={"invoice-management"}
+                                        className={`block px-3 py-2.5 text-sm rounded-md transition-colors ${
+                                            isActive('invoice-management')
+                                                ? 'bg-blue-600 text-white'
+                                                : 'text-gray-400 hover:bg-slate-700 hover:text-white'
+                                        }`}
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
+                                        Invoice Management
+                                    </Link>
+                                    <Link
                                         to={"partner-withdrawal-requests"} 
                                         className={`block px-3 py-2.5 text-sm rounded-md transition-colors ${
                                             isActive('partner-withdrawal-requests')

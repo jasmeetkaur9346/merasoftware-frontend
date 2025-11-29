@@ -589,6 +589,41 @@ const SummaryApi = {
             url: `${backendDomain}/api/wallet/delete-transaction`,
             method: "delete"
         },
+    },
+    // Monthly Invoice APIs
+    invoices: {
+        getUserInvoices: {
+            url: `${backendDomain}/api/my-invoices`,
+            method: "get"
+        },
+        getAllInvoices: {
+            url: `${backendDomain}/api/invoices`,
+            method: "get"
+        },
+        getInvoiceById: {
+            url: `${backendDomain}/api/invoices`,
+            method: "get"
+        },
+        getInvoiceStatistics: {
+            url: `${backendDomain}/api/invoices/statistics`,
+            method: "get"
+        },
+        markInvoiceAsPaid: {
+            url: `${backendDomain}/api/invoices`,
+            method: "post"
+        },
+        cancelInvoice: {
+            url: `${backendDomain}/api/invoices`,
+            method: "post"
+        },
+        sendInvoiceReminder: {
+            url: `${backendDomain}/api/invoices`,
+            method: "post"
+        },
+        updateOverdueInvoices: {
+            url: `${backendDomain}/api/invoices/update-overdue`,
+            method: "post"
+        }
     }
 }
 

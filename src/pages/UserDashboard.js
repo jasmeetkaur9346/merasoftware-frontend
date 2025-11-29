@@ -38,6 +38,7 @@ const Dashboard = () => {
   const [rejectedPayments, setRejectedPayments] = useState([]);
   const [pendingApprovalProjects, setPendingApprovalProjects] = useState([]);
   const [pendingRenewalInfo, setPendingRenewalInfo] = useState(null);
+  const [unpaidInvoices, setUnpaidInvoices] = useState([]);
 
   useEffect(() => {
     // Fetch user orders
@@ -150,7 +151,7 @@ const Dashboard = () => {
           const rejectedProjects = websiteProjects.filter(project => project.orderVisibility === 'payment-rejected');
           setRejectedPayments(rejectedProjects);
           
-          // Find active update plan (including yearly renewable plans)
+          // Find active update plan (including yearly renewable plans and monthly limited plans)
           const updatePlan = allOrders.find(order =>
             order.productId?.category === 'website_updates' &&
             order.isActive &&
@@ -158,18 +159,21 @@ const Dashboard = () => {
             order.orderVisibility !== 'payment-rejected' &&
             (
               // Regular update plans
-              (!order.productId?.isMonthlyRenewablePlan &&
+              (!order.productId?.isMonthlyRenewablePlan && !order.productId?.isMonthlyLimitedPlan &&
                order.updatesUsed < order.productId?.updateCount &&
                calculateRemainingDays(order) > 0) ||
-              // Yearly renewable plans
+              // Yearly renewable plans (unlimited updates)
               (order.productId?.isMonthlyRenewablePlan &&
+               order.totalYearlyDaysRemaining > 0) ||
+              // Monthly limited plans (1 update per month)
+              (order.productId?.isMonthlyLimitedPlan &&
                order.totalYearlyDaysRemaining > 0)
             )
           );
           setActiveUpdatePlan(updatePlan || null);
 
-          // Check for pending renewal if there's an active yearly renewable plan
-          if (updatePlan && updatePlan.productId?.isMonthlyRenewablePlan) {
+          // Check for pending renewal if there's an active yearly renewable or monthly limited plan
+          if (updatePlan && (updatePlan.productId?.isMonthlyRenewablePlan || updatePlan.productId?.isMonthlyLimitedPlan)) {
             checkPendingRenewal(updatePlan._id);
           } else {
             setPendingRenewalInfo(null);
@@ -216,6 +220,34 @@ const Dashboard = () => {
       setCartCount(context.cartProductCount || 0);
     }
   }, [user, context.walletBalance, context.cartProductCount]);
+
+  // Fetch OVERDUE invoices only (not unpaid)
+  // User can use plan even if bill is unpaid - admin will manually handle update approval
+  useEffect(() => {
+    const fetchOverdueInvoices = async () => {
+      try {
+        const response = await fetch(`${SummaryApi.invoices.getUserInvoices.url}?status=overdue`, {
+          method: SummaryApi.invoices.getUserInvoices.method,
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          // Only show overdue invoices (admin decides when to mark as overdue)
+          setUnpaidInvoices(data.data);
+        }
+      } catch (error) {
+        console.error('Error fetching overdue invoices:', error);
+      }
+    };
+
+    if (user?._id) {
+      fetchOverdueInvoices();
+    }
+  }, [user]);
 
   const handleStartProject = () => {
     navigate('/');
@@ -312,8 +344,8 @@ const Dashboard = () => {
   const calculateRemainingDays = (plan) => {
     if (!plan) return 0;
 
-    // For yearly renewable plans, use currentMonthExpiryDate
-    if (plan.productId?.isMonthlyRenewablePlan && plan.currentMonthExpiryDate) {
+    // For yearly renewable plans AND monthly limited plans, use currentMonthExpiryDate
+    if ((plan.productId?.isMonthlyRenewablePlan || plan.productId?.isMonthlyLimitedPlan) && plan.currentMonthExpiryDate) {
       const today = new Date();
       const expiryDate = new Date(plan.currentMonthExpiryDate);
       const remainingDays = Math.ceil((expiryDate - today) / (1000 * 60 * 60 * 24));
@@ -504,14 +536,14 @@ const Dashboard = () => {
                         <span className="text-xs font-medium text-yellow-600">Awaiting Approval</span>
                       </div>
                     </div>
-                    
+
                     <h2 className="text-lg font-bold text-gray-800 mb-1">
                       {pendingApprovalProjects[0].productId?.serviceName || "Website Project"}
                     </h2>
                     <span className="text-xs text-gray-500 block mb-3">
                       Ordered: {formatDate(pendingApprovalProjects[0].createdAt)}
                     </span>
-                    
+
                     <div className="mb-4">
                       <div className="flex items-center mb-2">
                         <div className="w-5 h-5 bg-white rounded-full shadow-sm flex items-center justify-center mr-2">
@@ -519,11 +551,11 @@ const Dashboard = () => {
                         </div>
                         <span className="text-sm text-gray-700">Waiting for payment approval</span>
                       </div>
-                      
+
                       <p className="text-xs text-gray-600 ml-7">
                         This usually takes 1-4 hours. You'll be notified once approved.
                       </p>
-                      {/* <button 
+                      {/* <button
                 className="w-full py-2 bg-amber-500 rounded-md shadow-sm hover:shadow-md transition-shadow flex items-center justify-center text-white text-sm font-medium group mt-8"
                 onClick={() => handleViewProjectDetails(pendingApprovalProjects._id)}
               >
@@ -535,22 +567,85 @@ const Dashboard = () => {
                 </div>
               )}
 
+              {/* Unpaid Invoices Alert Card */}
+              {unpaidInvoices && unpaidInvoices.length > 0 && (
+                <div className="flex-shrink-0 border bg-red-50 border-red-200 rounded-xl overflow-hidden shadow-md relative cursor-pointer hover:shadow-lg transition-shadow"
+                     onClick={() => navigate('/my-invoices')}>
+                  <div className="h-2 bg-red-500"></div>
+                  <div className="relative z-10 p-4">
+                    <div className="flex justify-start mb-1">
+                      <div className="px-2 py-0.5 bg-white rounded-full shadow-sm flex items-center">
+                        <div className="w-1.5 h-1.5 bg-red-500 rounded-full mr-1 animate-pulse"></div>
+                        <span className="text-xs font-medium text-red-600">Payment Due</span>
+                      </div>
+                    </div>
+
+                    <h2 className="text-lg font-bold text-gray-800 mb-1">
+                      Unpaid Invoice{unpaidInvoices.length > 1 ? 's' : ''}
+                    </h2>
+                    <span className="text-xs text-gray-500 block mb-3">
+                      {unpaidInvoices.length} invoice{unpaidInvoices.length > 1 ? 's' : ''} pending payment
+                    </span>
+
+                    <div className="mb-4">
+                      <div className="flex items-center mb-2">
+                        <div className="w-5 h-5 bg-white rounded-full shadow-sm flex items-center justify-center mr-2">
+                          <FileText size={12} className="text-red-500" />
+                        </div>
+                        <span className="text-sm font-semibold text-gray-800">
+                          ₹{unpaidInvoices.reduce((sum, inv) => sum + inv.amount, 0).toLocaleString()}
+                        </span>
+                      </div>
+
+                      <p className="text-xs text-gray-600 ml-7">
+                        Click to view invoices and make payment
+                      </p>
+                    </div>
+
+                    <button
+                      className="w-full py-2 bg-red-500 rounded-md shadow-sm hover:shadow-md transition-shadow flex items-center justify-center text-white text-sm font-medium group"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate('/my-invoices');
+                      }}
+                    >
+                      <span>View Invoices</span>
+                      <ChevronRight size={14} className="ml-1 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300" />
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {/* Active Update Plan or Active Project Card - Should always be first if exists */}
               {activeUpdatePlan && (
   <div className={`flex-shrink-0 ${
-    activeUpdatePlan.productId?.isMonthlyRenewablePlan
+    // Monthly Limited Plan - Purple theme
+    activeUpdatePlan.productId?.isMonthlyLimitedPlan
       ? calculateRemainingDays(activeUpdatePlan) <= 0
         ? 'bg-red-50 border-red-200'
-        : 'bg-blue-50 border-blue-200'
-      : 'bg-gray-50 border-blue-200'
+        : 'bg-purple-50 border-purple-200'
+      // Yearly Renewable Plan - Blue theme
+      : activeUpdatePlan.productId?.isMonthlyRenewablePlan
+        ? calculateRemainingDays(activeUpdatePlan) <= 0
+          ? 'bg-red-50 border-red-200'
+          : 'bg-blue-50 border-blue-200'
+        // Regular Plan - Gray theme
+        : 'bg-gray-50 border-blue-200'
   } border rounded-xl overflow-hidden shadow-md relative`}>
     {/* Card background with highlight effect */}
     <div className={`h-2 ${
-      activeUpdatePlan.productId?.isMonthlyRenewablePlan
+      // Monthly Limited Plan
+      activeUpdatePlan.productId?.isMonthlyLimitedPlan
         ? calculateRemainingDays(activeUpdatePlan) <= 0
           ? 'bg-red-600'
+          : 'bg-purple-600'
+        // Yearly Renewable Plan
+        : activeUpdatePlan.productId?.isMonthlyRenewablePlan
+          ? calculateRemainingDays(activeUpdatePlan) <= 0
+            ? 'bg-red-600'
+            : 'bg-blue-600'
+          // Regular Plan
           : 'bg-blue-600'
-        : 'bg-blue-600'
     }`}></div>
 
     {/* Main content container */}
@@ -559,24 +654,42 @@ const Dashboard = () => {
       <div className="flex justify-start mb-1">
         <div className="px-2 py-0.5 bg-white rounded-full shadow-sm flex items-center">
           <div className={`w-1.5 h-1.5 rounded-full mr-1 animate-pulse ${
-            activeUpdatePlan.productId?.isMonthlyRenewablePlan
+            // Monthly Limited Plan
+            activeUpdatePlan.productId?.isMonthlyLimitedPlan
               ? calculateRemainingDays(activeUpdatePlan) <= 0
                 ? 'bg-red-500'
+                : 'bg-purple-400'
+              // Yearly Renewable Plan
+              : activeUpdatePlan.productId?.isMonthlyRenewablePlan
+                ? calculateRemainingDays(activeUpdatePlan) <= 0
+                  ? 'bg-red-500'
+                  : 'bg-blue-400'
+                // Regular Plan
                 : 'bg-blue-400'
-              : 'bg-blue-400'
           }`}></div>
           <span className={`text-xs font-medium ${
-            activeUpdatePlan.productId?.isMonthlyRenewablePlan
+            // Monthly Limited Plan
+            activeUpdatePlan.productId?.isMonthlyLimitedPlan
               ? calculateRemainingDays(activeUpdatePlan) <= 0
                 ? 'text-red-600'
+                : 'text-purple-600'
+              // Yearly Renewable Plan
+              : activeUpdatePlan.productId?.isMonthlyRenewablePlan
+                ? calculateRemainingDays(activeUpdatePlan) <= 0
+                  ? 'text-red-600'
+                  : 'text-blue-600'
+                // Regular Plan
                 : 'text-blue-600'
-              : 'text-blue-600'
           }`}>
-            {activeUpdatePlan.productId?.isMonthlyRenewablePlan
+            {activeUpdatePlan.productId?.isMonthlyLimitedPlan
               ? calculateRemainingDays(activeUpdatePlan) <= 0
                 ? 'Needs Renewal'
-                : 'Yearly Plan Active'
-              : 'Active Plan'}
+                : 'Monthly Limited Plan'
+              : activeUpdatePlan.productId?.isMonthlyRenewablePlan
+                ? calculateRemainingDays(activeUpdatePlan) <= 0
+                  ? 'Needs Renewal'
+                  : 'Yearly Plan Active'
+                : 'Active Plan'}
           </span>
         </div>
       </div>
@@ -587,30 +700,38 @@ const Dashboard = () => {
           {activeUpdatePlan.productId?.serviceName || "Website Updates"}
         </h2>
         <div className="flex items-center gap-2">
-          {activeUpdatePlan.productId?.isMonthlyRenewablePlan && (
+          {/* Unlimited icon for yearly renewable plans */}
+          {activeUpdatePlan.productId?.isMonthlyRenewablePlan && !activeUpdatePlan.productId?.isMonthlyLimitedPlan && (
             <div className="text-2xl font-bold text-blue-600">∞</div>
+          )}
+          {/* Monthly limited badge */}
+          {activeUpdatePlan.productId?.isMonthlyLimitedPlan && (
+            <div className="bg-purple-100 px-3 py-1 rounded-full">
+              <span className="text-xs font-bold text-purple-700">
+                {activeUpdatePlan.currentMonthUpdatesRemaining ??
+                 ((activeUpdatePlan.currentMonthUpdatesLimit || activeUpdatePlan.productId?.monthlyUpdateLimit || 1) -
+                  (activeUpdatePlan.currentMonthUpdatesUsed || 0))}/
+                {activeUpdatePlan.currentMonthUpdatesLimit || activeUpdatePlan.productId?.monthlyUpdateLimit || 1}
+                {' '}
+              </span>
+            </div>
           )}
           <div className="flex flex-col">
             <span className="text-xs text-gray-500">
               Purchased: {formatDate(activeUpdatePlan.createdAt)}
             </span>
-            {activeUpdatePlan.productId?.isMonthlyRenewablePlan && (
-              <span className="text-xs text-purple-600 font-medium mt-1">
-                Yearly Plan ({(() => {
-                  const startDate = new Date(activeUpdatePlan.createdAt);
-                  const today = new Date();
-                  const totalDays = 365;
-                  const daysPassed = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
-                  const daysLeft = Math.max(0, totalDays - daysPassed);
-                  return daysLeft;
-                })()} days left)
+            {(activeUpdatePlan.productId?.isMonthlyRenewablePlan || activeUpdatePlan.productId?.isMonthlyLimitedPlan) && (
+              <span className={`text-xs font-medium mt-1 ${
+                activeUpdatePlan.productId?.isMonthlyLimitedPlan ? 'text-purple-600' : 'text-blue-600'
+              }`}>
+                Yearly Plan ({activeUpdatePlan.totalYearlyDaysRemaining || 0} days left)
               </span>
             )}
           </div>
         </div>
 
-        {/* Updates indicator for non-yearly plans */}
-        {!activeUpdatePlan.productId?.isMonthlyRenewablePlan && (
+        {/* Updates indicator for non-yearly plans (exclude both renewable and limited) */}
+        {!activeUpdatePlan.productId?.isMonthlyRenewablePlan && !activeUpdatePlan.productId?.isMonthlyLimitedPlan && (
           <div className="relative w-12 h-12 rounded-full bg-white shadow-md flex items-center justify-center mt-3">
             {activeUpdatePlan.productId?.isUnlimitedUpdates ? (
               <div className="text-center">
@@ -636,16 +757,22 @@ const Dashboard = () => {
 
       {/* Days left and additional info */}
       <div className="mb-5 space-y-3">
-        {activeUpdatePlan.productId?.isMonthlyRenewablePlan ? (
+        {(activeUpdatePlan.productId?.isMonthlyRenewablePlan || activeUpdatePlan.productId?.isMonthlyLimitedPlan) ? (
           <>
-            {/* Current Month Progress for Yearly Plans */}
+            {/* Current Month Progress for Yearly Plans (Renewable & Limited) */}
             <div>
               <div className="flex items-center justify-between mb-1">
                 <div className="flex items-center">
-                  <Clock size={12} className="text-blue-500 mr-1" />
-                  <span className="text-xs text-blue-600 font-medium">Current Month</span>
+                  <Clock size={12} className={`mr-1 ${
+                    activeUpdatePlan.productId?.isMonthlyLimitedPlan ? 'text-purple-500' : 'text-blue-500'
+                  }`} />
+                  <span className={`text-xs font-medium ${
+                    activeUpdatePlan.productId?.isMonthlyLimitedPlan ? 'text-purple-600' : 'text-blue-600'
+                  }`}>Current Month</span>
                 </div>
-                <span className="text-xs font-bold text-blue-700">
+                <span className={`text-xs font-bold ${
+                  activeUpdatePlan.productId?.isMonthlyLimitedPlan ? 'text-purple-700' : 'text-blue-700'
+                }`}>
                   {calculateRemainingDays(activeUpdatePlan)} days left
                 </span>
               </div>
@@ -654,7 +781,9 @@ const Dashboard = () => {
                   className={`h-full rounded-full ${
                     calculateRemainingDays(activeUpdatePlan) <= 3
                       ? 'bg-gradient-to-r from-red-500 to-red-600'
-                      : 'bg-gradient-to-r from-blue-500 to-blue-600'
+                      : activeUpdatePlan.productId?.isMonthlyLimitedPlan
+                        ? 'bg-gradient-to-r from-purple-500 to-purple-600'
+                        : 'bg-gradient-to-r from-blue-500 to-blue-600'
                   }`}
                   style={{
                     width: `${Math.max(5, (calculateRemainingDays(activeUpdatePlan) / 30) * 100)}%`
@@ -694,7 +823,9 @@ const Dashboard = () => {
 
       {/* Action buttons */}
       <div className="flex gap-2">
-        {activeUpdatePlan.productId?.isMonthlyRenewablePlan && calculateRemainingDays(activeUpdatePlan) <= 0 ? (
+        {/* Monthly Limited Plan OR Yearly Renewable Plan - Expired */}
+        {(activeUpdatePlan.productId?.isMonthlyLimitedPlan || activeUpdatePlan.productId?.isMonthlyRenewablePlan) &&
+         calculateRemainingDays(activeUpdatePlan) <= 0 ? (
           pendingRenewalInfo ? (
             /* Show Pending Approval Card */
             <div className="w-full bg-yellow-50 border border-yellow-300 rounded-md p-3">
@@ -716,11 +847,40 @@ const Dashboard = () => {
               className="flex-1 py-2 rounded-md flex items-center justify-center text-sm font-medium bg-red-600 text-white shadow-sm hover:shadow-md transition-all"
             >
               <RefreshCw size={14} className="mr-1" />
-              Recharge Plan (₹{activeUpdatePlan.productId?.monthlyRenewalCost || 8000})
+              Recharge Plan (₹{activeUpdatePlan.productId?.isMonthlyLimitedPlan
+                ? (activeUpdatePlan.productId?.monthlyRenewalPrice || 3000)
+                : (activeUpdatePlan.productId?.monthlyRenewalCost || 8000)})
             </button>
           )
+        /* Monthly Limited Plan - Active */
+        ) : activeUpdatePlan.productId?.isMonthlyLimitedPlan ? (
+          <>
+            <button
+              onClick={handleRequestUpdate}
+              disabled={
+                (activeUpdatePlan.currentMonthUpdatesUsed || 0) >=
+                (activeUpdatePlan.currentMonthUpdatesLimit || activeUpdatePlan.productId?.monthlyUpdateLimit || 1)
+              }
+              className={`flex-1 py-2 rounded-md flex items-center justify-center text-sm font-medium transition-all ${
+                (activeUpdatePlan.currentMonthUpdatesUsed || 0) >=
+                (activeUpdatePlan.currentMonthUpdatesLimit || activeUpdatePlan.productId?.monthlyUpdateLimit || 1)
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : 'bg-purple-600 text-white shadow-sm hover:shadow-md'
+              }`}
+            >
+              <RefreshCw size={14} className="mr-1" />
+              Request Update
+            </button>
+            <button
+              onClick={() => setShowYearlyPlanDetailsModal(true)}
+              className="flex-1 py-2 rounded-md flex items-center justify-center text-sm font-medium bg-purple-700 text-white shadow-sm hover:shadow-md transition-all"
+            >
+              <FileText size={14} className="mr-1" />
+              View Details
+            </button>
+          </>
+        /* Yearly Renewable Plan - Active */
         ) : activeUpdatePlan.productId?.isMonthlyRenewablePlan ? (
-          /* Yearly Plan - Two buttons side by side */
           <>
             <button
               onClick={handleRequestUpdate}

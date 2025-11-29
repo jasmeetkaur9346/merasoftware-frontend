@@ -66,6 +66,10 @@ const AdminEditProduct = ({
         yearlyPlanDuration: productData?.yearlyPlanDuration || "",
         monthlyRenewalCost: productData?.monthlyRenewalCost || "",
         isUnlimitedUpdates: productData?.isUnlimitedUpdates || false,
+        // Monthly limited plan fields
+        isMonthlyLimitedPlan: productData?.isMonthlyLimitedPlan || false,
+        monthlyUpdateLimit: productData?.monthlyUpdateLimit || "",
+        monthlyRenewalPrice: productData?.monthlyRenewalPrice || "",
     });
 
     const [openFullScreenImage, setOpenFullScreenImage] = useState(false);
@@ -306,11 +310,18 @@ const AdminEditProduct = ({
         formattedDescriptions: data.formattedDescriptions.map(item => ({ content: item.content }))
       };
 
-      // For yearly renewable plans, set the fixed values
-      if (data.isMonthlyRenewablePlan) {
+      // For yearly renewable plans (unlimited), set the fixed values
+      if (data.isMonthlyRenewablePlan && !data.isMonthlyLimitedPlan) {
         submissionData.validityPeriod = 30; // Current active period is 30 days
         submissionData.updateCount = 999999; // Unlimited updates
         submissionData.isUnlimitedUpdates = true;
+      }
+
+      // For monthly limited plans, set appropriate values
+      if (data.isMonthlyLimitedPlan) {
+        submissionData.validityPeriod = 30; // Current active period is 30 days
+        submissionData.updateCount = (data.monthlyUpdateLimit || 1) * 12; // For display (e.g., 1 per month * 12)
+        submissionData.isUnlimitedUpdates = false;
       }
       
       const response = await fetch(SummaryApi.updateProduct.url,{
@@ -631,25 +642,28 @@ const AdminEditProduct = ({
         {/* Plan Type Selection */}
         <div className='mt-4'>
             <label className='block mb-3 font-medium'>Plan Type:</label>
-            <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
+            <div className='grid grid-cols-1 md:grid-cols-3 gap-3'>
                 <label className='flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors'>
                     <input
                         type='radio'
                         name='planType'
                         value='regular'
-                        checked={!data.isMonthlyRenewablePlan}
+                        checked={!data.isMonthlyRenewablePlan && !data.isMonthlyLimitedPlan}
                         onChange={() => setData(prev => ({
                             ...prev,
                             isMonthlyRenewablePlan: false,
+                            isMonthlyLimitedPlan: false,
                             yearlyPlanDuration: "",
                             monthlyRenewalCost: "",
+                            monthlyUpdateLimit: "",
+                            monthlyRenewalPrice: "",
                             isUnlimitedUpdates: false
                         }))}
                         className='mr-3'
                     />
                     <div>
-                        <div className='font-medium'>Regular Update Plan</div>
-                        <div className='text-sm text-gray-600'>Fixed validity & update count</div>
+                        <div className='font-medium'>Regular Plan</div>
+                        <div className='text-sm text-gray-600'>Fixed validity & updates</div>
                     </div>
                 </label>
                 <label className='flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors'>
@@ -657,23 +671,46 @@ const AdminEditProduct = ({
                         type='radio'
                         name='planType'
                         value='yearly'
-                        checked={data.isMonthlyRenewablePlan}
+                        checked={data.isMonthlyRenewablePlan && !data.isMonthlyLimitedPlan}
                         onChange={() => setData(prev => ({
                             ...prev,
                             isMonthlyRenewablePlan: true,
+                            isMonthlyLimitedPlan: false,
+                            monthlyUpdateLimit: "",
+                            monthlyRenewalPrice: "",
                             isUnlimitedUpdates: true
                         }))}
                         className='mr-3'
                     />
                     <div>
-                        <div className='font-medium'>Yearly Renewable Plan</div>
-                        <div className='text-sm text-gray-600'>Monthly renewal with unlimited updates</div>
+                        <div className='font-medium'>Unlimited Plan</div>
+                        <div className='text-sm text-gray-600'>Unlimited updates/month</div>
+                    </div>
+                </label>
+                <label className='flex items-center p-3 border rounded-lg cursor-pointer hover:bg-purple-50 transition-colors border-purple-300'>
+                    <input
+                        type='radio'
+                        name='planType'
+                        value='limited'
+                        checked={data.isMonthlyLimitedPlan}
+                        onChange={() => setData(prev => ({
+                            ...prev,
+                            isMonthlyRenewablePlan: false,
+                            isMonthlyLimitedPlan: true,
+                            monthlyRenewalCost: "",
+                            isUnlimitedUpdates: false
+                        }))}
+                        className='mr-3'
+                    />
+                    <div>
+                        <div className='font-medium text-purple-700'>Limited Plan</div>
+                        <div className='text-sm text-purple-600'>1 update/month</div>
                     </div>
                 </label>
             </div>
         </div>
 
-        {!data.isMonthlyRenewablePlan ? (
+        {!data.isMonthlyRenewablePlan && !data.isMonthlyLimitedPlan ? (
             <div className='mt-4 p-4 bg-gray-50 rounded-lg border'>
                 <h3 className='font-medium text-gray-800 mb-4 flex items-center'>
                     <span className='w-2 h-2 bg-blue-500 rounded-full mr-2'></span>
@@ -714,11 +751,11 @@ const AdminEditProduct = ({
                     </div>
                 </div>
             </div>
-        ) : (
+        ) : data.isMonthlyRenewablePlan ? (
             <div className='mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200 flex flex-col'>
                 <h3 className='font-medium text-blue-800 mb-4 flex items-center'>
                     <span className='w-2 h-2 bg-blue-600 rounded-full mr-2'></span>
-                    Yearly Renewable Plan Configuration
+                    Yearly Unlimited Plan Configuration
                 </h3>
 
                 <div className='grid grid-cols-1 md:grid-cols-2 gap-4 mb-4'>
@@ -818,6 +855,135 @@ const AdminEditProduct = ({
                 <input type='hidden' name='validityPeriod' value='30' />
                 <input type='hidden' name='updateCount' value='999999' />
                 <input type='hidden' name='isUnlimitedUpdates' value='true' />
+            </div>
+        ) : (
+            <div className='mt-4 p-4 bg-purple-50 rounded-lg border border-purple-200 flex flex-col'>
+                <h3 className='font-medium text-purple-800 mb-4 flex items-center'>
+                    <span className='w-2 h-2 bg-purple-600 rounded-full mr-2'></span>
+                    Monthly Limited Plan Configuration
+                </h3>
+
+                <div className='grid grid-cols-1 md:grid-cols-3 gap-4 mb-4'>
+                    <div>
+                        <label htmlFor='yearlyPlanDuration' className='block mb-2 font-medium text-purple-800'>Total Plan Duration (Days):</label>
+                        <input
+                            type='number'
+                            id='yearlyPlanDuration'
+                            name='yearlyPlanDuration'
+                            placeholder='365 (for 1 year)'
+                            value={data.yearlyPlanDuration}
+                            onChange={handleOnChange}
+                            className='w-full p-3 bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500'
+                            min='30'
+                            max='365'
+                            required
+                        />
+                        <p className='text-xs text-purple-600 mt-1'>Total validity (usually 365 days)</p>
+                    </div>
+
+                    <div>
+                        <label htmlFor='monthlyUpdateLimit' className='block mb-2 font-medium text-purple-800'>Updates Per Month:</label>
+                        <input
+                            type='number'
+                            id='monthlyUpdateLimit'
+                            name='monthlyUpdateLimit'
+                            placeholder='1'
+                            value={data.monthlyUpdateLimit}
+                            onChange={handleOnChange}
+                            className='w-full p-3 bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500'
+                            min='1'
+                            max='10'
+                            required
+                        />
+                        <p className='text-xs text-purple-600 mt-1'>Max updates allowed per month</p>
+                    </div>
+
+                    <div>
+                        <label htmlFor='monthlyRenewalPrice' className='block mb-2 font-medium text-purple-800'>Monthly Renewal Price (₹):</label>
+                        <input
+                            type='number'
+                            id='monthlyRenewalPrice'
+                            name='monthlyRenewalPrice'
+                            placeholder='3000'
+                            value={data.monthlyRenewalPrice}
+                            onChange={handleOnChange}
+                            className='w-full p-3 bg-white border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500'
+                            min='1000'
+                            required
+                        />
+                        <p className='text-xs text-purple-600 mt-1'>Monthly renewal cost</p>
+                    </div>
+                </div>
+
+                <div className='bg-purple-100 p-4 rounded-lg border border-purple-200'>
+                    <h4 className='font-medium text-purple-800 mb-3 flex items-center'>
+                        <svg className='w-4 h-4 mr-2' fill='currentColor' viewBox='0 0 20 20'>
+                            <path fillRule='evenodd' d='M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z' clipRule='evenodd'></path>
+                        </svg>
+                        Monthly Limited Plan Features
+                    </h4>
+                    <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
+                        <div className='space-y-2'>
+                            <div className='flex items-center text-sm text-purple-700'>
+                                <span className='w-1.5 h-1.5 bg-purple-500 rounded-full mr-2'></span>
+                                Limited updates per month
+                            </div>
+                            <div className='flex items-center text-sm text-purple-700'>
+                                <span className='w-1.5 h-1.5 bg-purple-500 rounded-full mr-2'></span>
+                                Monthly renewal system (30 days)
+                            </div>
+                            <div className='flex items-center text-sm text-purple-700'>
+                                <span className='w-1.5 h-1.5 bg-purple-500 rounded-full mr-2'></span>
+                                Manual renewal required
+                            </div>
+                        </div>
+                        <div className='space-y-2'>
+                            <div className='flex items-center text-sm text-purple-700'>
+                                <span className='w-1.5 h-1.5 bg-purple-500 rounded-full mr-2'></span>
+                                Counter resets each month
+                            </div>
+                            <div className='flex items-center text-sm text-purple-700'>
+                                <span className='w-1.5 h-1.5 bg-purple-500 rounded-full mr-2'></span>
+                                Yearly duration tracking
+                            </div>
+                            <div className='flex items-center text-sm text-purple-700'>
+                                <span className='w-1.5 h-1.5 bg-purple-500 rounded-full mr-2'></span>
+                                No automatic billing
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Example calculation */}
+                <div className='mt-4 p-3 bg-white rounded-lg border border-purple-200'>
+                    <h4 className='font-medium text-purple-700 mb-2'>Example Calculation:</h4>
+                    <div className='text-sm text-gray-600 space-y-1'>
+                        <div>• User pays once to activate plan</div>
+                        <div>• Gets {data.monthlyUpdateLimit || 1} update(s) per month</div>
+                        <div>• After 30 days, must pay ₹{data.monthlyRenewalPrice || 3000} to renew</div>
+                        <div>• Counter resets to {data.monthlyUpdateLimit || 1} updates</div>
+                        <div>• Total cost for 1 year: ₹{(data.monthlyRenewalPrice || 3000) * 12}</div>
+                    </div>
+                </div>
+
+                {/* Auto-configured values display */}
+                <div className='mt-4 p-3 bg-gray-100 rounded-lg'>
+                    <h4 className='font-medium text-gray-700 mb-2'>Auto-configured Values:</h4>
+                    <div className='grid grid-cols-1 md:grid-cols-3 gap-3 text-sm text-gray-600'>
+                        <div className='flex justify-between'>
+                            <span>Active Period:</span>
+                            <span className='font-medium'>30 days</span>
+                        </div>
+                        <div className='flex justify-between'>
+                            <span>Update Type:</span>
+                            <span className='font-medium'>Monthly Limited</span>
+                        </div>
+                        <div className='flex justify-between'>
+                            <span>Unlimited:</span>
+                            <span className='font-medium'>No</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         )}
 
