@@ -315,7 +315,7 @@ const fetchCompatibleFeatures = async (category) => {
   // For monthly limited plans, set appropriate values
   if (data.isMonthlyLimitedPlan) {
     submissionData.validityPeriod = 30; // Current active period is 30 days
-    submissionData.updateCount = (data.monthlyUpdateLimit || 1) * 12; // For display (e.g., 1 per month * 12)
+    submissionData.updateCount = (data.monthlyUpdateLimit || 1) * 12; // For display (e.g., 2 per month * 12)
     submissionData.isUnlimitedUpdates = false;
   }
       
@@ -699,7 +699,7 @@ const CustomFeatureOption = ({ data, ...props }) => {
                     />
                     <div>
                         <div className='font-medium text-purple-700'>Limited Plan</div>
-                        <div className='text-sm text-purple-600'>1 update/month</div>
+                        <div className='text-sm text-purple-600'>2 updates/month</div>
                     </div>
                 </label>
             </div>
@@ -954,9 +954,9 @@ const CustomFeatureOption = ({ data, ...props }) => {
                     <h4 className='font-medium text-purple-700 mb-2'>Example Calculation:</h4>
                     <div className='text-sm text-gray-600 space-y-1'>
                         <div>• User pays once to activate plan</div>
-                        <div>• Gets {data.monthlyUpdateLimit || 1} update(s) per month</div>
+                        <div>• Gets {data.monthlyUpdateLimit || 2} update(s) per month</div>
                         <div>• After 30 days, must pay ₹{data.monthlyRenewalPrice || 3000} to renew</div>
-                        <div>• Counter resets to {data.monthlyUpdateLimit || 1} updates</div>
+                        <div>• Counter resets to {data.monthlyUpdateLimit || 2} updates</div>
                         <div>• Total cost for 1 year: ₹{(data.monthlyRenewalPrice || 3000) * 12}</div>
                     </div>
                 </div>

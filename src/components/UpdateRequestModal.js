@@ -278,7 +278,7 @@ const getFileIcon = (fileType) => {
             <div className="text-center mb-6">
               <h4 className="text-xl font-semibold mb-2">Confirm Update Request</h4>
               <p className="text-gray-600">
-                You're about to use 1 update from your plan. This action cannot be undone.
+                You're about to use 1 of your available monthly updates. This action cannot be undone.
               </p>
             </div>
             
