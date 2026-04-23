@@ -74,6 +74,7 @@ import KYCVerification from "../pages/KYCVerification";
 import PendingRenewals from "../pages/PendingRenewals";
 import UserInvoices from "../pages/UserInvoices";
 import AdminInvoiceManagement from "../pages/AdminInvoiceManagement";
+import ClosePlanManagement from "../pages/ClosePlanManagement";
 
 // Create a conditional home route
 // const HomeRoute = () => {
@@ -346,6 +347,10 @@ const router = createBrowserRouter([
                     {
                         path: "kyc-verification",
                         element: <KYCVerification/>
+                    },
+                    {
+                        path: "close-plan",
+                        element: <ClosePlanManagement/>
                     },
                     {
                         path: "all-developers",

@@ -48,6 +48,7 @@ const AdminPanel = () => {
             currentPath.includes('wallet-management') ||
             currentPath.includes('update-requests') ||
             currentPath.includes('projects') ||
+            currentPath.includes('close-plan') ||
             currentPath.includes('kyc-verification')) {
             setOpenSection('adminPanel')
         } else if (currentPath.includes('all-categories') || 
@@ -253,6 +254,19 @@ const AdminPanel = () => {
                                         KYC Verification
                                     </Link>
                                     {/* --- END NEW: KYC Verification Link --- */}
+                                    {/* --- NEW: Plan Closure Management Link --- */}
+                                    <Link
+                                        to={"close-plan"}
+                                        className={`block px-3 py-2.5 text-sm rounded-md transition-colors ${
+                                            isActive('close-plan')
+                                                ? 'bg-blue-600 text-white'
+                                                : 'text-gray-400 hover:bg-slate-700 hover:text-white'
+                                        }`}
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
+                                        Plan Closure Management
+                                    </Link>
+                                    {/* --- END NEW: Plan Closure Management Link --- */}
                                 </div>
                             )}
                         </div>

@@ -240,6 +240,14 @@ const SummaryApi = {
         url: `${backendDomain}/api/update-plan-progress`,
         method: "post"
     },
+    getUpdatePlans: {
+        url: `${backendDomain}/api/admin/get-update-plans`,
+        method: "get"
+    },
+    closePlan: {
+        url: `${backendDomain}/api/admin/close-plan`,
+        method: "post"
+    },
     sendProjectMessage: {
         url : `${backendDomain}/api/project-message`,
         method : "post"

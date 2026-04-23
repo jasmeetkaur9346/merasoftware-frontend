@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { 
-  ChevronRight, Check, PlusCircle, 
-   ShoppingBag,  
+import {
+  ChevronRight, Check, PlusCircle,
+   ShoppingBag,
   ExternalLink,  Clock,  RefreshCw,
-  FileText,
+  FileText, AlertCircle,
 } from 'lucide-react';
 import SummaryApi from '../common';
 import Context from '../context';
@@ -134,9 +134,10 @@ const Dashboard = () => {
             if (['standard_websites', 'dynamic_websites', 'cloud_software_development', 'app_development'].includes(category)) {
               return project.projectProgress === 100 && project.currentPhase === 'completed';
             } else if (category === 'website_updates') {
-              // Include completed/expired update plans
-              return !project.isActive || 
-                     (project.updatesUsed >= project.productId?.updateCount) || 
+              // Include completed/expired/closed update plans
+              return !project.isActive ||
+                     project.planStatus === 'closed' ||
+                     (project.updatesUsed >= project.productId?.updateCount) ||
                      (calculateRemainingDays(project) <= 0);
             }
             return false;
@@ -155,6 +156,7 @@ const Dashboard = () => {
           const updatePlan = allOrders.find(order =>
             order.productId?.category === 'website_updates' &&
             order.isActive &&
+            order.planStatus !== 'closed' &&
             order.orderVisibility !== 'pending-approval' &&
             order.orderVisibility !== 'payment-rejected' &&
             (
@@ -197,13 +199,14 @@ const Dashboard = () => {
           }
           
           // Determine if "Start New Project" button should be shown
-          // Show only if no active project AND (no update plan OR update plan with no updates left)
-          const showNewProj = !activeProj && 
-            (!updatePlan || 
+          // Show only if no active project AND (no update plan OR update plan is closed/expired/exhausted)
+          const showNewProj = !activeProj &&
+            (!updatePlan ||
+             updatePlan.planStatus === 'closed' ||
              (updatePlan.updatesUsed >= updatePlan.productId?.updateCount) ||
              (calculateRemainingDays(updatePlan) <= 0)
             );
-          
+
           setShowNewProjectButton(showNewProj);
         }
       } catch (error) {
@@ -619,77 +622,93 @@ const Dashboard = () => {
               {/* Active Update Plan or Active Project Card - Should always be first if exists */}
               {activeUpdatePlan && (
   <div className={`flex-shrink-0 ${
-    // Monthly Limited Plan - Purple theme
-    activeUpdatePlan.productId?.isMonthlyLimitedPlan
-      ? calculateRemainingDays(activeUpdatePlan) <= 0
-        ? 'bg-red-50 border-red-200'
-        : 'bg-purple-50 border-purple-200'
-      // Yearly Renewable Plan - Blue theme
-      : activeUpdatePlan.productId?.isMonthlyRenewablePlan
+    // Closed Plan - Red theme
+    activeUpdatePlan.planStatus === 'closed'
+      ? 'bg-red-50 border-red-200'
+      // Monthly Limited Plan - Purple theme
+      : activeUpdatePlan.productId?.isMonthlyLimitedPlan
         ? calculateRemainingDays(activeUpdatePlan) <= 0
           ? 'bg-red-50 border-red-200'
-          : 'bg-blue-50 border-blue-200'
-        // Regular Plan - Gray theme
-        : 'bg-gray-50 border-blue-200'
+          : 'bg-purple-50 border-purple-200'
+        // Yearly Renewable Plan - Blue theme
+        : activeUpdatePlan.productId?.isMonthlyRenewablePlan
+          ? calculateRemainingDays(activeUpdatePlan) <= 0
+            ? 'bg-red-50 border-red-200'
+            : 'bg-blue-50 border-blue-200'
+          // Regular Plan - Gray theme
+          : 'bg-gray-50 border-blue-200'
   } border rounded-xl overflow-hidden shadow-md relative`}>
     {/* Card background with highlight effect */}
     <div className={`h-2 ${
-      // Monthly Limited Plan
-      activeUpdatePlan.productId?.isMonthlyLimitedPlan
-        ? calculateRemainingDays(activeUpdatePlan) <= 0
-          ? 'bg-red-600'
-          : 'bg-purple-600'
-        // Yearly Renewable Plan
-        : activeUpdatePlan.productId?.isMonthlyRenewablePlan
+      // Closed Plan
+      activeUpdatePlan.planStatus === 'closed'
+        ? 'bg-red-600'
+        // Monthly Limited Plan
+        : activeUpdatePlan.productId?.isMonthlyLimitedPlan
           ? calculateRemainingDays(activeUpdatePlan) <= 0
             ? 'bg-red-600'
+            : 'bg-purple-600'
+          // Yearly Renewable Plan
+          : activeUpdatePlan.productId?.isMonthlyRenewablePlan
+            ? calculateRemainingDays(activeUpdatePlan) <= 0
+              ? 'bg-red-600'
+              : 'bg-blue-600'
+            // Regular Plan
             : 'bg-blue-600'
-          // Regular Plan
-          : 'bg-blue-600'
     }`}></div>
 
     {/* Main content container */}
     <div className="relative z-10 p-4">
       {/* Status indicator pill */}
       <div className="flex justify-start mb-1">
-        <div className="px-2 py-0.5 bg-white rounded-full shadow-sm flex items-center">
-          <div className={`w-1.5 h-1.5 rounded-full mr-1 animate-pulse ${
-            // Monthly Limited Plan
-            activeUpdatePlan.productId?.isMonthlyLimitedPlan
-              ? calculateRemainingDays(activeUpdatePlan) <= 0
-                ? 'bg-red-500'
-                : 'bg-purple-400'
-              // Yearly Renewable Plan
-              : activeUpdatePlan.productId?.isMonthlyRenewablePlan
+        <div className={`px-2 py-0.5 rounded-full shadow-sm flex items-center ${
+          activeUpdatePlan.planStatus === 'closed'
+            ? 'bg-red-100'
+            : 'bg-white'
+        }`}>
+          <div className={`w-1.5 h-1.5 rounded-full mr-1 ${
+            activeUpdatePlan.planStatus === 'closed'
+              ? 'bg-red-600'
+              : // Monthly Limited Plan
+              activeUpdatePlan.productId?.isMonthlyLimitedPlan
                 ? calculateRemainingDays(activeUpdatePlan) <= 0
                   ? 'bg-red-500'
-                  : 'bg-blue-400'
-                // Regular Plan
-                : 'bg-blue-400'
+                  : 'bg-purple-400 animate-pulse'
+                // Yearly Renewable Plan
+                : activeUpdatePlan.productId?.isMonthlyRenewablePlan
+                  ? calculateRemainingDays(activeUpdatePlan) <= 0
+                    ? 'bg-red-500'
+                    : 'bg-blue-400 animate-pulse'
+                  // Regular Plan
+                  : 'bg-blue-400 animate-pulse'
           }`}></div>
           <span className={`text-xs font-medium ${
-            // Monthly Limited Plan
-            activeUpdatePlan.productId?.isMonthlyLimitedPlan
-              ? calculateRemainingDays(activeUpdatePlan) <= 0
-                ? 'text-red-600'
-                : 'text-purple-600'
-              // Yearly Renewable Plan
-              : activeUpdatePlan.productId?.isMonthlyRenewablePlan
+            activeUpdatePlan.planStatus === 'closed'
+              ? 'text-red-700'
+              : // Monthly Limited Plan
+              activeUpdatePlan.productId?.isMonthlyLimitedPlan
                 ? calculateRemainingDays(activeUpdatePlan) <= 0
                   ? 'text-red-600'
+                  : 'text-purple-600'
+                // Yearly Renewable Plan
+                : activeUpdatePlan.productId?.isMonthlyRenewablePlan
+                  ? calculateRemainingDays(activeUpdatePlan) <= 0
+                    ? 'text-red-600'
+                    : 'text-blue-600'
+                  // Regular Plan
                   : 'text-blue-600'
-                // Regular Plan
-                : 'text-blue-600'
           }`}>
-            {activeUpdatePlan.productId?.isMonthlyLimitedPlan
-              ? calculateRemainingDays(activeUpdatePlan) <= 0
-                ? 'Needs Renewal'
-                : 'Monthly Limited Plan'
-              : activeUpdatePlan.productId?.isMonthlyRenewablePlan
+            {activeUpdatePlan.planStatus === 'closed'
+              ? '⛔ Plan Closed'
+              : activeUpdatePlan.productId?.isMonthlyLimitedPlan
                 ? calculateRemainingDays(activeUpdatePlan) <= 0
                   ? 'Needs Renewal'
-                  : 'Yearly Plan Active'
-                : 'Active Plan'}
+                  : 'Monthly Limited Plan'
+                : activeUpdatePlan.productId?.isMonthlyRenewablePlan
+                  ? calculateRemainingDays(activeUpdatePlan) <= 0
+                    ? 'Needs Renewal'
+                    : 'Yearly Plan Active'
+                  : 'Active Plan'}
           </span>
         </div>
       </div>
@@ -823,8 +842,22 @@ const Dashboard = () => {
 
       {/* Action buttons */}
       <div className="flex gap-2">
-        {/* Monthly Limited Plan OR Yearly Renewable Plan - Expired */}
-        {(activeUpdatePlan.productId?.isMonthlyLimitedPlan || activeUpdatePlan.productId?.isMonthlyRenewablePlan) &&
+        {/* Plan Closed - No actions allowed */}
+        {activeUpdatePlan.planStatus === 'closed' ? (
+          <div className="w-full bg-red-50 border border-red-300 rounded-md p-3">
+            <div className="flex items-center mb-2">
+              <AlertCircle size={16} className="text-red-600 mr-2" />
+              <span className="text-sm font-semibold text-red-800">Plan Closed</span>
+            </div>
+            {activeUpdatePlan.closureReason && (
+              <p className="text-xs text-red-700">Reason: {activeUpdatePlan.closureReason}</p>
+            )}
+            {activeUpdatePlan.closedAt && (
+              <p className="text-xs text-red-600 mt-1">Closed on: {formatDate(activeUpdatePlan.closedAt)}</p>
+            )}
+          </div>
+        ) : /* Monthly Limited Plan OR Yearly Renewable Plan - Expired */
+        (activeUpdatePlan.productId?.isMonthlyLimitedPlan || activeUpdatePlan.productId?.isMonthlyRenewablePlan) &&
          calculateRemainingDays(activeUpdatePlan) <= 0 ? (
           pendingRenewalInfo ? (
             /* Show Pending Approval Card */
@@ -984,39 +1017,42 @@ const Dashboard = () => {
               {completedProjects.slice(0, 2).map((project, index) => {
   const isUpdatePlan = project.productId?.category?.toLowerCase() === 'website_updates';
   const isRejected = project.orderVisibility === 'payment-rejected';
-  
+  const isClosed = project.planStatus === 'closed';
+
   return (
     <div key={project._id} className={`flex-shrink-0 border ${
-      isRejected 
-        ? 'bg-red-50 border-red-200' 
+      isRejected || isClosed
+        ? 'bg-red-50 border-red-200'
         : 'bg-green-50 border-emerald-200'
     } rounded-xl overflow-hidden shadow-md relative`}>
       {/* Card background with highlight effect */}
-      <div className={`h-2 ${isRejected ? 'bg-red-600' : 'bg-emerald-600'}`}></div>
-      
+      <div className={`h-2 ${isRejected || isClosed ? 'bg-red-600' : 'bg-emerald-600'}`}></div>
+
       {/* Main content container */}
       <div className="relative z-10 p-4">
         {/* Status label */}
         <div className="flex justify-start mb-1">
           <div className="px-2 py-0.5 bg-white rounded-full shadow-sm flex items-center">
-            <div className={`w-1.5 h-1.5 ${isRejected ? 'bg-red-500' : 'bg-emerald-500'} rounded-full mr-1 animate-pulse`}></div>
-            <span className={`text-xs font-medium ${isRejected ? 'text-red-600' : 'text-emerald-600'}`}>
-              {isRejected ? 'Payment Rejected' : 'Completed'}
+            <div className={`w-1.5 h-1.5 ${isRejected || isClosed ? 'bg-red-500' : 'bg-emerald-500'} rounded-full mr-1 animate-pulse`}></div>
+            <span className={`text-xs font-medium ${isRejected || isClosed ? 'text-red-600' : 'text-emerald-600'}`}>
+              {isRejected ? 'Payment Rejected' : isClosed ? '⛔ Closed' : 'Completed'}
             </span>
           </div>
         </div>
-        
+
         {/* Project name */}
         <h2 className="text-lg font-bold text-gray-800 mb-1">{project.productId?.serviceName || "Website Project"}</h2>
         <span className="text-xs text-gray-500 block mb-3">
-          {isRejected 
+          {isRejected
             ? `Rejected: ${formatDate(project.updatedAt || project.createdAt)}`
-            : isUpdatePlan 
-              ? `Ended: ${formatDate(project.updatedAt || project.createdAt)}`
-              : `Completed: ${formatDate(project.updatedAt || project.createdAt)}`
+            : isClosed
+              ? `Closed: ${formatDate(project.closedAt || project.updatedAt || project.createdAt)}`
+              : isUpdatePlan
+                ? `Ended: ${formatDate(project.updatedAt || project.createdAt)}`
+                : `Completed: ${formatDate(project.updatedAt || project.createdAt)}`
           }
         </span>
-        
+
         {/* Status items */}
         <div className="mb-4">
           {isRejected ? (
@@ -1025,6 +1061,14 @@ const Dashboard = () => {
               <p className="text-sm text-gray-700 h-[50px]">
                 {project.rejectionReason || "Your payment for this order was rejected."}
               </p>
+            </div>
+          ) : isClosed ? (
+            // For closed plans
+            <div className="bg-white p-3 rounded-md border border-red-100">
+              <div className="mb-2">
+                <p className="text-xs font-semibold text-red-700 mb-1">Plan Closure Reason:</p>
+                <p className="text-sm text-gray-700">{project.closureReason || "Plan was closed by admin"}</p>
+              </div>
             </div>
           ) : isUpdatePlan ? (
             // For completed update plans
@@ -1064,9 +1108,9 @@ const Dashboard = () => {
         </div>
         
         {/* Action button */}
-        {isRejected ? (
+        {isRejected || isClosed ? (
           <div className="flex space-x-3">
-            <button 
+            <button
               className="flex-1 py-2 bg-red-600 text-white rounded-md shadow-sm hover:bg-red-700 transition-all flex items-center justify-center text-sm font-medium"
               onClick={() => navigate(`/project-details/${project._id}`)}
             >
@@ -1074,7 +1118,7 @@ const Dashboard = () => {
             </button>
           </div>
         ) : (
-          <button 
+          <button
             className="w-full py-2 bg-emerald-600 rounded-md shadow-sm hover:shadow-md transition-shadow flex items-center justify-center text-white text-sm font-medium group"
             onClick={() => handleViewProjectDetails(project._id)}
           >
@@ -1166,8 +1210,9 @@ const Dashboard = () => {
             {websiteProjects.map(project => {
               const isUpdatePlan = project.productId?.category?.toLowerCase() === 'website_updates';
               const isRejected = project.orderVisibility === 'payment-rejected';
-              const isCompleted = isUpdatePlan 
-                ? (!project.isActive || project.updatesUsed >= project.productId?.updateCount || calculateRemainingDays(project) <= 0)
+              const isClosed = project.planStatus === 'closed';
+              const isCompleted = isUpdatePlan
+                ? (!project.isActive || isClosed || project.updatesUsed >= project.productId?.updateCount || calculateRemainingDays(project) <= 0)
                 : (project.projectProgress === 100 && project.currentPhase === 'completed');
               
               return (
@@ -1188,15 +1233,19 @@ const Dashboard = () => {
                         <div className={`text-xs font-medium mb-1 px-2 py-0.5 rounded-full inline-block ${
                           isRejected
                             ? 'text-red-600 bg-red-50'
-                            : isCompleted
-                              ? 'text-green-600 bg-green-50'
-                              : 'text-blue-600 bg-blue-50'
+                            : isClosed
+                              ? 'text-red-600 bg-red-50'
+                              : isCompleted
+                                ? 'text-green-600 bg-green-50'
+                                : 'text-blue-600 bg-blue-50'
                         }`}>
                           {isRejected
                             ? 'Payment Rejected'
-                            : isCompleted
-                              ? 'Completed'
-                              : 'In Progress'}
+                            : isClosed
+                              ? '⛔ Closed'
+                              : isCompleted
+                                ? 'Completed'
+                                : 'In Progress'}
                         </div>
                         <h4 className="font-semibold">{project.productId?.serviceName || "Project"}</h4>
                       </div>
@@ -1222,6 +1271,17 @@ const Dashboard = () => {
                       </div>
                     ) : isCompleted ? (
                       <div className="mb-4 text-sm text-gray-600">
+                        {isClosed ? (
+                          <div className="bg-red-50 border border-red-200 rounded p-3 mb-2">
+                            <p className="text-red-700 font-medium mb-1">⛔ Plan Closed</p>
+                            {project.closureReason && (
+                              <p className="text-red-600 text-xs mb-1">Reason: {project.closureReason}</p>
+                            )}
+                            {project.closedAt && (
+                              <p className="text-red-600 text-xs">Closed on: {formatDate(project.closedAt)}</p>
+                            )}
+                          </div>
+                        ) : null}
                         {isUpdatePlan ? (
                           <div className="flex items-center">
                             <Check size={16} className="text-green-500 mr-2" />
