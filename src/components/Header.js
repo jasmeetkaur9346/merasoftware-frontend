@@ -501,12 +501,20 @@ const Header = () => {
                     Logout
                   </button>
                 ) : (
-                  <Link
-                    to={"/login"}
-                    className="px-3 py-1 rounded-full text-white bg-blue-600 hover:bg-blue-700"
-                  >
-                    Login
-                  </Link>
+                  <div className="flex items-center gap-2">
+                    <Link
+                      to={"/login"}
+                      className="px-4 py-2 rounded-full text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 shadow-sm hover:from-blue-700 hover:to-indigo-700 hover:shadow-md transition-all duration-200"
+                    >
+                      Customer Login
+                    </Link>
+                    <Link
+                      to={"/staff/login"}
+                      className="px-4 py-2 rounded-full text-sm font-semibold text-blue-700 bg-white border border-blue-200 shadow-sm hover:bg-blue-50 hover:border-blue-300 transition-all duration-200"
+                    >
+                      Staff Login
+                    </Link>
+                  </div>
                 )}
               </div>
             </div>

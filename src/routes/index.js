@@ -105,6 +105,10 @@ const router = createBrowserRouter([
                 element: <Login/>
             },
             {
+                path: "staff/login",
+                element: <Login loginType="staff" />
+            },
+            {
                 path: "unauthorized",
                 element: <div>Unauthorized Access</div>
             },
