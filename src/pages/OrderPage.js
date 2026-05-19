@@ -4,6 +4,7 @@ import { Calendar, Clock, CheckCircle, AlertCircle, RefreshCw, Eye } from 'lucid
 import SummaryApi from '../common';
 import DashboardLayout from '../components/DashboardLayout';
 import TriangleMazeLoader from '../components/TriangleMazeLoader';
+import { isOrderApproved } from '../helpers/orderVisibility';
 
 // Status Badge Component with icons
 const OrderStatusBadge = ({ status }) => {
@@ -62,7 +63,7 @@ const OrderItem = ({ order, navigate, formatDate }) => {
     }
     
     // If approved or visible, it's in progress
-    if (order.orderVisibility === 'approved') {
+    if (isOrderApproved(order)) {
       return 'In Progress';
     }
     

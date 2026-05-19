@@ -11,6 +11,7 @@ import Context from './context';
 import CookieManager from './utils/cookieManager';
 import StorageService from './utils/storageService';
 import ScrollToTop from './helpers/scrollTop';
+import { isOrderApproved } from './helpers/orderVisibility';
 // import QRModal from './components/QRModal';
 // import socket from './components/socket';
 // import { AnimatePresence } from 'framer-motion';
@@ -283,7 +284,7 @@ useEffect(() => {
           if (!category) return false;
           
           if (['standard_websites', 'dynamic_websites', 'cloud_software_development', 'app_development'].includes(category)) {
-            if (project.orderVisibility === 'pending-approval' || project.orderVisibility === 'payment-rejected') {
+            if (!isOrderApproved(project) || project.orderVisibility === 'payment-rejected') {
               return false;
             }
             return project.projectProgress < 100 || project.currentPhase !== 'completed';

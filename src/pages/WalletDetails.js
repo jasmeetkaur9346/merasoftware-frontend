@@ -8,6 +8,7 @@ import TriangleMazeLoader from '../components/TriangleMazeLoader';
 import DashboardLayout from '../components/DashboardLayout';
 import { QRCodeSVG } from 'qrcode.react';
 import { toast } from 'react-toastify';
+import { isOrderApproved } from '../helpers/orderVisibility';
 
 const WalletDetails = () => {
   const [walletHistory, setWalletHistory] = useState([]);
@@ -86,7 +87,7 @@ const WalletDetails = () => {
           
           // Only consider website projects, not update plans
           if (['standard_websites', 'dynamic_websites', 'cloud_software_development', 'app_development'].includes(category)) {
-            if (order.orderVisibility === 'pending-approval' || order.orderVisibility === 'payment-rejected') {
+            if (!isOrderApproved(order) || order.orderVisibility === 'payment-rejected') {
               return false; // Don't show as active if pending approval or rejected
             }
 

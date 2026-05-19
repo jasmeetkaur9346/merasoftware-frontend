@@ -14,6 +14,7 @@ import RenewalModal from '../components/RenewalModal';
 import YearlyPlanDetailsModal from '../components/YearlyPlanDetailsModal';
 import DashboardLayout from '../components/DashboardLayout';
 import displayINRCurrency from '../helpers/displayCurrency';
+import { isOrderApproved } from '../helpers/orderVisibility';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -72,8 +73,8 @@ const Dashboard = () => {
           setWebsiteProjects(websiteProjects);
 
           // Find projects pending approval - NEW CODE
-        const pendingApprovalProjects = websiteProjects.filter(project => 
-          project.orderVisibility === 'pending-approval'
+        const pendingApprovalProjects = websiteProjects.filter(
+          (project) => project.orderVisibility === 'pending-approval'
         );
         setPendingApprovalProjects(pendingApprovalProjects);
 
@@ -90,7 +91,7 @@ const Dashboard = () => {
             
             // Only website projects, not update plans
             if (['standard_websites', 'dynamic_websites', 'cloud_software_development', 'app_development'].includes(category)) {
-              if (project.orderVisibility === 'pending-approval' || project.orderVisibility === 'payment-rejected') {
+              if (!isOrderApproved(project) || project.orderVisibility === 'payment-rejected') {
                 return false; // Don't show as active if pending approval
               }
 
@@ -157,8 +158,7 @@ const Dashboard = () => {
             order.productId?.category === 'website_updates' &&
             order.isActive &&
             order.planStatus !== 'closed' &&
-            order.orderVisibility !== 'pending-approval' &&
-            order.orderVisibility !== 'payment-rejected' &&
+            isOrderApproved(order) &&
             (
               // Regular update plans
               (!order.productId?.isMonthlyRenewablePlan && !order.productId?.isMonthlyLimitedPlan &&
@@ -1417,8 +1417,7 @@ const Dashboard = () => {
               order.isActive &&
               order.updatesUsed < order.productId?.updateCount &&
               calculateRemainingDays(order) > 0 &&
-              order.orderVisibility !== 'pending-approval' &&
-              order.orderVisibility !== 'payment-rejected'
+              isOrderApproved(order)
             );
 
             // Set active update plan (could be null if all updates used)

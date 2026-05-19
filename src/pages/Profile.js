@@ -16,6 +16,7 @@ import CookieManager from '../utils/cookieManager';
 import StorageService from '../utils/storageService';
 import { useOnlineStatus } from '../App';
 import DashboardLayout from '../components/DashboardLayout';
+import { isOrderApproved } from '../helpers/orderVisibility';
 
 const Profile = () => {
     const dispatch = useDispatch();
@@ -53,7 +54,7 @@ const Profile = () => {
                     
                     // Only consider website projects, not update plans
                     if (['standard_websites', 'dynamic_websites', 'cloud_software_development', 'app_development'].includes(category)) {
-                        if (order.orderVisibility === 'pending-approval' || order.orderVisibility === 'payment-rejected') {
+                        if (!isOrderApproved(order) || order.orderVisibility === 'payment-rejected') {
                             return false; // Don't show as active if pending approval or rejected
                         }
     

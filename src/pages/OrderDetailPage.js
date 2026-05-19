@@ -4,6 +4,7 @@ import { ChevronLeft } from 'lucide-react';
 import SummaryApi from '../common';
 import DashboardLayout from '../components/DashboardLayout';
 import TriangleMazeLoader from '../components/TriangleMazeLoader';
+import { isOrderApproved } from '../helpers/orderVisibility';
 
 const OrderDetailPage = () => {
   const { orderId } = useParams();
@@ -66,7 +67,7 @@ const OrderDetailPage = () => {
     }
     
     // If not rejected, pending approval, or completed, then it's in progress
-    if (order.orderVisibility === 'approved') {
+    if (isOrderApproved(order)) {
       return { text: 'In Progress', className: 'bg-blue-500 text-white' };
     }
     
@@ -77,7 +78,7 @@ const OrderDetailPage = () => {
   const handleDownloadInvoice = async () => {
     try {
       // Only proceed if order is approved or completed
-      if (order.orderVisibility !== 'approved' && 
+      if (!isOrderApproved(order) && 
           !(order.projectProgress >= 100 || order.currentPhase === 'completed')) {
         return;
       }
@@ -266,10 +267,10 @@ const OrderDetailPage = () => {
             <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
               <button
                 onClick={handleDownloadInvoice}
-                disabled={order.orderVisibility !== 'approved' && 
+                disabled={!isOrderApproved(order) && 
                        !(order.projectProgress >= 100 || order.currentPhase === 'completed')}
                 className={`w-full py-3 rounded-lg font-medium mb-4 transition-colors ${
-                  order.orderVisibility === 'approved' || 
+                  isOrderApproved(order) || 
                   order.projectProgress >= 100 || 
                   order.currentPhase === 'completed'
                     ? 'bg-blue-600 text-white hover:bg-blue-700' 
@@ -290,7 +291,7 @@ const OrderDetailPage = () => {
               {order.isPartialPayment && 
               order.installments && 
               order.installments.some(i => !i.paid) && 
-              order.orderVisibility === 'approved' && (
+              isOrderApproved(order) && (
                 <button
                   onClick={() => {
                     // Find next unpaid installment
