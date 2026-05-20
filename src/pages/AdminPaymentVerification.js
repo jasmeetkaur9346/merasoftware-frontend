@@ -158,12 +158,15 @@ const AdminPaymentVerification = () => {
             
             if (data.success) {
                 // console.log("Transaction approved successfully:", data);
-                
+
                 // Show appropriate success message
-                toast.success(transactionDetails.isWalletCredit ? 
-                    'Wallet recharge approved successfully' : 
+                toast.success(transactionDetails.isWalletCredit ?
+                    'Wallet recharge approved successfully' :
                     'Payment approved successfully');
-                
+
+                // Notify dashboard
+                localStorage.setItem('dashboardUpdate', JSON.stringify({ type: 'payment', timestamp: Date.now() }));
+
                 fetchPendingTransactions();
                 closeModal();
             } else {
@@ -197,6 +200,10 @@ const AdminPaymentVerification = () => {
           
           if (data.success) {
             toast.success('Transaction rejected');
+
+            // Notify dashboard
+            localStorage.setItem('dashboardUpdate', JSON.stringify({ type: 'payment', timestamp: Date.now() }));
+
             fetchPendingTransactions();
             closeModal();
           } else {

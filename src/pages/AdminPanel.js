@@ -25,9 +25,8 @@ const AdminPanel = () => {
         const currentPath = location.pathname
         const basePath = '/admin-panel' // Adjust according to your base admin path
         
-        if (path === '') {
-            // For dashboard, check if we're at the base admin path
-            return currentPath === basePath || currentPath === `${basePath}/`
+        if (path === 'dashboard') {
+            return currentPath.includes('/admin-panel/dashboard')
         }
         
         return currentPath.includes(path)
@@ -95,9 +94,9 @@ const AdminPanel = () => {
                     <nav className='space-y-1'>
                         {/* Dashboard */}
                         <Link
-                            to={""}
+                            to={"dashboard"}
                             className={`flex items-center px-3 py-2 text-sm rounded-md transition-colors ${
-                                isActive('')
+                                isActive('dashboard')
                                     ? 'bg-blue-600 text-white'
                                     : 'text-gray-300 hover:bg-slate-700 hover:text-white'
                             }`}

@@ -62,6 +62,8 @@ const PendingRenewals = () => {
 
       if (data.success) {
         toast.success('Renewal approved successfully!');
+        // Notify dashboard
+        localStorage.setItem('dashboardUpdate', JSON.stringify({ type: 'renewal', timestamp: Date.now() }));
         fetchPendingRenewals(); // Refresh list
       } else {
         toast.error(data.message || 'Failed to approve renewal');
@@ -99,6 +101,8 @@ const PendingRenewals = () => {
 
       if (data.success) {
         toast.success('Renewal rejected');
+        // Notify dashboard
+        localStorage.setItem('dashboardUpdate', JSON.stringify({ type: 'renewal', timestamp: Date.now() }));
         fetchPendingRenewals(); // Refresh list
       } else {
         toast.error(data.message || 'Failed to reject renewal');

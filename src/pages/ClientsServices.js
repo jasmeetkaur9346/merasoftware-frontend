@@ -1,80 +1,53 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import SummaryApi from '../common';
 import { toast } from 'react-toastify';
 import { Search } from 'lucide-react';
 
 const ClientsServices = () => {
-  const [clients, setClients] = useState([
-    {
-      _id: '1',
-      name: 'John Doe',
-      email: 'john@example.com',
-      phone: '9876543210',
-      company: 'Tech Corp',
-      totalOrders: 5,
-      totalSpent: 50000,
-      status: 'active',
-      joinDate: '2025-01-15'
-    },
-    {
-      _id: '2',
-      name: 'Jane Smith',
-      email: 'jane@example.com',
-      phone: '9876543211',
-      company: 'Design Studio',
-      totalOrders: 3,
-      totalSpent: 30000,
-      status: 'active',
-      joinDate: '2025-02-10'
-    },
-    {
-      _id: '3',
-      name: 'Ram Patel',
-      email: 'ram@example.com',
-      phone: '9876543212',
-      company: 'Web Solutions',
-      totalOrders: 7,
-      totalSpent: 75000,
-      status: 'active',
-      joinDate: '2024-12-05'
-    },
-    {
-      _id: '4',
-      name: 'Priya Singh',
-      email: 'priya@example.com',
-      phone: '9876543213',
-      company: 'Mobile Apps',
-      totalOrders: 2,
-      totalSpent: 25000,
-      status: 'inactive',
-      joinDate: '2025-03-20'
-    },
-    {
-      _id: '5',
-      name: 'Amit Kumar',
-      email: 'amit@example.com',
-      phone: '9876543214',
-      company: 'E-Commerce',
-      totalOrders: 8,
-      totalSpent: 100000,
-      status: 'active',
-      joinDate: '2024-11-01'
-    },
-  ]);
-
-  const [filteredClients, setFilteredClients] = useState(clients);
+  const navigate = useNavigate();
+  const [clients, setClients] = useState([]);
+  const [filteredClients, setFilteredClients] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
+  // Fetch customers from API
   useEffect(() => {
-    // Filter clients based on search term
+    const fetchClients = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(SummaryApi.allUser.url, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+        });
+        const result = await response.json();
+        if (result.success) {
+          const customers = result.data.filter(user => user.roles.includes('customer'));
+          setClients(customers);
+          setFilteredClients(customers);
+        } else {
+          toast.error(result.message || 'Failed to load clients');
+        }
+      } catch (error) {
+        console.error(error);
+        toast.error('Error fetching clients');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchClients();
+  }, []);
+
+  // Filter clients based on search term
+  useEffect(() => {
     const filtered = clients.filter((client) =>
       client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      client.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      client.company.toLowerCase().includes(searchTerm.toLowerCase())
+      client.email.toLowerCase().includes(searchTerm.toLowerCase())
     );
     setFilteredClients(filtered);
-  }, [searchTerm]);
+  }, [searchTerm, clients]);
 
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
@@ -146,11 +119,9 @@ const ClientsServices = () => {
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700">Name</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700">Email</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700">Company</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700">Phone</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700">Orders</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700">Total Spent</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700">Status</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700">Roles</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700">Join Date</th>
               </tr>
             </thead>
@@ -163,28 +134,32 @@ const ClientsServices = () => {
                 </tr>
               ) : filteredClients.length > 0 ? (
                 filteredClients.map((client) => (
-                  <tr key={client._id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 text-sm font-medium text-gray-800">{client.name}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{client.email}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{client.company}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{client.phone}</td>
-                    <td className="px-6 py-4 text-sm text-gray-800 font-semibold">{client.totalOrders}</td>
-                    <td className="px-6 py-4 text-sm font-semibold text-green-600">
-                      {displayINRCurrency(client.totalSpent)}
-                    </td>
+                  <tr
+                    key={client._id}
+                    className="hover:bg-blue-50 transition-colors cursor-pointer"
+                    onClick={() => navigate(`/admin-panel/customer-detail/${client._id}`)}
+                  >
+                    <td className="px-6 py-4 text-sm font-medium text-gray-800">{client.name || 'N/A'}</td>
+                    <td className="px-6 py-4 text-sm text-gray-600">{client.email || 'N/A'}</td>
+                    <td className="px-6 py-4 text-sm text-gray-600">{client.phone || 'N/A'}</td>
                     <td className="px-6 py-4 text-sm">
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                          client.status === 'active'
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-gray-100 text-gray-800'
-                        }`}
-                      >
-                        {client.status === 'active' ? '✓ Active' : 'Inactive'}
+                      <span className="px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
+                        Active
                       </span>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-600">
-                      {new Date(client.joinDate).toLocaleDateString('en-IN')}
+                      {client.roles && client.roles.length > 0
+                        ? client.roles.map(role => (
+                            <span key={role} className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded mr-1 capitalize">
+                              {role}
+                            </span>
+                          ))
+                        : 'N/A'}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-600">
+                      {client.createdAt
+                        ? new Date(client.createdAt).toLocaleDateString('en-IN')
+                        : 'N/A'}
                     </td>
                   </tr>
                 ))

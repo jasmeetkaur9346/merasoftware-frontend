@@ -76,6 +76,8 @@ import UserInvoices from "../pages/UserInvoices";
 import AdminInvoiceManagement from "../pages/AdminInvoiceManagement";
 import ClosePlanManagement from "../pages/ClosePlanManagement";
 import ClientsServices from "../pages/ClientsServices";
+import CustomerDetailPage from "../pages/CustomerDetailPage";
+import AdminDashboard from "../pages/AdminDashboard";
 
 // Create a conditional home route
 // const HomeRoute = () => {
@@ -274,12 +276,20 @@ const router = createBrowserRouter([
                 ),
                 children :[
                     {
+                        path: "dashboard",
+                        element: <AdminDashboard/>
+                    },
+                    {
                         path: "clients-services",
                         element: <ClientsServices/>
                     },
                     {
+                        path: "customer-detail/:customerId",
+                        element: <CustomerDetailPage/>
+                    },
+                    {
                         path: "",
-                        element: <Navigate to="all-products" replace />
+                        element: <Navigate to="dashboard" replace />
                     },
                     {
                         path: "all-products",

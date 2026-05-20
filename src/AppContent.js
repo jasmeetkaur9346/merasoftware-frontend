@@ -39,7 +39,7 @@ useEffect(() => {
         if (user?._id && location.pathname === '/') {
             switch(user.role) {
                 case 'admin':
-                    navigate('/admin-panel/all-products');
+                    navigate('/admin-panel/dashboard');
                     break;
                     case 'manager':
                     navigate('/manager-panel/dashboard');

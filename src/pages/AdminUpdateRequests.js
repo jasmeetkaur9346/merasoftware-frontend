@@ -180,16 +180,18 @@ const AdminUpdateRequests = () => {
       
       if (data.success) {
         toast.success('Update request marked as completed');
-        
+        // Notify dashboard
+        localStorage.setItem('dashboardUpdate', JSON.stringify({ type: 'update', timestamp: Date.now() }));
+
         // Update local state
-        const updatedRequest = { 
+        const updatedRequest = {
           ...selectedRequest,
           status: 'completed',
           completedAt: new Date()
         };
-        
+
         setSelectedRequest(updatedRequest);
-        setUpdateRequests(prev => prev.map(req => 
+        setUpdateRequests(prev => prev.map(req =>
           req._id === selectedRequest._id ? updatedRequest : req
         ));
         

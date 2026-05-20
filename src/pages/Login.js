@@ -79,7 +79,7 @@ const Login = ({ loginType = "customer" }) => {
       await fetchUserAddToCart();
       toast.success(dataApi.message);
 
-      if (role === "admin") navigate("/admin-panel/all-products");
+      if (role === "admin") navigate("/admin-panel/dashboard");
       else if (role === "manager") navigate("/manager-panel/dashboard");
       else if (role === "partner") navigate("/partner-panel/dashboard");
       else if (role === "developer") navigate("/developer-panel");
