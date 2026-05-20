@@ -75,6 +75,7 @@ import PendingRenewals from "../pages/PendingRenewals";
 import UserInvoices from "../pages/UserInvoices";
 import AdminInvoiceManagement from "../pages/AdminInvoiceManagement";
 import ClosePlanManagement from "../pages/ClosePlanManagement";
+import ClientsServices from "../pages/ClientsServices";
 
 // Create a conditional home route
 // const HomeRoute = () => {
@@ -272,6 +273,10 @@ const router = createBrowserRouter([
                     </ProtectedRoute>
                 ),
                 children :[
+                    {
+                        path: "clients-services",
+                        element: <ClientsServices/>
+                    },
                     {
                         path: "",
                         element: <Navigate to="all-products" replace />

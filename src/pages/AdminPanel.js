@@ -37,7 +37,8 @@ const AdminPanel = () => {
     useEffect(() => {
         const currentPath = location.pathname
         
-        if (currentPath.includes('coupon-management') ||
+        if (currentPath.includes('clients-services') ||
+            currentPath.includes('coupon-management') ||
             currentPath.includes('payment-verification') ||
             currentPath.includes('pending-renewals') ||
             currentPath.includes('invoice-management') ||
@@ -93,17 +94,33 @@ const AdminPanel = () => {
                 <div className='p-2'>
                     <nav className='space-y-1'>
                         {/* Dashboard */}
-                        <Link 
-                            to={""} 
+                        <Link
+                            to={""}
                             className={`flex items-center px-3 py-2 text-sm rounded-md transition-colors ${
-                                isActive('') 
-                                    ? 'bg-blue-600 text-white' 
+                                isActive('')
+                                    ? 'bg-blue-600 text-white'
                                     : 'text-gray-300 hover:bg-slate-700 hover:text-white'
                             }`}
                         >
                             <MdDashboard className='mr-3 text-lg' />
                             Dashboard
                         </Link>
+
+                        <div className='border-t border-slate-700 my-3'></div>
+
+                        <Link
+                            to={"clients-services"}
+                            className={`flex items-center px-3 py-2 text-sm rounded-md transition-colors ${
+                                isActive('clients-services')
+                                    ? 'bg-blue-600 text-white'
+                                    : 'text-gray-300 hover:bg-slate-700 hover:text-white'
+                            }`}
+                        >
+                            <span className='mr-3 text-lg'>👥</span>
+                            Clients Services
+                        </Link>
+
+                        <div className='border-t border-slate-700 my-3'></div>
 
                         {/* Admin Panel Section */}
                         <div className='mt-6'>

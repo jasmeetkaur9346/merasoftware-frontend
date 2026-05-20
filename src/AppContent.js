@@ -212,48 +212,58 @@ useEffect(() => {
   useEffect(() => {
     const initializeData = async () => {
       try {
-        if (!isInitialized) return;
+        console.log("🔵 [AppContent] initializeData() started - isInitialized:", isInitialized);
 
-        // यहाँ localStorage की checking से पहले COOKIE check करें
-        const sessionCookie = document.cookie.includes('user-details');
-        if (!sessionCookie) {
-          // If no session cookie, clear everything and logout
-          StorageService.clearUserData();
-          dispatch(logout());
+        if (!isInitialized) {
+          console.log("🔴 [AppContent] isInitialized is false, returning early");
           return;
         }
 
         // Try to get user data from localStorage first
         const cachedUser = StorageService.getUserDetails();
+        console.log("💾 [AppContent] Checking localStorage for userDetails:", cachedUser ? "FOUND" : "NOT FOUND");
+        console.log("💾 [AppContent] Cached user data:", cachedUser);
+
         if (cachedUser) {
-          // console.log("🧾 Cached user from localStorage:", cachedUser);
+          console.log("✅ [AppContent] Restoring user from localStorage:", cachedUser.name);
           dispatch(setUserDetails(cachedUser));
           await fetchUserAddToCart();
           return;
         }
 
-        // If online, verify user session
+        // If online, verify user session with API
+        // This will work even if httpOnly cookies exist (browser includes them automatically)
         if (isOnline) {
+          console.log("🌐 [AppContent] User is online, verifying session with API");
           const userResponse = await fetch(SummaryApi.current_user.url, {
             method: SummaryApi.current_user.method,
-            credentials: 'include'
+            credentials: 'include' // Browser will include httpOnly cookies
           });
-          
+
+          console.log("🌐 [AppContent] API response ok:", userResponse.ok);
+
           if (!userResponse.ok) {
+            console.log("❌ [AppContent] API returned not ok, logging out");
             dispatch(logout());
             await fetchUserAddToCart();
             return;
           }
-          
+
+          console.log("✅ [AppContent] Fetching user details from API");
           await fetchUserDetails();
           await fetchUserAddToCart();
+        } else {
+          // Offline aur no cached user
+          console.log("📡 [AppContent] Offline aur no cached user, logging out");
+          dispatch(logout());
         }
       } catch (error) {
         console.error("Error during initialization:", error);
         dispatch(logout());
       }
     };
-    
+
+    console.log("🟡 [AppContent] useEffect dependency changed - isInitialized:", isInitialized);
     initializeData();
   }, [isInitialized]);
 

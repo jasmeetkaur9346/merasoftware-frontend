@@ -5,21 +5,24 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   const user = useSelector(state => state?.user?.user);
   const initialized = useSelector(state => state?.user?.initialized);
 
-  // console.log("ProtectedRoute render - user.role:", user?.role, "allowedRoles:", allowedRoles);
+  console.log("🛡️ [ProtectedRoute] Render - user:", user?.name || "NULL", "initialized:", initialized, "allowedRoles:", allowedRoles);
 
   if (!initialized) {
-    // Optionally, show a loading spinner or null while initializing
+    console.log("🛡️ [ProtectedRoute] NOT initialized, returning null (loading)");
     return null;
   }
 
   if (!user?._id) {
+    console.log("❌ [ProtectedRoute] No user found, redirecting to /home");
     return <Navigate to="/home" replace />;
   }
-  
+
   if (allowedRoles && !allowedRoles.includes(user.role)) {
+    console.log("❌ [ProtectedRoute] User role", user.role, "not in allowed roles", allowedRoles, "redirecting to /unauthorized");
     return <Navigate to="/unauthorized" replace />;
   }
-  
+
+  console.log("✅ [ProtectedRoute] User authorized, rendering children");
   return children;
 };
 

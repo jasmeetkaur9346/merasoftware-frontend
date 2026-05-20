@@ -12,17 +12,22 @@ export const userSlice = createSlice({
   initialState,
   reducers: {
     setUserDetails: (state, action) => {
+      console.log("📝 [userSlice] setUserDetails called with:", action.payload?.name || "NO NAME");
       state.user = action.payload
       state.walletBalance = action.payload?.walletBalance || 0
       state.initialized = true  // Set to true when user details are set
+      console.log("📝 [userSlice] State updated - initialized set to true");
     },
     updateWalletBalance: (state, action) => {
+      console.log("💰 [userSlice] updateWalletBalance called with:", action.payload);
       state.walletBalance = action.payload
     },
     logout: (state) => {
+      console.log("🚪 [userSlice] logout called");
       state.user = null
       state.walletBalance = 0
       state.initialized = true  // Keep as true after logout since we know user state
+      console.log("🚪 [userSlice] User cleared, initialized set to true");
     },
     // Add this new reducer
     initializeState: (state) => {

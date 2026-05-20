@@ -1,12 +1,16 @@
 import { Cookies } from 'react-cookie';
 
-const COOKIE_DOMAIN = process.env.REACT_APP_COOKIE_DOMAIN || undefined;
+const COOKIE_DOMAIN = process.env.REACT_APP_COOKIE_DOMAIN || (
+  typeof window !== 'undefined' && window.location.hostname === 'localhost'
+    ? 'localhost'
+    : undefined
+);
 const cookies = new Cookies();
 
 const DEFAULT_CONFIG = {
   path: '/',
-  secure: true,
-  sameSite: 'none',
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
   domain: COOKIE_DOMAIN,
 };
 

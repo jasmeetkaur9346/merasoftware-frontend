@@ -12,12 +12,19 @@ function App() {
   const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
-    const handleOnline = () => setIsOnline(true);
-    const handleOffline = () => setIsOnline(false);
+    console.log("🟢 [App.js] useEffect running - setting isInitialized=true");
+    const handleOnline = () => {
+      console.log("🌐 [App.js] Online event triggered");
+      setIsOnline(true);
+    };
+    const handleOffline = () => {
+      console.log("🌐 [App.js] Offline event triggered");
+      setIsOnline(false);
+    };
 
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
-    
+
     // Set initialized after checking online status
     setIsInitialized(true);
 
