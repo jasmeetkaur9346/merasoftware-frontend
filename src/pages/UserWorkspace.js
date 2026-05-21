@@ -8,11 +8,14 @@ import EditDeveloper from '../components/EditDeveloper';
 import EditUserBasicModal from '../components/EditUserBasicModal';
 import {
   fetchWorkspaceActivityCounts,
-  getClientTotalCount,
+  getBadgeClasses,
+  getClientActiveCount,
+  getClientBadgeState,
   getModuleCount,
+  getModuleBadgeState,
+  getModuleItems,
   hasClientUnreadActivity,
   hasModuleUnreadActivity,
-  markWorkspaceActivitySeen,
 } from '../helpers/adminActivitySignals';
 
 const roleTheme = {
@@ -195,30 +198,6 @@ const UserWorkspace = () => {
     }
   }, [activeTab, tabs]);
 
-  useEffect(() => {
-    if (!userId || activeTab === 'overview' || !activityCounts) return;
-
-    const latestTabActivity = activityCounts.modules?.[activeTab]?.latestActivityAt;
-    if (!latestTabActivity) return;
-
-    const markSeen = async () => {
-      try {
-        await markWorkspaceActivitySeen({
-          targetUserId: userId,
-          moduleKey: activeTab,
-          seenAt: latestTabActivity,
-        });
-        await loadWorkspaceActivity();
-      } catch (error) {
-        console.error('Error marking workspace tab as seen:', error);
-      }
-    };
-
-    if (getModuleCount(activityCounts, activeTab) > 0) {
-      markSeen();
-    }
-  }, [activeTab, activityCounts, userId]);
-
   const formatCurrency = (num) =>
     new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(num || 0);
 
@@ -277,6 +256,18 @@ const UserWorkspace = () => {
         {value || 'N/A'}
       </span>
     );
+  };
+
+  const getItemActivityState = (moduleKey, itemId) => {
+    const match = getModuleItems(activityCounts, moduleKey).find((item) => item.id === String(itemId));
+    return match?.state || 'clear';
+  };
+
+  const renderActivityDot = (moduleKey, itemId) => {
+    const state = getItemActivityState(moduleKey, itemId);
+    if (state === 'attention') return <span className="inline-block h-2.5 w-2.5 rounded-full bg-red-500" />;
+    if (state === 'inProgress') return <span className="inline-block h-2.5 w-2.5 rounded-full bg-yellow-400" />;
+    return null;
   };
 
   const OverviewTab = () => (
@@ -354,7 +345,12 @@ const UserWorkspace = () => {
             <tbody className="divide-y divide-slate-100">
               {allData.orders.map((order) => (
                 <tr key={order._id}>
-                  <td className="px-6 py-4">{order._id?.slice(-8)}</td>
+                  <td className="px-6 py-4">
+                    <span className="inline-flex items-center gap-2">
+                      {renderActivityDot('orders', order._id)}
+                      <span>{order._id?.slice(-8)}</span>
+                    </span>
+                  </td>
                   <td className="px-6 py-4">{order.productId?.serviceName || 'N/A'}</td>
                   <td className="px-6 py-4">
                     {renderStatusChip(
@@ -403,7 +399,12 @@ const UserWorkspace = () => {
             <tbody className="divide-y divide-slate-100">
               {allData.renewals.map((renewal) => (
                 <tr key={renewal._id}>
-                  <td className="px-6 py-4">{renewal._id?.slice(-8)}</td>
+                  <td className="px-6 py-4">
+                    <span className="inline-flex items-center gap-2">
+                      {renderActivityDot('renewals', renewal._id)}
+                      <span>{renewal._id?.slice(-8)}</span>
+                    </span>
+                  </td>
                   <td className="px-6 py-4">{renewal.planDetails?.planName || 'N/A'}</td>
                   <td className="px-6 py-4">{formatCurrency(renewal.amount || 0)}</td>
                   <td className="px-6 py-4">
@@ -444,7 +445,12 @@ const UserWorkspace = () => {
                 const displayStatus = transaction.paymentStatus || transaction.status || 'unknown';
                 return (
                   <tr key={transaction._id}>
-                    <td className="px-6 py-4">{formatDate(transaction.date || transaction.createdAt)}</td>
+                    <td className="px-6 py-4">
+                      <span className="inline-flex items-center gap-2">
+                        {renderActivityDot('payments', transaction._id)}
+                        <span>{formatDate(transaction.date || transaction.createdAt)}</span>
+                      </span>
+                    </td>
                     <td className="px-6 py-4">{transaction.type || 'N/A'}</td>
                     <td className="px-6 py-4">{formatCurrency(transaction.amount || 0)}</td>
                     <td className="px-6 py-4">
@@ -486,7 +492,12 @@ const UserWorkspace = () => {
             <tbody className="divide-y divide-slate-100">
               {allData.invoices.map((invoice) => (
                 <tr key={invoice._id}>
-                  <td className="px-6 py-4">{invoice.invoiceNumber || invoice._id?.slice(-8)}</td>
+                  <td className="px-6 py-4">
+                    <span className="inline-flex items-center gap-2">
+                      {renderActivityDot('invoices', invoice._id)}
+                      <span>{invoice.invoiceNumber || invoice._id?.slice(-8)}</span>
+                    </span>
+                  </td>
                   <td className="px-6 py-4">{formatCurrency(invoice.amount || 0)}</td>
                   <td className="px-6 py-4">
                     {renderStatusChip(invoice.status, {
@@ -525,7 +536,12 @@ const UserWorkspace = () => {
             <tbody className="divide-y divide-slate-100">
               {allData.updates.map((update) => (
                 <tr key={update._id}>
-                  <td className="px-6 py-4">{update._id?.slice(-8)}</td>
+                  <td className="px-6 py-4">
+                    <span className="inline-flex items-center gap-2">
+                      {renderActivityDot('updates', update._id)}
+                      <span>{update._id?.slice(-8)}</span>
+                    </span>
+                  </td>
                   <td className="px-6 py-4">{update.updatePlanId?.productId?.serviceName || 'N/A'}</td>
                   <td className="px-6 py-4">
                     {renderStatusChip(update.status, {
@@ -565,7 +581,12 @@ const UserWorkspace = () => {
             <tbody className="divide-y divide-slate-100">
               {allData.plans.map((plan) => (
                 <tr key={plan._id}>
-                  <td className="px-6 py-4">{plan._id?.slice(-8)}</td>
+                  <td className="px-6 py-4">
+                    <span className="inline-flex items-center gap-2">
+                      {renderActivityDot('closure', plan._id)}
+                      <span>{plan._id?.slice(-8)}</span>
+                    </span>
+                  </td>
                   <td className="px-6 py-4">{plan.productId?.serviceName || 'N/A'}</td>
                   <td className="px-6 py-4">
                     {renderStatusChip(plan.planStatus || 'active', {
@@ -710,8 +731,8 @@ const UserWorkspace = () => {
                   <span className="inline-flex items-center gap-2"><Phone size={16} /> {user.phone || 'N/A'}</span>
                   <span className="inline-flex items-center gap-2"><Shield size={16} /> {user.status || 'Active'}</span>
                   {user.roles?.includes('customer') && hasClientUnreadActivity(activityCounts) && (
-                    <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-semibold text-white">
-                      {getClientTotalCount(activityCounts)}
+                    <span className={`inline-flex min-w-5 items-center justify-center rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${getBadgeClasses(getClientBadgeState(activityCounts))}`}>
+                      {getClientActiveCount(activityCounts)}
                     </span>
                   )}
                 </div>
@@ -763,7 +784,7 @@ const UserWorkspace = () => {
               <span className="inline-flex items-center gap-2">
                 <span>{tab.label}</span>
                 {hasModuleUnreadActivity(activityCounts, tab.id) && (
-                  <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-semibold text-white">
+                  <span className={`inline-flex min-w-5 items-center justify-center rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${getBadgeClasses(getModuleBadgeState(activityCounts, tab.id))}`}>
                     {getModuleCount(activityCounts, tab.id)}
                   </span>
                 )}

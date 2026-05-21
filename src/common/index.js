@@ -644,10 +644,6 @@ const SummaryApi = {
     workspaceActivityCounts: {
         url: `${backendDomain}/api/workspace-activity-counts`,
         method: "get"
-    },
-    markWorkspaceActivitySeen: {
-        url: `${backendDomain}/api/mark-workspace-activity-seen`,
-        method: "post"
     }
 }
 

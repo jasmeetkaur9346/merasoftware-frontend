@@ -6,8 +6,10 @@ import { Search } from 'lucide-react';
 import SignUp from './SignUp';
 import {
   fetchWorkspaceActivityCounts,
+  getBadgeClasses,
+  getClientActiveCount,
+  getClientBadgeState,
   getClientLatestActivity,
-  getClientTotalCount,
   hasClientUnreadActivity,
 } from '../helpers/adminActivitySignals';
 
@@ -198,12 +200,12 @@ const ClientsServices = () => {
                     <td className="px-6 py-4 text-sm font-medium text-gray-800">
                       <div className="flex items-center gap-2">
                         {hasClientUnreadActivity(activityByUser[client._id]) && (
-                          <span className="inline-block h-2.5 w-2.5 rounded-full bg-red-500" />
+                          <span className={`inline-block h-2.5 w-2.5 rounded-full ${getClientBadgeState(activityByUser[client._id]) === 'attention' ? 'bg-red-500' : 'bg-yellow-400'}`} />
                         )}
                         <span>{client.name || 'N/A'}</span>
-                        {getClientTotalCount(activityByUser[client._id]) > 0 && (
-                          <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-semibold text-white">
-                            {getClientTotalCount(activityByUser[client._id])}
+                        {getClientActiveCount(activityByUser[client._id]) > 0 && (
+                          <span className={`inline-flex min-w-5 items-center justify-center rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${getBadgeClasses(getClientBadgeState(activityByUser[client._id]))}`}>
+                            {getClientActiveCount(activityByUser[client._id])}
                           </span>
                         )}
                       </div>

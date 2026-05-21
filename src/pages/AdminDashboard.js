@@ -5,10 +5,10 @@ import useDashboardUpdate from '../hooks/useDashboardUpdate';
 import { MdPeople, MdOutlineBarChart, MdPendingActions } from 'react-icons/md';
 import {
   fetchWorkspaceActivityCounts,
+  getBadgeClasses,
+  getDashboardModuleBadgeState,
   getDashboardModuleCount,
-  getModuleCount,
   hasDashboardModuleActivity,
-  markWorkspaceActivitySeen,
 } from '../helpers/adminActivitySignals';
 
 const AdminDashboard = () => {
@@ -238,26 +238,7 @@ const AdminDashboard = () => {
 
   useDashboardUpdate(handleDashboardUpdate);
 
-  const openDashboardSection = async (to, activityKey) => {
-    if (activityKey) {
-      const relatedClients = (activitySummary.clients || []).filter((client) => getModuleCount(client, activityKey) > 0);
-
-      if (relatedClients.length > 0) {
-        await Promise.allSettled(
-          relatedClients.map((client) =>
-            markWorkspaceActivitySeen({
-              targetUserId: client.userId,
-              moduleKey: activityKey,
-              seenAt: client.modules?.[activityKey]?.latestActivityAt,
-            })
-          )
-        );
-
-        const refreshedActivity = await fetchWorkspaceActivityCounts().catch(() => activitySummary);
-        setActivitySummary(refreshedActivity);
-      }
-    }
-
+  const openDashboardSection = (to) => {
     if (to) {
       navigate(to);
     }
@@ -265,13 +246,13 @@ const AdminDashboard = () => {
 
   const StatCard = ({ label, value, color, textColor, to, activityKey }) => (
     <div
-      onClick={() => openDashboardSection(to, activityKey)}
+      onClick={() => openDashboardSection(to)}
       className={`${color} rounded-lg p-5 shadow-sm ${to ? 'cursor-pointer hover:opacity-90 hover:shadow-md transition-all' : ''}`}
     >
       <div className="flex items-center gap-2">
         <p className={`text-sm font-medium ${textColor} opacity-80`}>{label}</p>
         {activityKey && hasDashboardModuleActivity(activitySummary, activityKey) && (
-          <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-semibold text-white">
+          <span className={`inline-flex min-w-5 items-center justify-center rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${getBadgeClasses(getDashboardModuleBadgeState(activitySummary, activityKey))}`}>
             {getDashboardModuleCount(activitySummary, activityKey)}
           </span>
         )}

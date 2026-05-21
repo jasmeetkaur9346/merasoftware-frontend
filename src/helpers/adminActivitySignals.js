@@ -3,8 +3,11 @@ import SummaryApi from '../common';
 export const customerTabIds = ['orders', 'renewals', 'payments', 'invoices', 'updates', 'closure'];
 
 const emptyModuleState = () => ({
-  count: 0,
+  attentionCount: 0,
+  inProgressCount: 0,
+  totalActiveCount: 0,
   latestActivityAt: null,
+  items: [],
 });
 
 const toTimestamp = (value) => {
@@ -16,7 +19,9 @@ const toTimestamp = (value) => {
 const normalizeClientActivity = (client = {}) => ({
   userId: client.userId,
   latestActivityAt: client.latestActivityAt || null,
-  totalCount: client.totalCount || 0,
+  attentionCount: client.attentionCount || 0,
+  inProgressCount: client.inProgressCount || 0,
+  totalActiveCount: client.totalActiveCount || 0,
   modules: {
     orders: client.modules?.orders || emptyModuleState(),
     renewals: client.modules?.renewals || emptyModuleState(),
@@ -46,14 +51,17 @@ export const fetchWorkspaceActivityCounts = async () => {
   }, {});
 
   const moduleTotals = customerTabIds.reduce((acc, moduleKey) => {
-    const totalCount = clients.reduce((sum, client) => sum + (client.modules[moduleKey]?.count || 0), 0);
+    const attentionCount = clients.reduce((sum, client) => sum + (client.modules[moduleKey]?.attentionCount || 0), 0);
+    const inProgressCount = clients.reduce((sum, client) => sum + (client.modules[moduleKey]?.inProgressCount || 0), 0);
     const latestActivityAt = clients.reduce(
       (latest, client) => Math.max(latest, toTimestamp(client.modules[moduleKey]?.latestActivityAt)),
       0
     );
 
     acc[moduleKey] = {
-      count: totalCount,
+      attentionCount,
+      inProgressCount,
+      totalActiveCount: attentionCount + inProgressCount,
       latestActivityAt: latestActivityAt ? new Date(latestActivityAt).toISOString() : null,
     };
     return acc;
@@ -66,42 +74,61 @@ export const fetchWorkspaceActivityCounts = async () => {
   };
 };
 
-export const markWorkspaceActivitySeen = async ({ targetUserId, moduleKey, seenAt }) => {
-  const response = await fetch(SummaryApi.markWorkspaceActivitySeen.url, {
-    method: SummaryApi.markWorkspaceActivitySeen.method,
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      targetUserId,
-      moduleKey,
-      seenAt,
-    }),
-  });
-
-  const result = await response.json();
-
-  if (!result.success) {
-    throw new Error(result.message || 'Failed to mark workspace activity as seen');
-  }
-
-  return result.data;
-};
-
 export const getClientTotalCount = (clientActivity) => clientActivity?.totalCount || 0;
+export const getClientActiveCount = (clientActivity) => clientActivity?.totalActiveCount || clientActivity?.totalCount || 0;
+export const getClientAttentionCount = (clientActivity) => clientActivity?.attentionCount || 0;
+export const getClientInProgressCount = (clientActivity) => clientActivity?.inProgressCount || 0;
 
 export const getClientLatestActivity = (clientActivity) => toTimestamp(clientActivity?.latestActivityAt);
 
-export const getModuleCount = (clientActivity, moduleKey) => clientActivity?.modules?.[moduleKey]?.count || 0;
+export const getModuleCount = (clientActivity, moduleKey) =>
+  clientActivity?.modules?.[moduleKey]?.totalActiveCount || clientActivity?.modules?.[moduleKey]?.count || 0;
 
-export const hasClientUnreadActivity = (clientActivity) => getClientTotalCount(clientActivity) > 0;
+export const getModuleAttentionCount = (clientActivity, moduleKey) =>
+  clientActivity?.modules?.[moduleKey]?.attentionCount || 0;
+
+export const getModuleInProgressCount = (clientActivity, moduleKey) =>
+  clientActivity?.modules?.[moduleKey]?.inProgressCount || 0;
+
+export const getModuleItems = (clientActivity, moduleKey) => clientActivity?.modules?.[moduleKey]?.items || [];
+
+export const hasClientUnreadActivity = (clientActivity) => getClientActiveCount(clientActivity) > 0;
 
 export const hasModuleUnreadActivity = (clientActivity, moduleKey) => getModuleCount(clientActivity, moduleKey) > 0;
 
-export const getDashboardModuleCount = (activitySummary, moduleKey) => activitySummary?.moduleTotals?.[moduleKey]?.count || 0;
+export const getDashboardModuleCount = (activitySummary, moduleKey) => activitySummary?.moduleTotals?.[moduleKey]?.totalActiveCount || 0;
+
+export const getDashboardModuleAttentionCount = (activitySummary, moduleKey) =>
+  activitySummary?.moduleTotals?.[moduleKey]?.attentionCount || 0;
+
+export const getDashboardModuleInProgressCount = (activitySummary, moduleKey) =>
+  activitySummary?.moduleTotals?.[moduleKey]?.inProgressCount || 0;
 
 export const hasDashboardModuleActivity = (activitySummary, moduleKey) => getDashboardModuleCount(activitySummary, moduleKey) > 0;
 
 export const getDashboardModuleLatestActivity = (activitySummary, moduleKey) =>
   toTimestamp(activitySummary?.moduleTotals?.[moduleKey]?.latestActivityAt);
+
+export const getClientBadgeState = (clientActivity) => {
+  if (getClientAttentionCount(clientActivity) > 0) return 'attention';
+  if (getClientInProgressCount(clientActivity) > 0) return 'inProgress';
+  return 'clear';
+};
+
+export const getModuleBadgeState = (clientActivity, moduleKey) => {
+  if (getModuleAttentionCount(clientActivity, moduleKey) > 0) return 'attention';
+  if (getModuleInProgressCount(clientActivity, moduleKey) > 0) return 'inProgress';
+  return 'clear';
+};
+
+export const getDashboardModuleBadgeState = (activitySummary, moduleKey) => {
+  if (getDashboardModuleAttentionCount(activitySummary, moduleKey) > 0) return 'attention';
+  if (getDashboardModuleInProgressCount(activitySummary, moduleKey) > 0) return 'inProgress';
+  return 'clear';
+};
+
+export const getBadgeClasses = (state) => {
+  if (state === 'attention') return 'bg-red-500 text-white';
+  if (state === 'inProgress') return 'bg-yellow-400 text-yellow-950';
+  return '';
+};
