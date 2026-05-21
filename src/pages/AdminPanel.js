@@ -5,6 +5,48 @@ import { useSelector } from 'react-redux'
 import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom'
 import ROLE from '../common/role'
 
+const SECTION_ROUTE_MAP = {
+    adminPanel: [
+        'coupon-management',
+        'payment-verification',
+        'pending-renewals',
+        'invoice-management',
+        'order-approval',
+        'admin-settings',
+        'admin-tickets',
+        'partner-withdrawal-requests',
+        'wallet-management',
+        'update-requests',
+        'projects',
+        'close-plan',
+        'kyc-verification',
+    ],
+    productManagement: [
+        'all-categories',
+        'all-products',
+    ],
+    userManagement: [
+        'admins',
+        'managers',
+        'developers',
+        'partners',
+    ],
+    websiteManagement: [
+        'welcome-content',
+        'all-ads',
+    ],
+}
+
+const getSectionFromPath = (pathname) => {
+    for (const [section, routes] of Object.entries(SECTION_ROUTE_MAP)) {
+        if (routes.some((route) => pathname.includes(route))) {
+            return section
+        }
+    }
+
+    return null
+}
+
 const AdminPanel = () => {
     const user = useSelector(state => state?.user?.user)
     const navigate = useNavigate()
@@ -32,38 +74,8 @@ const AdminPanel = () => {
         return currentPath.includes(path)
     }
 
-    // Function to determine which section should be open based on current route
     useEffect(() => {
-        const currentPath = location.pathname
-        
-        if (currentPath.includes('clients-services') ||
-            currentPath.includes('coupon-management') ||
-            currentPath.includes('payment-verification') ||
-            currentPath.includes('pending-renewals') ||
-            currentPath.includes('invoice-management') ||
-            currentPath.includes('order-approval') ||
-            currentPath.includes('admin-settings') ||
-            currentPath.includes('admin-tickets') ||
-            currentPath.includes('partner-withdrawal-requests') ||
-            currentPath.includes('wallet-management') ||
-            currentPath.includes('update-requests') ||
-            currentPath.includes('projects') ||
-            currentPath.includes('close-plan') ||
-            currentPath.includes('kyc-verification')) {
-            setOpenSection('adminPanel')
-        } else if (currentPath.includes('all-categories') || 
-                   currentPath.includes('all-products')) {
-            setOpenSection('productManagement')
-        } else if (currentPath.includes('admins') || 
-                   currentPath.includes('managers') || 
-                   currentPath.includes('customers') ||
-                   currentPath.includes('developers') ||
-                   currentPath.includes('partners')) {
-            setOpenSection('userManagement')
-        } else if (currentPath.includes('welcome-content') || 
-                   currentPath.includes('all-ads')) {
-            setOpenSection('websiteManagement')
-        }
+        setOpenSection(getSectionFromPath(location.pathname))
     }, [location.pathname])
 
     const toggleSection = (section) => {
@@ -118,6 +130,69 @@ const AdminPanel = () => {
                             <span className='mr-3 text-lg'>👥</span>
                             Clients Services
                         </Link>
+
+                        {/* User Management Section */}
+                        <div className='mt-4'>
+                            <button 
+                                onClick={() => toggleSection('userManagement')}
+                                className='flex items-center justify-between w-full px-4 py-3 text-sm text-gray-300 hover:bg-slate-700 rounded-md transition-colors'
+                            >
+                                <div className='flex items-center'>
+                                    <MdPeople className='mr-3 text-lg' />
+                                    User Management
+                                </div>
+                                {openSection === 'userManagement' ? <FaChevronUp className='text-xs' /> : <FaChevronDown className='text-xs' />}
+                            </button>
+                            
+                            {openSection === 'userManagement' && (
+                                <div className='ml-6 mt-2 border-l-2 border-blue-500 pl-4 space-y-1'>
+                                    <Link 
+                                        to={"admins"} 
+                                        className={`block px-3 py-2.5 text-sm rounded-md transition-colors ${
+                                            isActive('admins')
+                                                ? 'bg-blue-600 text-white'
+                                                : 'text-gray-400 hover:bg-slate-700 hover:text-white'
+                                        }`}
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
+                                        Admins
+                                    </Link>
+                                    <Link 
+                                        to={"managers"} 
+                                        className={`block px-3 py-2.5 text-sm rounded-md transition-colors ${
+                                            isActive('managers')
+                                                ? 'bg-blue-600 text-white'
+                                                : 'text-gray-400 hover:bg-slate-700 hover:text-white'
+                                        }`}
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
+                                        Managers
+                                    </Link>
+                                    <Link 
+                                        to={"developers"} 
+                                        className={`block px-3 py-2.5 text-sm rounded-md transition-colors ${
+                                            isActive('developers')
+                                                ? 'bg-blue-600 text-white'
+                                                : 'text-gray-400 hover:bg-slate-700 hover:text-white'
+                                        }`}
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
+                                        Developers
+                                    </Link>
+                                    <Link 
+                                        to={"partners"} 
+                                        className={`block px-3 py-2.5 text-sm rounded-md transition-colors ${
+                                            isActive('partners')
+                                                ? 'bg-blue-600 text-white'
+                                                : 'text-gray-400 hover:bg-slate-700 hover:text-white'
+                                        }`}
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
+                                        Partners
+                                    </Link>
+                                </div>
+                            )}
+                        </div>
 
                         <div className='border-t border-slate-700 my-3'></div>
 
@@ -323,91 +398,6 @@ const AdminPanel = () => {
                                         onClick={(e) => e.stopPropagation()}
                                     >
                                         All Products
-                                    </Link>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* User Management Section */}
-                        <div className='mt-4'>
-                            <button 
-                                onClick={() => toggleSection('userManagement')}
-                                className='flex items-center justify-between w-full px-4 py-3 text-sm text-gray-300 hover:bg-slate-700 rounded-md transition-colors'
-                            >
-                                <div className='flex items-center'>
-                                    <MdPeople className='mr-3 text-lg' />
-                                    User Management
-                                </div>
-                                {openSection === 'userManagement' ? <FaChevronUp className='text-xs' /> : <FaChevronDown className='text-xs' />}
-                            </button>
-                            
-                            {openSection === 'userManagement' && (
-                                <div className='ml-6 mt-2 border-l-2 border-blue-500 pl-4 space-y-1'>
-                                    <Link 
-                                        to={"admins"} 
-                                        className={`block px-3 py-2.5 text-sm rounded-md transition-colors ${
-                                            isActive('admins')
-                                                ? 'bg-blue-600 text-white'
-                                                : 'text-gray-400 hover:bg-slate-700 hover:text-white'
-                                        }`}
-                                        onClick={(e) => e.stopPropagation()}
-                                    >
-                                        Admins
-                                    </Link>
-                                    <Link 
-                                        to={"managers"} 
-                                        className={`block px-3 py-2.5 text-sm rounded-md transition-colors ${
-                                            isActive('managers')
-                                                ? 'bg-blue-600 text-white'
-                                                : 'text-gray-400 hover:bg-slate-700 hover:text-white'
-                                        }`}
-                                        onClick={(e) => e.stopPropagation()}
-                                    >
-                                        Managers
-                                    </Link>
-                                    <Link 
-                                        to={"customers"} 
-                                        className={`block px-3 py-2.5 text-sm rounded-md transition-colors ${
-                                            isActive('customers')
-                                                ? 'bg-blue-600 text-white'
-                                                : 'text-gray-400 hover:bg-slate-700 hover:text-white'
-                                        }`}
-                                        onClick={(e) => e.stopPropagation()}
-                                    >
-                                        Customers
-                                    </Link>
-                                    <Link 
-                                        to={"developers"} 
-                                        className={`block px-3 py-2.5 text-sm rounded-md transition-colors ${
-                                            isActive('developers')
-                                                ? 'bg-blue-600 text-white'
-                                                : 'text-gray-400 hover:bg-slate-700 hover:text-white'
-                                        }`}
-                                        onClick={(e) => e.stopPropagation()}
-                                    >
-                                        Developers
-                                    </Link>
-                                    <Link 
-                                        to={"partners"} 
-                                        className={`block px-3 py-2.5 text-sm rounded-md transition-colors ${
-                                            isActive('partners')
-                                                ? 'bg-blue-600 text-white'
-                                                : 'text-gray-400 hover:bg-slate-700 hover:text-white'
-                                        }`}
-                                        onClick={(e) => e.stopPropagation()}
-                                    >
-                                        Partners
-                                    </Link>
-                                     <Link 
-                                        to={"all-developers"} 
-                                        className={`block px-3 py-2.5 text-sm rounded-md transition-colors ${
-                                            isActive('partners')
-                                                ? 'bg-blue-600 text-white'
-                                                : 'text-gray-400 hover:bg-slate-700 hover:text-white'
-                                        }`}
-                                        onClick={(e) => e.stopPropagation()}
-                                    >
-                                        All Developers
                                     </Link>
                                 </div>
                             )}

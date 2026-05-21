@@ -2,23 +2,16 @@ import React, { useEffect, useState } from 'react'
 import SummaryApi from '../common'
 import { toast } from "react-toastify";
 import moment from 'moment'
-import { MdModeEdit } from "react-icons/md";
-import ChangeUserRole from '../components/ChangeUserRole';
 import SignUp from './SignUp';
 import AddRoleToUserModal from '../components/AddRoleToUserModal';
+import { useNavigate } from 'react-router-dom';
 
 const AllUsers = () => {
+  const navigate = useNavigate()
   const [allUser, setAllUsers] = useState([])
-  const [openUpdateRole, setOpenUpdateRole] = useState(false)
   const [openAddUserModal, setOpenAddUserModal] = useState(false)
   const [openAddRoleModal, setOpenAddRoleModal] = useState(false)
-
-  const [updateUserDetails, setUpdateUserDetails] = useState({
-        email : "",
-        name: "",
-        role: "",
-        _id : ""
-    })  
+  const [selectedUserForAccess, setSelectedUserForAccess] = useState(null)
 
   const fetchAllUsers = async()=> {
     const fetchData = await fetch(SummaryApi.allUser.url,{
@@ -55,10 +48,11 @@ const AllUsers = () => {
         <button 
           className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
           onClick={() => {
+            setSelectedUserForAccess(null);
             setOpenAddRoleModal(true);
           }}
         >
-          Add New Role to Existing User
+          Manage Access
         </button>
       </div>
 
@@ -84,13 +78,23 @@ const AllUsers = () => {
                     <td>{el?.roles ? el.roles.join(", ") : ""}</td>
                     <td>{moment(el?.createdAt).format('LL')}</td>
                     <td>
-                      <button className='bg-green-100 p-2 rounded-full cursor-pointer hover:bg-green-500 hover:text-white' 
-                      onClick={()=>{
-                        setUpdateUserDetails(el)
-                        setOpenUpdateRole(true)
-                        }}>
-                        <MdModeEdit/>
-                      </button>
+                      <div className='flex items-center gap-2'>
+                        <button
+                          className='rounded bg-blue-600 px-3 py-2 text-white hover:bg-blue-700'
+                          onClick={() => navigate(`/admin-panel/users/${el._id}`)}
+                        >
+                          Open Workspace
+                        </button>
+                        <button
+                          className='rounded border border-green-300 px-3 py-2 text-green-700 hover:bg-green-50'
+                          onClick={() => {
+                            setSelectedUserForAccess(el);
+                            setOpenAddRoleModal(true);
+                          }}
+                        >
+                          Manage Access
+                        </button>
+                      </div>
                     </td>
                   </tr>
               )
@@ -98,19 +102,6 @@ const AllUsers = () => {
           }
         </tbody>
       </table>
-
-      {
-            openUpdateRole && (
-              <ChangeUserRole 
-              onClose={()=>setOpenUpdateRole(false)}
-              name={updateUserDetails.name}
-              email={updateUserDetails.email}
-              role={updateUserDetails.role}
-              userId={updateUserDetails._id}
-              callFunc={fetchAllUsers}
-              /> 
-            )
-          }
 
       {
         openAddUserModal && (
@@ -131,7 +122,11 @@ const AllUsers = () => {
       {
         openAddRoleModal && (
           <AddRoleToUserModal 
-            onClose={() => setOpenAddRoleModal(false)} 
+            onClose={() => {
+              setOpenAddRoleModal(false)
+              setSelectedUserForAccess(null)
+            }} 
+            userId={selectedUserForAccess?._id}
             callFunc={fetchAllUsers} 
           />
         )

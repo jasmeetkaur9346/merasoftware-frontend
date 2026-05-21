@@ -640,6 +640,14 @@ const SummaryApi = {
             url: `${backendDomain}/api/invoices/update-overdue`,
             method: "post"
         }
+    },
+    workspaceActivityCounts: {
+        url: `${backendDomain}/api/workspace-activity-counts`,
+        method: "get"
+    },
+    markWorkspaceActivitySeen: {
+        url: `${backendDomain}/api/mark-workspace-activity-seen`,
+        method: "post"
     }
 }
 

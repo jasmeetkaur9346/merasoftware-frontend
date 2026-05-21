@@ -19,7 +19,6 @@ import AllCategory from "../pages/AllCategory";
 import AllAds from "../pages/AllAds";
 import WalletManagement from "../pages/WalletManagement";
 import Profile from "../pages/Profile";
-import AllDevelopers from "../pages/AllDevelopers";
 import AdminProjects from "../pages/AdminProjects";
 import ProjectDetails from "../pages/ProjectDetails";
 import WalletDetails from "../pages/WalletDetails";
@@ -54,7 +53,6 @@ import LandingPageLayout from "../pages/LandingPageLayout";
 import AdminManagement from "../components/AdminManagement";
 import DeveloperManagement from "../components/DeveloperManagement";
 import PartnerManagement from "../components/PartnerManagement";
-import CustomerManagement from "../components/CustomerManagement";
 import ProtectedRoute from "../components/ProtectedRoute";
 import RoleBasedHome from "../components/RoleBasedHome";
 import ManagerManagement from "../components/ManagerManagement";
@@ -78,6 +76,7 @@ import ClosePlanManagement from "../pages/ClosePlanManagement";
 import ClientsServices from "../pages/ClientsServices";
 import CustomerDetailPage from "../pages/CustomerDetailPage";
 import AdminDashboard from "../pages/AdminDashboard";
+import UserWorkspace from "../pages/UserWorkspace";
 
 // Create a conditional home route
 // const HomeRoute = () => {
@@ -288,6 +287,10 @@ const router = createBrowserRouter([
                         element: <CustomerDetailPage/>
                     },
                     {
+                        path: "users/:userId",
+                        element: <UserWorkspace/>
+                    },
+                    {
                         path: "",
                         element: <Navigate to="dashboard" replace />
                     },
@@ -314,10 +317,6 @@ const router = createBrowserRouter([
                     {
                         path: "partners",
                         element : <PartnerManagement/>
-                    },
-                    {
-                        path: "customers",
-                        element : <CustomerManagement/>
                     },
                     {
                         path: "admin-settings",
@@ -373,7 +372,7 @@ const router = createBrowserRouter([
                     },
                     {
                         path: "all-developers",
-                        element : <AllDevelopers/>
+                        element : <Navigate to="/admin-panel/developers" replace />
                     },
                     {
                         path : "all-ads",

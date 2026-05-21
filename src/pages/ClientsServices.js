@@ -1,57 +1,105 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SummaryApi from '../common';
 import { toast } from 'react-toastify';
 import { Search } from 'lucide-react';
+import SignUp from './SignUp';
+import {
+  fetchWorkspaceActivityCounts,
+  getClientLatestActivity,
+  getClientTotalCount,
+  hasClientUnreadActivity,
+} from '../helpers/adminActivitySignals';
 
 const ClientsServices = () => {
   const navigate = useNavigate();
   const [clients, setClients] = useState([]);
-  const [filteredClients, setFilteredClients] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
+  const [openAddUserModal, setOpenAddUserModal] = useState(false);
+  const [activityByUser, setActivityByUser] = useState({});
 
-  // Fetch customers from API
-  useEffect(() => {
-    const fetchClients = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch(SummaryApi.allUser.url, {
+  const fetchClients = async () => {
+    try {
+      setLoading(true);
+      const requests = await Promise.allSettled([
+        fetch(SummaryApi.allUser.url, {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
-        });
-        const result = await response.json();
-        if (result.success) {
-          const customers = result.data.filter(user => user.roles.includes('customer'));
-          setClients(customers);
-          setFilteredClients(customers);
-        } else {
-          toast.error(result.message || 'Failed to load clients');
-        }
-      } catch (error) {
-        console.error(error);
-        toast.error('Error fetching clients');
-      } finally {
-        setLoading(false);
-      }
-    };
+        }),
+        fetchWorkspaceActivityCounts(),
+      ]);
 
+      const parseFetch = async (result) => {
+        if (result.status !== 'fulfilled') return { success: false, data: [] };
+        try {
+          return await result.value.json();
+        } catch (error) {
+          console.error('Failed to parse client response:', error);
+          return { success: false, data: [] };
+        }
+      };
+
+      const usersResult = await parseFetch(requests[0]);
+      const activityResult = requests[1].status === 'fulfilled' ? requests[1].value : { clientMap: {} };
+
+      if (!usersResult.success) {
+        toast.error(usersResult.message || 'Failed to load clients');
+        return;
+      }
+
+      const customers = (usersResult.data || []).filter((user) => user.roles?.includes('customer'));
+      setClients(customers);
+      setActivityByUser(activityResult.clientMap || {});
+    } catch (error) {
+      console.error(error);
+      toast.error('Error fetching clients');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchClients();
   }, []);
 
-  // Filter clients based on search term
   useEffect(() => {
-    const filtered = clients.filter((client) =>
-      client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      client.email.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    setFilteredClients(filtered);
-  }, [searchTerm, clients]);
+    const handleActivityVisibilityRefresh = () => {
+      fetchClients();
+    };
+
+    window.addEventListener('focus', handleActivityVisibilityRefresh);
+
+    return () => {
+      window.removeEventListener('focus', handleActivityVisibilityRefresh);
+    };
+  }, []);
 
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
   };
+
+  const filteredClients = useMemo(() => {
+    const query = searchTerm.toLowerCase();
+
+    return [...clients]
+      .filter((client) =>
+        client.name?.toLowerCase().includes(query) ||
+        client.email?.toLowerCase().includes(query) ||
+        client.phone?.toLowerCase().includes(query)
+      )
+      .sort((left, right) => {
+        const rightActivity = getClientLatestActivity(activityByUser[right._id]);
+        const leftActivity = getClientLatestActivity(activityByUser[left._id]);
+
+        if (rightActivity !== leftActivity) {
+          return rightActivity - leftActivity;
+        }
+
+        return new Date(right.createdAt || 0) - new Date(left.createdAt || 0);
+      });
+  }, [activityByUser, clients, searchTerm]);
 
   const displayINRCurrency = (num) => {
     const formatter = new Intl.NumberFormat('en-IN', {
@@ -64,11 +112,19 @@ const ClientsServices = () => {
   return (
     <div className="p-6 bg-gray-50 min-h-full">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-800">Clients Services</h1>
-        <p className="text-gray-600 mt-2">
-          Manage all your clients and their services
-        </p>
+      <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-800">Clients Services</h1>
+          <p className="text-gray-600 mt-2">
+            Manage all your clients and their services
+          </p>
+        </div>
+        <button
+          onClick={() => setOpenAddUserModal(true)}
+          className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+        >
+          Add New User
+        </button>
       </div>
 
       {/* Search Bar */}
@@ -137,9 +193,21 @@ const ClientsServices = () => {
                   <tr
                     key={client._id}
                     className="hover:bg-blue-50 transition-colors cursor-pointer"
-                    onClick={() => navigate(`/admin-panel/customer-detail/${client._id}`)}
+                    onClick={() => navigate(`/admin-panel/users/${client._id}`)}
                   >
-                    <td className="px-6 py-4 text-sm font-medium text-gray-800">{client.name || 'N/A'}</td>
+                    <td className="px-6 py-4 text-sm font-medium text-gray-800">
+                      <div className="flex items-center gap-2">
+                        {hasClientUnreadActivity(activityByUser[client._id]) && (
+                          <span className="inline-block h-2.5 w-2.5 rounded-full bg-red-500" />
+                        )}
+                        <span>{client.name || 'N/A'}</span>
+                        {getClientTotalCount(activityByUser[client._id]) > 0 && (
+                          <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-semibold text-white">
+                            {getClientTotalCount(activityByUser[client._id])}
+                          </span>
+                        )}
+                      </div>
+                    </td>
                     <td className="px-6 py-4 text-sm text-gray-600">{client.email || 'N/A'}</td>
                     <td className="px-6 py-4 text-sm text-gray-600">{client.phone || 'N/A'}</td>
                     <td className="px-6 py-4 text-sm">
@@ -179,6 +247,26 @@ const ClientsServices = () => {
       <div className="mt-4 text-sm text-gray-600">
         Showing {filteredClients.length} of {clients.length} clients
       </div>
+
+      {openAddUserModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="relative w-full max-w-md rounded bg-white p-6 shadow-lg">
+            <button
+              className="absolute right-2 top-2 text-gray-600 hover:text-gray-900"
+              onClick={() => setOpenAddUserModal(false)}
+            >
+              &times;
+            </button>
+            <SignUp
+              onClose={() => setOpenAddUserModal(false)}
+              onUserAdded={() => {
+                setOpenAddUserModal(false);
+                fetchClients();
+              }}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

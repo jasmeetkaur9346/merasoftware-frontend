@@ -2,6 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import SummaryApi from '../common';
 import useDashboardUpdate from '../hooks/useDashboardUpdate';
+import { MdPeople, MdOutlineBarChart, MdPendingActions } from 'react-icons/md';
+import {
+  fetchWorkspaceActivityCounts,
+  getDashboardModuleCount,
+  getModuleCount,
+  hasDashboardModuleActivity,
+  markWorkspaceActivitySeen,
+} from '../helpers/adminActivitySignals';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -27,12 +35,25 @@ const AdminDashboard = () => {
     openTickets: 0,
     pendingWithdrawals: 0,
   });
+  const [activitySummary, setActivitySummary] = useState({ clients: [], clientMap: {}, moduleTotals: {} });
+
+  const getLatestTimestamp = (items = [], fields = ['updatedAt', 'createdAt']) =>
+    items.reduce((latest, item) => {
+      for (const field of fields) {
+        const value = item?.[field];
+        const timestamp = value ? new Date(value).getTime() : 0;
+        if (timestamp) {
+          return Math.max(latest, timestamp);
+        }
+      }
+      return latest;
+    }, 0);
 
   useEffect(() => {
     const fetchAllStats = async () => {
       setLoading(true);
       try {
-        const results = await Promise.allSettled([
+        const statsRequests = await Promise.allSettled([
           fetch(SummaryApi.allUser.url, { method: SummaryApi.allUser.method, credentials: 'include' }),
           fetch(SummaryApi.allDevelopers.url, { method: SummaryApi.allDevelopers.method, credentials: 'include' }),
           fetch(SummaryApi.allOrder.url, { method: SummaryApi.allOrder.method, credentials: 'include' }),
@@ -46,6 +67,7 @@ const AdminDashboard = () => {
           fetch(SummaryApi.getAllTickets.url, { method: SummaryApi.getAllTickets.method, credentials: 'include' }),
           fetch(SummaryApi.getAllWithdrawalRequests.url, { method: SummaryApi.getAllWithdrawalRequests.method, credentials: 'include' }),
         ]);
+        const workspaceActivity = await fetchWorkspaceActivityCounts().catch(() => ({ clients: [], clientMap: {}, moduleTotals: {} }));
 
         const parse = async (result) => {
           if (result.status === 'fulfilled') {
@@ -62,7 +84,7 @@ const AdminDashboard = () => {
           projectsData, pendingOrdersData, productsData,
           pendingPaymentsData, pendingRenewalsData,
           updatesData, ticketsData, withdrawalsData,
-        ] = await Promise.all(results.map(parse));
+        ] = await Promise.all(statsRequests.map(parse));
 
         // Users breakdown
         const users = Array.isArray(usersData) ? usersData : [];
@@ -90,6 +112,8 @@ const AdminDashboard = () => {
         // Pending withdrawals
         const withdrawals = Array.isArray(withdrawalsData) ? withdrawalsData : [];
         const pendingWithdrawals = withdrawals.filter(w => w.status === 'pending').length;
+
+        setActivitySummary(workspaceActivity);
 
         setStats({
           totalUsers: users.length,
@@ -129,7 +153,7 @@ const AdminDashboard = () => {
     const fetchAllStats = async () => {
       setLoading(true);
       try {
-        const results = await Promise.allSettled([
+        const statsRequests = await Promise.allSettled([
           fetch(SummaryApi.allUser.url, { method: SummaryApi.allUser.method, credentials: 'include' }),
           fetch(SummaryApi.allDevelopers.url, { method: SummaryApi.allDevelopers.method, credentials: 'include' }),
           fetch(SummaryApi.allOrder.url, { method: SummaryApi.allOrder.method, credentials: 'include' }),
@@ -143,6 +167,7 @@ const AdminDashboard = () => {
           fetch(SummaryApi.getAllTickets.url, { method: SummaryApi.getAllTickets.method, credentials: 'include' }),
           fetch(SummaryApi.getAllWithdrawalRequests.url, { method: SummaryApi.getAllWithdrawalRequests.method, credentials: 'include' }),
         ]);
+        const workspaceActivity = await fetchWorkspaceActivityCounts().catch(() => ({ clients: [], clientMap: {}, moduleTotals: {} }));
 
         const parse = async (result) => {
           if (result.status === 'fulfilled') {
@@ -159,7 +184,7 @@ const AdminDashboard = () => {
           projectsData, pendingOrdersData, productsData,
           pendingPaymentsData, pendingRenewalsData,
           updatesData, ticketsData, withdrawalsData,
-        ] = await Promise.all(results.map(parse));
+        ] = await Promise.all(statsRequests.map(parse));
 
         const users = Array.isArray(usersData) ? usersData : [];
         const totalCustomers = users.filter(u => u.roles?.includes('customer')).length;
@@ -181,6 +206,8 @@ const AdminDashboard = () => {
 
         const withdrawals = Array.isArray(withdrawalsData) ? withdrawalsData : [];
         const pendingWithdrawals = withdrawals.filter(w => w.status === 'pending').length;
+
+        setActivitySummary(workspaceActivity);
 
         setStats({
           totalUsers: users.length,
@@ -211,12 +238,44 @@ const AdminDashboard = () => {
 
   useDashboardUpdate(handleDashboardUpdate);
 
-  const StatCard = ({ label, value, color, textColor, to }) => (
+  const openDashboardSection = async (to, activityKey) => {
+    if (activityKey) {
+      const relatedClients = (activitySummary.clients || []).filter((client) => getModuleCount(client, activityKey) > 0);
+
+      if (relatedClients.length > 0) {
+        await Promise.allSettled(
+          relatedClients.map((client) =>
+            markWorkspaceActivitySeen({
+              targetUserId: client.userId,
+              moduleKey: activityKey,
+              seenAt: client.modules?.[activityKey]?.latestActivityAt,
+            })
+          )
+        );
+
+        const refreshedActivity = await fetchWorkspaceActivityCounts().catch(() => activitySummary);
+        setActivitySummary(refreshedActivity);
+      }
+    }
+
+    if (to) {
+      navigate(to);
+    }
+  };
+
+  const StatCard = ({ label, value, color, textColor, to, activityKey }) => (
     <div
-      onClick={() => to && navigate(to)}
+      onClick={() => openDashboardSection(to, activityKey)}
       className={`${color} rounded-lg p-5 shadow-sm ${to ? 'cursor-pointer hover:opacity-90 hover:shadow-md transition-all' : ''}`}
     >
-      <p className={`text-sm font-medium ${textColor} opacity-80`}>{label}</p>
+      <div className="flex items-center gap-2">
+        <p className={`text-sm font-medium ${textColor} opacity-80`}>{label}</p>
+        {activityKey && hasDashboardModuleActivity(activitySummary, activityKey) && (
+          <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-semibold text-white">
+            {getDashboardModuleCount(activitySummary, activityKey)}
+          </span>
+        )}
+      </div>
       <p className={`text-2xl font-bold ${textColor} mt-2`}>{value}</p>
       {to && <p className={`text-xs ${textColor} opacity-60 mt-2`}>Click to view →</p>}
     </div>
@@ -233,7 +292,8 @@ const AdminDashboard = () => {
       {/* Section 1: Users & Business */}
       <div className="mb-8">
         <h2 className="text-lg font-semibold text-gray-700 mb-4 flex items-center gap-2">
-          <span>👥</span> Users & Business
+          <MdPeople className="text-xl text-gray-600" />
+          <span>Users & Business</span>
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           <StatCard label="Total Users"    value={val(stats.totalUsers)}      color="bg-blue-500"   textColor="text-white" to="/admin-panel/all-users" />
@@ -247,7 +307,8 @@ const AdminDashboard = () => {
       {/* Section 2: Orders & Revenue */}
       <div className="mb-8">
         <h2 className="text-lg font-semibold text-gray-700 mb-4 flex items-center gap-2">
-          <span>📊</span> Orders & Revenue
+          <MdOutlineBarChart className="text-xl text-gray-600" />
+          <span>Orders & Revenue</span>
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           <StatCard label="Total Orders"      value={val(stats.totalOrders)}                    color="bg-green-500"   textColor="text-white" to="/admin-panel/all-orders" />
@@ -261,16 +322,17 @@ const AdminDashboard = () => {
       {/* Section 3: Pending Actions */}
       <div className="mb-8">
         <h2 className="text-lg font-semibold text-gray-700 mb-4 flex items-center gap-2">
-          <span>⚠️</span> Pending Actions
+          <MdPendingActions className="text-xl text-gray-600" />
+          <span>Pending Actions</span>
           <span className="text-xs font-normal text-gray-500 ml-1">(Admin attention chahiye)</span>
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          <StatCard label="Pending Payments"    value={val(stats.pendingPayments)}    color={stats.pendingPayments > 0 && !loading ? 'bg-yellow-500' : 'bg-yellow-100'}   textColor={stats.pendingPayments > 0 && !loading ? 'text-white' : 'text-yellow-800'} to="/admin-panel/payment-verification" />
-          <StatCard label="Pending Renewals"    value={val(stats.pendingRenewals)}    color={stats.pendingRenewals > 0 && !loading ? 'bg-orange-500' : 'bg-orange-100'}   textColor={stats.pendingRenewals > 0 && !loading ? 'text-white' : 'text-orange-800'} to="/admin-panel/pending-renewals" />
-          <StatCard label="Unpaid Invoices"     value={val(stats.unpaidInvoices)}     color={stats.unpaidInvoices > 0 && !loading ? 'bg-red-500' : 'bg-red-100'}          textColor={stats.unpaidInvoices > 0 && !loading ? 'text-white' : 'text-red-800'} to="/admin-panel/invoice-management" />
-          <StatCard label="Pending Updates"     value={val(stats.pendingUpdates)}     color={stats.pendingUpdates > 0 && !loading ? 'bg-purple-500' : 'bg-purple-100'}    textColor={stats.pendingUpdates > 0 && !loading ? 'text-white' : 'text-purple-800'} to="/admin-panel/update-requests" />
-          <StatCard label="Open Tickets"        value={val(stats.openTickets)}        color={stats.openTickets > 0 && !loading ? 'bg-pink-500' : 'bg-pink-100'}           textColor={stats.openTickets > 0 && !loading ? 'text-white' : 'text-pink-800'} to="/admin-panel/admin-tickets" />
-          <StatCard label="Pending Withdrawals" value={val(stats.pendingWithdrawals)} color={stats.pendingWithdrawals > 0 && !loading ? 'bg-amber-600' : 'bg-amber-100'}  textColor={stats.pendingWithdrawals > 0 && !loading ? 'text-white' : 'text-amber-800'} to="/admin-panel/partner-withdrawal-requests" />
+          <StatCard label="Pending Payments"    value={val(stats.pendingPayments)}    color={stats.pendingPayments > 0 && !loading ? 'bg-yellow-500' : 'bg-yellow-100'}   textColor={stats.pendingPayments > 0 && !loading ? 'text-white' : 'text-yellow-800'} to="/admin-panel/payment-verification" activityKey="payments" />
+          <StatCard label="Pending Renewals"    value={val(stats.pendingRenewals)}    color={stats.pendingRenewals > 0 && !loading ? 'bg-orange-500' : 'bg-orange-100'}   textColor={stats.pendingRenewals > 0 && !loading ? 'text-white' : 'text-orange-800'} to="/admin-panel/pending-renewals" activityKey="renewals" />
+          <StatCard label="Unpaid Invoices"     value={val(stats.unpaidInvoices)}     color={stats.unpaidInvoices > 0 && !loading ? 'bg-red-500' : 'bg-red-100'}          textColor={stats.unpaidInvoices > 0 && !loading ? 'text-white' : 'text-red-800'} to="/admin-panel/invoice-management" activityKey="invoices" />
+          <StatCard label="Pending Updates"     value={val(stats.pendingUpdates)}     color={stats.pendingUpdates > 0 && !loading ? 'bg-purple-500' : 'bg-purple-100'}    textColor={stats.pendingUpdates > 0 && !loading ? 'text-white' : 'text-purple-800'} to="/admin-panel/update-requests" activityKey="updates" />
+          <StatCard label="Open Tickets"        value={val(stats.openTickets)}        color={stats.openTickets > 0 && !loading ? 'bg-pink-500' : 'bg-pink-100'}           textColor={stats.openTickets > 0 && !loading ? 'text-white' : 'text-pink-800'} to="/admin-panel/admin-tickets" activityKey="tickets" />
+          <StatCard label="Pending Withdrawals" value={val(stats.pendingWithdrawals)} color={stats.pendingWithdrawals > 0 && !loading ? 'bg-amber-600' : 'bg-amber-100'}  textColor={stats.pendingWithdrawals > 0 && !loading ? 'text-white' : 'text-amber-800'} to="/admin-panel/partner-withdrawal-requests" activityKey="withdrawals" />
         </div>
       </div>
     </div>
