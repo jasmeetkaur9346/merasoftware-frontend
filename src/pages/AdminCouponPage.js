@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
-import { MdDelete, MdEdit, MdAdd } from 'react-icons/md';
+import { MdDelete, MdAdd } from 'react-icons/md';
+import { Search } from 'lucide-react';
 import SummaryApi from '../common';
 import TriangleMazeLoader from '../components/TriangleMazeLoader';
 
@@ -11,6 +12,7 @@ const AdminCouponPage = () => {
   const [editMode, setEditMode] = useState(false);
   const [availableProducts, setAvailableProducts] = useState([]);
   const [selectedProducts, setSelectedProducts] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
   // State for the calculated discount
   const [calculatedDiscount, setCalculatedDiscount] = useState(null);
   const [selectedProductPrice, setSelectedProductPrice] = useState(null);
@@ -303,17 +305,50 @@ const AdminCouponPage = () => {
     }
   };
 
+  const filteredCoupons = useMemo(() => {
+    const query = searchTerm.trim().toLowerCase();
+
+    return [...coupons]
+      .filter((coupon) => {
+        if (!query) return true;
+
+        return (
+          coupon.code?.toLowerCase().includes(query) ||
+          coupon.type?.toLowerCase().includes(query) ||
+          coupon.applicableProducts?.some((product) =>
+            product?.serviceName?.toLowerCase().includes(query)
+          )
+        );
+      })
+      .sort((left, right) => new Date(right.createdAt || 0) - new Date(left.createdAt || 0));
+  }, [coupons, searchTerm]);
+
+  const getAppliesToText = (coupon) => {
+    if (!coupon.applicableProducts?.length) {
+      return 'All products';
+    }
+
+    if (coupon.applicableProducts.length === 1) {
+      return coupon.applicableProducts[0]?.serviceName || '1 product';
+    }
+
+    return `${coupon.applicableProducts.length} products`;
+  };
+
   return (
-    <div className="p-6">
-      <div className="max-w-6xl mx-auto">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-800">Coupon Management</h1>
+    <div className="p-6 bg-gray-50 min-h-full">
+      <div>
+        <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-800">Coupon Management</h1>
+            <p className="text-gray-600 mt-2">Manage coupon codes, discount rules, and their usage from one table.</p>
+          </div>
           <button
             onClick={() => {
               resetForm();
               setFormOpen(!formOpen);
             }}
-            className="flex items-center bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 transition-colors inline-flex items-center"
           >
             {formOpen ? 'Cancel' : (
               <>
@@ -322,6 +357,19 @@ const AdminCouponPage = () => {
               </>
             )}
           </button>
+        </div>
+
+        <div className="mb-6">
+          <div className="relative">
+            <Search className="absolute left-3 top-3 text-gray-400" size={20} />
+            <input
+              type="text"
+              placeholder="Search by coupon code, type, or product..."
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
         </div>
 
         {/* Coupon Form */}
@@ -636,59 +684,69 @@ const AdminCouponPage = () => {
             <TriangleMazeLoader />
           </div>
         ) : (
-          <div className="bg-white rounded-lg shadow-md overflow-hidden">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+              <table className="w-full">
+                <thead className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-200">
                   <tr>
                     <th
                       scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      className="px-6 py-3 text-left text-xs font-semibold text-gray-700"
                     >
                       Coupon Code
                     </th>
                     <th
                       scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      className="px-6 py-3 text-left text-xs font-semibold text-gray-700"
                     >
                       Discount
                     </th>
                     <th
                       scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      className="px-6 py-3 text-left text-xs font-semibold text-gray-700"
+                    >
+                      Applies To
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-6 py-3 text-left text-xs font-semibold text-gray-700"
                     >
                       Validity
                     </th>
                     <th
                       scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      className="px-6 py-3 text-left text-xs font-semibold text-gray-700"
                     >
                       Status
                     </th>
                     <th
                       scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      className="px-6 py-3 text-left text-xs font-semibold text-gray-700"
                     >
                       Usage
                     </th>
                     <th
                       scope="col"
-                      className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      className="px-6 py-3 text-right text-xs font-semibold text-gray-700"
                     >
                       Actions
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {coupons.length === 0 ? (
+                <tbody className="divide-y divide-gray-200">
+                  {filteredCoupons.length === 0 ? (
                     <tr>
-                      <td colSpan="6" className="px-6 py-4 text-center text-sm text-gray-500">
-                        No coupons found
+                      <td colSpan="7" className="px-6 py-8 text-center text-sm text-gray-500">
+                        No coupons found matching your search.
                       </td>
                     </tr>
                   ) : (
-                    coupons.map((coupon) => (
-                      <tr key={coupon._id} className="hover:bg-gray-50">
+                    filteredCoupons.map((coupon) => (
+                      <tr
+                        key={coupon._id}
+                        className="hover:bg-blue-50 transition-colors cursor-pointer"
+                        onClick={() => handleEdit(coupon)}
+                      >
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
                             <div className="font-medium text-gray-900">{coupon.code}</div>
@@ -709,6 +767,9 @@ const AdminCouponPage = () => {
                             `${coupon.minAmount > 0 || coupon.maxDiscount ? ' | ' : ''}Target: ₹${coupon.targetPrice}`}
                         </div>
                       </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                          {getAppliesToText(coupon)}
+                        </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm text-gray-900">
                             {formatDate(coupon.startDate)} to {formatDate(coupon.endDate)}
@@ -716,7 +777,10 @@ const AdminCouponPage = () => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <button
-                            onClick={() => handleToggleActive(coupon._id, coupon.isActive)}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              handleToggleActive(coupon._id, coupon.isActive);
+                            }}
                             className={`px-3 py-1 rounded-full text-xs font-medium ${
                               coupon.isActive
                                 ? 'bg-green-100 text-green-800'
@@ -738,13 +802,10 @@ const AdminCouponPage = () => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                           <button
-                            onClick={() => handleEdit(coupon)}
-                            className="text-blue-600 hover:text-blue-900 mr-4"
-                          >
-                            <MdEdit className="h-5 w-5" />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(coupon._id)}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              handleDelete(coupon._id);
+                            }}
                             className="text-red-600 hover:text-red-900"
                           >
                             <MdDelete className="h-5 w-5" />
@@ -758,6 +819,10 @@ const AdminCouponPage = () => {
             </div>
           </div>
         )}
+
+        <div className="mt-4 text-sm text-gray-600">
+          Showing {filteredCoupons.length} of {coupons.length} coupons
+        </div>
       </div>
     </div>
   );

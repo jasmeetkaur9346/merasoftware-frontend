@@ -1,11 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Mail, Phone, Shield, UserRound } from 'lucide-react';
 import { toast } from 'react-toastify';
 import SummaryApi from '../common';
 import AddRoleToUserModal from '../components/AddRoleToUserModal';
 import EditDeveloper from '../components/EditDeveloper';
 import EditUserBasicModal from '../components/EditUserBasicModal';
+import ProjectWorkspaceModal from '../components/admin/ProjectWorkspaceModal';
+import UpdateRequestWorkspaceModal from '../components/admin/UpdateRequestWorkspaceModal';
 import {
   fetchWorkspaceActivityCounts,
   getBadgeClasses,
@@ -26,20 +28,49 @@ const roleTheme = {
   admin: 'bg-slate-100 text-slate-800',
 };
 
+const getTimestamp = (value) => {
+  if (!value) return 0;
+  const timestamp = new Date(value).getTime();
+  return Number.isFinite(timestamp) ? timestamp : 0;
+};
+
+const getOrderSortPriority = (order) => {
+  if (order.orderVisibility === 'pending-approval') return 1;
+  if (order.orderVisibility === 'payment-rejected') return 2;
+  if ((order.projectProgress || 0) >= 100 || order.currentPhase === 'completed') return 4;
+  return 3;
+};
+
+const getUpdateSortPriority = (update) => {
+  if (update.status === 'pending') return 1;
+  if (update.status === 'in_progress') return 2;
+  if (update.status === 'rejected') return 3;
+  if (update.status === 'completed') return 4;
+  return 5;
+};
+
 const UserWorkspace = () => {
   const { userId } = useParams();
+  const location = useLocation();
   const navigate = useNavigate();
 
   const [user, setUser] = useState(null);
   const [developerProfile, setDeveloperProfile] = useState(null);
+  const [developers, setDevelopers] = useState([]);
   const [loadingUser, setLoadingUser] = useState(true);
   const [loadingData, setLoadingData] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
+  const [selectedRole, setSelectedRole] = useState('customer');
   const [openRoleModal, setOpenRoleModal] = useState(false);
   const [openEditDeveloper, setOpenEditDeveloper] = useState(false);
   const [openEditProfile, setOpenEditProfile] = useState(false);
   const [savingProfile, setSavingProfile] = useState(false);
   const [activityCounts, setActivityCounts] = useState(null);
+  const [selectedProject, setSelectedProject] = useState(null);
+  const [selectedUpdateRequest, setSelectedUpdateRequest] = useState(null);
+  const [loadingDeveloperWork, setLoadingDeveloperWork] = useState(false);
+  const [developerAssignedProjects, setDeveloperAssignedProjects] = useState([]);
+  const [developerAssignedUpdates, setDeveloperAssignedUpdates] = useState([]);
   const [allData, setAllData] = useState({
     orders: [],
     renewals: [],
@@ -47,6 +78,7 @@ const UserWorkspace = () => {
     invoices: [],
     updates: [],
     plans: [],
+    summary: null,
   });
 
   const loadWorkspaceActivity = async () => {
@@ -82,6 +114,7 @@ const UserWorkspace = () => {
 
       const selectedUser = usersResult.data.find((item) => item._id === userId) || null;
       setUser(selectedUser);
+      setDevelopers(developerResult.success ? (developerResult.data || []) : []);
 
       if (selectedUser && developerResult.success) {
         const matchedDeveloper = (developerResult.data || []).find(
@@ -102,43 +135,43 @@ const UserWorkspace = () => {
   const loadWorkspaceData = async () => {
     try {
       setLoadingData(true);
-      const requests = await Promise.allSettled([
-        fetch(SummaryApi.ordersList.url, { method: SummaryApi.ordersList.method, credentials: 'include' }),
-        fetch(SummaryApi.getPendingRenewals.url, { method: SummaryApi.getPendingRenewals.method, credentials: 'include' }),
-        fetch(SummaryApi.wallet.pendingTransactions.url, { method: SummaryApi.wallet.pendingTransactions.method, credentials: 'include' }),
-        fetch(SummaryApi.wallet.adminTransactionHistory.url, { method: SummaryApi.wallet.adminTransactionHistory.method, credentials: 'include' }),
-        fetch(SummaryApi.invoices.getAllInvoices.url, { method: SummaryApi.invoices.getAllInvoices.method, credentials: 'include' }),
-        fetch(SummaryApi.adminUpdateRequests.url, { method: SummaryApi.adminUpdateRequests.method, credentials: 'include' }),
-        fetch(SummaryApi.getUpdatePlans.url, { method: SummaryApi.getUpdatePlans.method, credentials: 'include' }),
-      ]);
-
-      const parseResult = async (result) => {
-        if (result.status !== 'fulfilled') return [];
-        const json = await result.value.json();
-        return json.success ? (json.data || []) : [];
-      };
-
-      const [
-        ordersData,
-        renewalsData,
-        pendingTransactions,
-        transactionHistory,
-        invoicesData,
-        updatesData,
-        plansData,
-      ] = await Promise.all(requests.map(parseResult));
-
-      setAllData({
-        orders: ordersData.filter((item) => item.userId?._id === userId),
-        renewals: renewalsData.filter((item) => item.user?._id === userId || item.userId?._id === userId),
-        transactions: [...pendingTransactions, ...transactionHistory].filter((item) => item.userId?._id === userId),
-        invoices: invoicesData.filter((item) => item.userId?._id === userId),
-        updates: updatesData.filter((item) => item.userId?._id === userId),
-        plans: plansData.filter((item) => item.userId?._id === userId),
+      const response = await fetch(`${SummaryApi.adminUserWorkspace.url}/${userId}`, {
+        method: SummaryApi.adminUserWorkspace.method,
+        credentials: 'include',
       });
+
+      const result = await response.json();
+
+      if (!result.success) {
+        toast.error(result.message || 'Failed to load workspace modules');
+        const emptyData = {
+          orders: [],
+          renewals: [],
+          transactions: [],
+          invoices: [],
+          updates: [],
+          plans: [],
+          summary: null,
+        };
+        setAllData(emptyData);
+        return emptyData;
+      }
+
+      const nextData = {
+        orders: result.data?.orders || [],
+        renewals: result.data?.renewals || [],
+        transactions: result.data?.transactions || [],
+        invoices: result.data?.invoices || [],
+        updates: result.data?.updates || [],
+        plans: result.data?.plans || [],
+        summary: result.data?.summary || null,
+      };
+      setAllData(nextData);
+      return nextData;
     } catch (error) {
       console.error('Error fetching workspace data:', error);
       toast.error('Error loading workspace modules');
+      return null;
     } finally {
       setLoadingData(false);
     }
@@ -157,40 +190,101 @@ const UserWorkspace = () => {
     }
   }, [userId]);
 
+  useEffect(() => {
+    const loadDeveloperWork = async () => {
+      if (!user?.roles?.includes('developer') || !developerProfile?._id) {
+        setDeveloperAssignedProjects([]);
+        setDeveloperAssignedUpdates([]);
+        return;
+      }
+
+      try {
+        setLoadingDeveloperWork(true);
+        const [projectsResponse, updatesResponse] = await Promise.all([
+          fetch(SummaryApi.adminProjects.url, { credentials: 'include' }),
+          fetch(SummaryApi.adminUpdateRequests.url, { credentials: 'include' }),
+        ]);
+
+        const [projectsResult, updatesResult] = await Promise.all([
+          projectsResponse.json(),
+          updatesResponse.json(),
+        ]);
+
+        const developerId = String(developerProfile._id);
+
+        const assignedProjects = (projectsResult.success ? (projectsResult.data || []) : []).filter(
+          (project) => String(project.assignedDeveloper?._id || project.assignedDeveloper) === developerId
+        );
+
+        const assignedUpdates = (updatesResult.success ? (updatesResult.data || []) : []).filter(
+          (update) => String(update.assignedDeveloper?._id || update.assignedDeveloper) === developerId
+        );
+
+        setDeveloperAssignedProjects(assignedProjects);
+        setDeveloperAssignedUpdates(assignedUpdates);
+      } catch (error) {
+        console.error('Error loading developer assigned work:', error);
+        setDeveloperAssignedProjects([]);
+        setDeveloperAssignedUpdates([]);
+      } finally {
+        setLoadingDeveloperWork(false);
+      }
+    };
+
+    loadDeveloperWork();
+  }, [developerProfile, user]);
+
+  useEffect(() => {
+    if (!user?.roles?.length) return;
+
+    const requestedRole = location.state?.defaultRole;
+    if (requestedRole && user.roles.includes(requestedRole)) {
+      setSelectedRole(requestedRole);
+      return;
+    }
+
+    if (user.roles.includes('customer')) {
+      setSelectedRole('customer');
+      return;
+    }
+
+    setSelectedRole((prev) => (user.roles.includes(prev) ? prev : user.roles[0]));
+  }, [location.state, user]);
+
   const tabs = useMemo(() => {
     if (!user) return [];
 
-    const dynamicTabs = [{ id: 'overview', label: 'Overview' }];
-
-    if (user.roles?.includes('customer')) {
-      dynamicTabs.push(
+    const roleTabs = {
+      customer: [
+        { id: 'overview', label: 'Overview' },
         { id: 'orders', label: 'Orders & Projects' },
         { id: 'renewals', label: 'Renewals' },
         { id: 'payments', label: 'Payments & Wallet' },
         { id: 'invoices', label: 'Invoices' },
         { id: 'updates', label: 'Update Requests' },
-        { id: 'closure', label: 'Plan Closure' }
-      );
-    }
+        { id: 'closure', label: 'Plan Closure' },
+      ],
+      developer: [
+        { id: 'overview', label: 'Overview' },
+        { id: 'developer', label: 'Developer Profile' },
+        { id: 'assigned-work', label: 'Assigned Work' },
+      ],
+      partner: [
+        { id: 'overview', label: 'Overview' },
+        { id: 'partner', label: 'Partner View' },
+      ],
+      manager: [
+        { id: 'overview', label: 'Overview' },
+        { id: 'manager', label: 'Manager View' },
+      ],
+      admin: [
+        { id: 'overview', label: 'Overview' },
+        { id: 'admin', label: 'Admin View' },
+      ],
+    };
 
-    if (user.roles?.includes('developer')) {
-      dynamicTabs.push({ id: 'developer', label: 'Developer Profile' });
-    }
-
-    if (user.roles?.includes('partner')) {
-      dynamicTabs.push({ id: 'partner', label: 'Partner View' });
-    }
-
-    if (user.roles?.includes('manager')) {
-      dynamicTabs.push({ id: 'manager', label: 'Manager View' });
-    }
-
-    if (user.roles?.includes('admin')) {
-      dynamicTabs.push({ id: 'admin', label: 'Admin View' });
-    }
-
-    return dynamicTabs;
-  }, [user]);
+    return roleTabs[selectedRole] || [{ id: 'overview', label: 'Overview' }];
+  }, [selectedRole, user]);
 
   useEffect(() => {
     if (tabs.length && !tabs.some((tab) => tab.id === activeTab)) {
@@ -242,12 +336,23 @@ const UserWorkspace = () => {
     }
   };
 
-  const overviewCards = [
-    { label: 'Orders', value: allData.orders.length },
-    { label: 'Transactions', value: allData.transactions.length },
-    { label: 'Update Requests', value: allData.updates.length },
-    { label: 'Invoices', value: allData.invoices.length },
-  ];
+  const workspaceSummary = allData.summary || null;
+
+  const sortedOrders = useMemo(() => {
+    return [...allData.orders].sort((left, right) => {
+      const priorityDiff = getOrderSortPriority(left) - getOrderSortPriority(right);
+      if (priorityDiff !== 0) return priorityDiff;
+      return getTimestamp(right.updatedAt || right.createdAt) - getTimestamp(left.updatedAt || left.createdAt);
+    });
+  }, [allData.orders]);
+
+  const sortedUpdates = useMemo(() => {
+    return [...allData.updates].sort((left, right) => {
+      const priorityDiff = getUpdateSortPriority(left) - getUpdateSortPriority(right);
+      if (priorityDiff !== 0) return priorityDiff;
+      return getTimestamp(right.updatedAt || right.createdAt || right.completedAt) - getTimestamp(left.updatedAt || left.createdAt || left.completedAt);
+    });
+  }, [allData.updates]);
 
   const renderStatusChip = (value, palette = {}) => {
     const cls = palette[value] || 'bg-slate-100 text-slate-700';
@@ -270,115 +375,318 @@ const UserWorkspace = () => {
     return null;
   };
 
-  const OverviewTab = () => (
-    <div className="space-y-6">
-      <div className="grid gap-4 md:grid-cols-4">
-        {overviewCards.map((item) => (
-          <div key={item.label} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-            <p className="text-sm text-slate-500">{item.label}</p>
-            <p className="mt-2 text-3xl font-semibold text-slate-900">{item.value}</p>
-          </div>
-        ))}
-      </div>
+  const OverviewTab = () => {
+    const activeProjects = workspaceSummary?.activeProjects || [];
+    const activeUpdatePlans = workspaceSummary?.activeUpdatePlans || [];
+    const totalOrders = workspaceSummary?.counts?.orders ?? allData.orders.length;
+    const activeProjectsCount = workspaceSummary?.counts?.activeProjects ?? activeProjects.length ?? 0;
+    const completedProjectsCount = workspaceSummary?.counts?.completedProjects ?? 0;
+    const completedUpdatesCount = workspaceSummary?.counts?.completedUpdates ?? 0;
+    const activePlan = activeUpdatePlans[0] || workspaceSummary?.activePlan || null;
 
-      <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h3 className="text-lg font-semibold text-slate-900">Profile Summary</h3>
-          <div className="mt-5 grid gap-4 sm:grid-cols-2">
-            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-              <p className="text-xs uppercase tracking-wide text-slate-500">Email</p>
-              <p className="mt-2 text-sm font-medium text-slate-900">{user?.email || 'N/A'}</p>
-            </div>
-            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-              <p className="text-xs uppercase tracking-wide text-slate-500">Phone</p>
-              <p className="mt-2 text-sm font-medium text-slate-900">{user?.phone || 'N/A'}</p>
-            </div>
-            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-              <p className="text-xs uppercase tracking-wide text-slate-500">Joined</p>
-              <p className="mt-2 text-sm font-medium text-slate-900">{formatDate(user?.createdAt)}</p>
-            </div>
-            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-              <p className="text-xs uppercase tracking-wide text-slate-500">Status</p>
-              <p className="mt-2 text-sm font-medium text-slate-900">{user?.status || 'Active'}</p>
-            </div>
+    const getPlanValidityLabel = (plan) => {
+      if (!plan) return 'N/A';
+      if (plan.validityDays !== null && plan.validityDays !== undefined) {
+        return `${plan.validityDays} day${Number(plan.validityDays) === 1 ? '' : 's'} left`;
+      }
+      if (plan.expiryDate) {
+        return `Until ${formatDate(plan.expiryDate)}`;
+      }
+      return 'Validity unavailable';
+    };
+
+    const getProjectStatusLabel = (project) => {
+      if (!project) return 'In Progress';
+      if (project.state === 'attention') return 'Pending Approval';
+      if (project.state === 'blocked') return 'Blocked';
+      if (project.state === 'completed') return 'Completed';
+      return 'In Progress';
+    };
+
+    return (
+      <div className="space-y-6">
+        <div className="grid gap-4 md:grid-cols-4">
+          <button
+            onClick={() => setActiveTab('orders')}
+            className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:shadow-md hover:border-blue-400 cursor-pointer"
+          >
+            <p className="text-sm text-slate-500">Total Orders</p>
+            <p className="mt-2 text-3xl font-semibold text-slate-900">{totalOrders}</p>
+          </button>
+          <button
+            onClick={() => setActiveTab('orders')}
+            className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:shadow-md hover:border-blue-400 cursor-pointer"
+          >
+            <p className="text-sm text-slate-500">Active Projects</p>
+            <p className="mt-2 text-3xl font-semibold text-slate-900">{activeProjectsCount}</p>
+          </button>
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <p className="text-sm text-slate-500">Total Active Plans</p>
+            <p className="mt-2 text-3xl font-semibold text-slate-900">{activeUpdatePlans.length}</p>
+          </div>
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <p className="text-sm text-slate-500">Completed</p>
+            <p className="mt-2 text-lg font-semibold text-slate-900">
+              {completedProjectsCount} projects, {completedUpdatesCount} updates
+            </p>
           </div>
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h3 className="text-lg font-semibold text-slate-900">Role Snapshot</h3>
-          <div className="mt-4 flex flex-wrap gap-2">
-            {(user?.roles || []).map((role) => (
-              <span
-                key={role}
-                className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold capitalize ${roleTheme[role] || 'bg-slate-100 text-slate-700'}`}
-              >
-                {role}
-              </span>
-            ))}
-          </div>
-          <div className="mt-5 space-y-3 text-sm text-slate-600">
-            <p>Customer modules are shown only when the user has the `customer` role.</p>
-            <p>The developer profile tab is available only when the user has the `developer` role.</p>
-            <p>Access management is currently additive; remove and pause actions are not available yet.</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+        <div className="grid gap-6">
+          {activeProjects.length > 0 && (
+            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <h3 className="text-lg font-semibold text-slate-900">Active Projects</h3>
+                  <p className="mt-1 text-sm text-slate-500">
+                    {activeProjectsCount > 0
+                      ? `${activeProjectsCount} active project${activeProjectsCount === 1 ? '' : 's'}`
+                      : 'No active projects'}
+                  </p>
+                </div>
+                <p className="text-xs font-medium uppercase tracking-wide text-slate-400">Click to open details</p>
+              </div>
 
-  const OrdersTab = () => (
-    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-      {allData.orders.length === 0 ? (
-        <div className="p-6 text-center text-slate-500">No orders found for this user</div>
-      ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-slate-50">
-              <tr>
-                <th className="px-6 py-3 text-left font-semibold text-slate-700">Order ID</th>
-                <th className="px-6 py-3 text-left font-semibold text-slate-700">Product</th>
-                <th className="px-6 py-3 text-left font-semibold text-slate-700">Status</th>
-                <th className="px-6 py-3 text-left font-semibold text-slate-700">Progress</th>
-                <th className="px-6 py-3 text-left font-semibold text-slate-700">Price</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {allData.orders.map((order) => (
-                <tr key={order._id}>
-                  <td className="px-6 py-4">
-                    <span className="inline-flex items-center gap-2">
-                      {renderActivityDot('orders', order._id)}
-                      <span>{order._id?.slice(-8)}</span>
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">{order.productId?.serviceName || 'N/A'}</td>
-                  <td className="px-6 py-4">
-                    {renderStatusChip(
-                      order.orderVisibility === 'pending-approval'
-                        ? 'Processing'
-                        : order.orderVisibility === 'payment-rejected'
-                          ? 'Rejected'
-                          : (order.projectProgress || 0) >= 100
-                            ? 'Completed'
-                            : 'In Progress',
-                      {
-                        Processing: 'bg-amber-100 text-amber-800',
-                        Rejected: 'bg-rose-100 text-rose-800',
-                        Completed: 'bg-emerald-100 text-emerald-800',
-                        'In Progress': 'bg-blue-100 text-blue-800',
-                      }
-                    )}
-                  </td>
-                  <td className="px-6 py-4">{order.projectProgress || 0}%</td>
-                  <td className="px-6 py-4">{formatCurrency(order.totalPrice || order.price || 0)}</td>
+              <div className="mt-5 grid gap-4">
+                {activeProjects.map((project) => {
+                  const linkedOrder = allData.orders.find((order) => String(order._id) === project.id) || null;
+                  return (
+                    <button
+                      key={project.id}
+                      type="button"
+                      onClick={() => setSelectedProject(linkedOrder)}
+                      className="w-full rounded-2xl border border-slate-200 bg-slate-50 p-4 text-left transition hover:border-indigo-300 hover:bg-indigo-50"
+                    >
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div>
+                          <p className="text-sm font-medium uppercase tracking-wide text-indigo-600">
+                            {getProjectStatusLabel(project)}
+                          </p>
+                          <h4 className="mt-2 text-lg font-semibold text-slate-900">{project.title}</h4>
+                          <p className="mt-1 text-sm text-slate-600">
+                            {project.phase ? `Phase: ${project.phase}` : 'Current phase unavailable'}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-semibold text-slate-900">{project.progress || 0}%</p>
+                          <p className="text-xs text-slate-500">{formatDate(project.updatedAt)}</p>
+                        </div>
+                      </div>
+                      <div className="mt-4 h-2 overflow-hidden rounded-full bg-slate-200">
+                        <div
+                          className="h-full rounded-full bg-indigo-500"
+                          style={{ width: `${Math.min(Number(project.progress || 0), 100)}%` }}
+                        />
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {activeUpdatePlans.length > 0 && (
+            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <h4 className="text-base font-semibold text-slate-900">Active Update Plans</h4>
+                  <p className="mt-1 text-sm text-slate-500">
+                    {activeUpdatePlans.length > 0
+                      ? `${activeUpdatePlans.length} active update plan${activeUpdatePlans.length === 1 ? '' : 's'}`
+                      : 'No active update plans'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-4 grid gap-4">
+                {activeUpdatePlans.map((plan) => (
+                  <div
+                    key={plan.id}
+                    className="rounded-2xl border border-slate-200 bg-slate-50 p-4"
+                  >
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-medium uppercase tracking-wide text-violet-600">
+                          Update Plan
+                        </p>
+                        <h5 className="mt-2 text-lg font-semibold text-slate-900">{plan.title}</h5>
+                        <p className="mt-1 text-sm text-slate-600 capitalize">{plan.status || 'active'}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-semibold text-slate-900">
+                          {plan.validityDays !== null && plan.validityDays !== undefined
+                            ? `${plan.validityDays} day${Number(plan.validityDays) === 1 ? '' : 's'} left`
+                            : plan.expiryDate
+                              ? `Until ${formatDate(plan.expiryDate)}`
+                              : 'Validity unavailable'}
+                        </p>
+                        <p className="text-xs text-slate-500">
+                          {plan.remainingUpdates !== null && plan.remainingUpdates !== undefined
+                            ? `${plan.remainingUpdates} remaining`
+                            : 'Remaining unavailable'}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                      <div className="rounded-xl bg-white p-3">
+                        <p className="text-xs uppercase tracking-wide text-slate-500">Total</p>
+                        <p className="mt-1 text-sm font-semibold text-slate-900">
+                          {plan.totalUpdates !== null && plan.totalUpdates !== undefined ? plan.totalUpdates : 'N/A'}
+                        </p>
+                      </div>
+                      <div className="rounded-xl bg-white p-3">
+                        <p className="text-xs uppercase tracking-wide text-slate-500">Consumed</p>
+                        <p className="mt-1 text-sm font-semibold text-slate-900">{plan.consumedUpdates || 0}</p>
+                      </div>
+                      <div className="rounded-xl bg-white p-3">
+                        <p className="text-xs uppercase tracking-wide text-slate-500">Remaining</p>
+                        <p className="mt-1 text-sm font-semibold text-slate-900">
+                          {plan.remainingUpdates !== null && plan.remainingUpdates !== undefined
+                            ? plan.remainingUpdates
+                            : 'N/A'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+      </div>
+    );
+  };
+
+  const OrdersTab = () => {
+    const getOrderDisplayStatus = (order) => {
+      if (order.orderVisibility === 'pending-approval') return 'Processing';
+      if (order.orderVisibility === 'payment-rejected') return 'Rejected';
+      if ((order.projectProgress || 0) >= 100 || order.currentPhase === 'completed') return 'Completed';
+      return 'In Progress';
+    };
+
+    const getProgressPercent = (order) => {
+      const isWebsiteUpdate = order.productId?.category?.toLowerCase() === 'website_updates';
+      if (isWebsiteUpdate) {
+        const total = order.productId?.updateCount || 0;
+        const consumed = order.updatesUsed || 0;
+        return total > 0 ? Math.round((consumed / total) * 100) : 0;
+      }
+      return order.projectProgress || 0;
+    };
+
+    const getProgressLabel = (order) => {
+      const isWebsiteUpdate = order.productId?.category?.toLowerCase() === 'website_updates';
+      if (isWebsiteUpdate) {
+        const consumed = order.updatesUsed || 0;
+        const total = order.productId?.updateCount || 0;
+        return `${consumed}/${total} updates`;
+      }
+      return `${order.projectProgress || 0}%`;
+    };
+
+    const getTotalBenefit = (order) => {
+      const isWebsiteUpdate = order.productId?.category?.toLowerCase() === 'website_updates';
+      if (isWebsiteUpdate) {
+        return order.productId?.updateCount || 'N/A';
+      }
+      return order.productId?.totalPages || 'N/A';
+    };
+
+    const getExpiryDate = (order) => {
+      const isWebsiteUpdate = order.productId?.category?.toLowerCase() === 'website_updates';
+      if (isWebsiteUpdate) {
+        const expiryDate = order.currentMonthExpiryDate || order.monthlyLimitResetDate;
+        return expiryDate ? formatDate(expiryDate) : 'N/A';
+      }
+      return order.expectedCompletionDate ? formatDate(order.expectedCompletionDate) : 'N/A';
+    };
+
+    return (
+      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        {allData.orders.length === 0 ? (
+          <div className="p-6 text-center text-slate-500">No orders found for this user</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-slate-50">
+                <tr>
+                  <th className="px-6 py-3 text-left font-semibold text-slate-700">Project / Plan</th>
+                  <th className="px-6 py-3 text-left font-semibold text-slate-700">Status</th>
+                  <th className="px-6 py-3 text-left font-semibold text-slate-700">Progress</th>
+                  <th className="px-6 py-3 text-left font-semibold text-slate-700">Purchase Date</th>
+                  <th className="px-6 py-3 text-left font-semibold text-slate-700">Expiry Date</th>
+                  <th className="px-6 py-3 text-left font-semibold text-slate-700">Total Benefit</th>
+                  <th className="px-6 py-3 text-left font-semibold text-slate-700">Price</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </div>
-  );
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {sortedOrders.map((order) => {
+                  const displayStatus = getOrderDisplayStatus(order);
+                  const progressPercent = getProgressPercent(order);
+                  const progressLabel = getProgressLabel(order);
+                  const totalBenefit = getTotalBenefit(order);
+                  const expiryDate = getExpiryDate(order);
+
+                  return (
+                    <tr
+                      key={order._id}
+                      onClick={() => setSelectedProject(order)}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                          event.preventDefault();
+                          setSelectedProject(order);
+                        }
+                      }}
+                      className="cursor-pointer transition hover:bg-slate-50"
+                    >
+                      <td className="px-6 py-4">
+                        <div>
+                          <p className="font-medium text-slate-900">{order.productId?.serviceName || 'N/A'}</p>
+                          <p className="text-xs text-slate-500 mt-1">
+                            <span className="inline-flex items-center gap-1">
+                              {renderActivityDot('orders', order._id)}
+                              Order: {order._id?.slice(-8)}
+                            </span>
+                          </p>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        {renderStatusChip(displayStatus, {
+                          Processing: 'bg-amber-100 text-amber-800',
+                          Rejected: 'bg-rose-100 text-rose-800',
+                          Completed: 'bg-emerald-100 text-emerald-800',
+                          'In Progress': 'bg-blue-100 text-blue-800',
+                        })}
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="space-y-1">
+                          <p className="font-medium text-slate-900">{progressLabel}</p>
+                          <div className="w-full bg-slate-200 rounded-full h-2">
+                            <div
+                              className="bg-indigo-500 h-2 rounded-full"
+                              style={{ width: `${Math.min(progressPercent, 100)}%` }}
+                            />
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-slate-700">{formatDate(order.createdAt)}</td>
+                      <td className="px-6 py-4 text-slate-700">{expiryDate}</td>
+                      <td className="px-6 py-4 text-slate-700">{totalBenefit}</td>
+                      <td className="px-6 py-4 font-medium text-slate-900">{formatCurrency(order.totalPrice || order.price || 0)}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   const RenewalsTab = () => (
     <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
@@ -534,8 +842,12 @@ const UserWorkspace = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {allData.updates.map((update) => (
-                <tr key={update._id}>
+              {sortedUpdates.map((update) => (
+                <tr
+                  key={update._id}
+                  onClick={() => setSelectedUpdateRequest(update)}
+                  className="cursor-pointer transition hover:bg-slate-50"
+                >
                   <td className="px-6 py-4">
                     <span className="inline-flex items-center gap-2">
                       {renderActivityDot('updates', update._id)}
@@ -665,6 +977,126 @@ const UserWorkspace = () => {
     </div>
   );
 
+  const DeveloperAssignedWorkTab = () => (
+    <div className="space-y-6">
+      <div className="grid gap-4 md:grid-cols-2">
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <p className="text-xs uppercase tracking-wide text-slate-500">Assigned Projects</p>
+          <p className="mt-2 text-3xl font-semibold text-slate-900">{developerAssignedProjects.length}</p>
+        </div>
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <p className="text-xs uppercase tracking-wide text-slate-500">Assigned Update Requests</p>
+          <p className="mt-2 text-3xl font-semibold text-slate-900">{developerAssignedUpdates.length}</p>
+        </div>
+      </div>
+
+      {loadingDeveloperWork ? (
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 text-center text-slate-500 shadow-sm">
+          Loading assigned work...
+        </div>
+      ) : (
+        <>
+          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <div className="border-b border-slate-200 px-6 py-4">
+              <h3 className="text-lg font-semibold text-slate-900">Assigned Projects</h3>
+            </div>
+            {developerAssignedProjects.length === 0 ? (
+              <div className="p-6 text-center text-slate-500">No projects are assigned to this developer</div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="bg-slate-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left font-semibold text-slate-700">Project</th>
+                      <th className="px-6 py-3 text-left font-semibold text-slate-700">Client</th>
+                      <th className="px-6 py-3 text-left font-semibold text-slate-700">Status</th>
+                      <th className="px-6 py-3 text-left font-semibold text-slate-700">Progress</th>
+                      <th className="px-6 py-3 text-left font-semibold text-slate-700">Ordered</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {developerAssignedProjects.map((project) => (
+                      <tr
+                        key={project._id}
+                        onClick={() => setSelectedProject(project)}
+                        className="cursor-pointer transition hover:bg-slate-50"
+                      >
+                        <td className="px-6 py-4 font-medium text-slate-900">{project.productId?.serviceName || 'N/A'}</td>
+                        <td className="px-6 py-4 text-slate-600">{project.userId?.name || 'N/A'}</td>
+                        <td className="px-6 py-4">
+                          {renderStatusChip(
+                            project.orderVisibility === 'pending-approval'
+                              ? 'Processing'
+                              : project.orderVisibility === 'payment-rejected'
+                                ? 'Rejected'
+                                : (project.projectProgress || 0) >= 100
+                                  ? 'Completed'
+                                  : 'In Progress',
+                            {
+                              Processing: 'bg-amber-100 text-amber-800',
+                              Rejected: 'bg-rose-100 text-rose-800',
+                              Completed: 'bg-emerald-100 text-emerald-800',
+                              'In Progress': 'bg-blue-100 text-blue-800',
+                            }
+                          )}
+                        </td>
+                        <td className="px-6 py-4 text-slate-600">{project.projectProgress || 0}%</td>
+                        <td className="px-6 py-4 text-slate-600">{formatDate(project.createdAt)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+
+          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <div className="border-b border-slate-200 px-6 py-4">
+              <h3 className="text-lg font-semibold text-slate-900">Assigned Update Requests</h3>
+            </div>
+            {developerAssignedUpdates.length === 0 ? (
+              <div className="p-6 text-center text-slate-500">No update requests are assigned to this developer</div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="bg-slate-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left font-semibold text-slate-700">Plan</th>
+                      <th className="px-6 py-3 text-left font-semibold text-slate-700">Client</th>
+                      <th className="px-6 py-3 text-left font-semibold text-slate-700">Status</th>
+                      <th className="px-6 py-3 text-left font-semibold text-slate-700">Submitted</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {developerAssignedUpdates.map((update) => (
+                      <tr
+                        key={update._id}
+                        onClick={() => setSelectedUpdateRequest(update)}
+                        className="cursor-pointer transition hover:bg-slate-50"
+                      >
+                        <td className="px-6 py-4 font-medium text-slate-900">{update.updatePlanId?.productId?.serviceName || 'N/A'}</td>
+                        <td className="px-6 py-4 text-slate-600">{update.userId?.name || 'N/A'}</td>
+                        <td className="px-6 py-4">
+                          {renderStatusChip(update.status, {
+                            pending: 'bg-amber-100 text-amber-800',
+                            in_progress: 'bg-blue-100 text-blue-800',
+                            completed: 'bg-emerald-100 text-emerald-800',
+                            rejected: 'bg-rose-100 text-rose-800',
+                          })}
+                        </td>
+                        <td className="px-6 py-4 text-slate-600">{formatDate(update.createdAt)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </>
+      )}
+    </div>
+  );
+
   const GenericRolePanel = ({ title, description }) => (
     <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
       <h3 className="text-lg font-semibold text-slate-900">{title}</h3>
@@ -675,6 +1107,24 @@ const UserWorkspace = () => {
   if (loadingUser) {
     return <div className="p-6 text-center text-slate-600">Loading user workspace...</div>;
   }
+
+  const refreshWorkspaceProject = async (projectId) => {
+    const latestData = await loadWorkspaceData();
+    const nextProject = latestData?.orders?.find((order) => order._id === projectId) || null;
+    if (nextProject) {
+      setSelectedProject(nextProject);
+    }
+    return nextProject;
+  };
+
+  const refreshWorkspaceUpdateRequest = async (requestId) => {
+    const latestData = await loadWorkspaceData();
+    const nextRequest = latestData?.updates?.find((update) => update._id === requestId) || null;
+    if (nextRequest) {
+      setSelectedUpdateRequest(nextRequest);
+    }
+    return nextRequest;
+  };
 
   if (!user) {
     return (
@@ -718,19 +1168,25 @@ const UserWorkspace = () => {
                 <h1 className="text-3xl font-bold text-slate-900">{user.name}</h1>
                 <div className="mt-3 flex flex-wrap gap-2">
                   {(user.roles || []).map((role) => (
-                    <span
+                    <button
                       key={role}
-                      className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold capitalize ${roleTheme[role] || 'bg-slate-100 text-slate-700'}`}
+                      type="button"
+                      onClick={() => setSelectedRole(role)}
+                      className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold capitalize transition ${
+                        selectedRole === role
+                          ? `${roleTheme[role] || 'bg-slate-100 text-slate-700'} border-transparent ring-2 ring-offset-1 ring-slate-300`
+                          : 'border-slate-200 bg-white text-slate-500 hover:bg-slate-50 hover:text-slate-700'
+                      }`}
                     >
                       {role}
-                    </span>
+                    </button>
                   ))}
                 </div>
                 <div className="mt-4 flex flex-wrap gap-4 text-sm text-slate-600">
                   <span className="inline-flex items-center gap-2"><Mail size={16} /> {user.email}</span>
                   <span className="inline-flex items-center gap-2"><Phone size={16} /> {user.phone || 'N/A'}</span>
                   <span className="inline-flex items-center gap-2"><Shield size={16} /> {user.status || 'Active'}</span>
-                  {user.roles?.includes('customer') && hasClientUnreadActivity(activityCounts) && (
+                  {selectedRole === 'customer' && hasClientUnreadActivity(activityCounts) && (
                     <span className={`inline-flex min-w-5 items-center justify-center rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${getBadgeClasses(getClientBadgeState(activityCounts))}`}>
                       {getClientActiveCount(activityCounts)}
                     </span>
@@ -806,6 +1262,7 @@ const UserWorkspace = () => {
               {activeTab === 'updates' && <UpdatesTab />}
               {activeTab === 'closure' && <ClosureTab />}
               {activeTab === 'developer' && <DeveloperTab />}
+              {activeTab === 'assigned-work' && <DeveloperAssignedWorkTab />}
               {activeTab === 'partner' && (
                 <GenericRolePanel
                   title="Partner Role View"
@@ -851,6 +1308,25 @@ const UserWorkspace = () => {
           developerData={developerProfile}
           fetchData={loadUserDetails}
           onClose={() => setOpenEditDeveloper(false)}
+        />
+      )}
+
+      {selectedProject && (
+        <ProjectWorkspaceModal
+          project={selectedProject}
+          developers={developers}
+          onClose={() => setSelectedProject(null)}
+          onProjectUpdated={refreshWorkspaceProject}
+          isReadOnly={(selectedProject?.projectProgress || 0) >= 100 || selectedProject?.currentPhase === 'completed' || selectedProject?.orderVisibility === 'payment-rejected'}
+        />
+      )}
+
+      {selectedUpdateRequest && (
+        <UpdateRequestWorkspaceModal
+          request={selectedUpdateRequest}
+          developers={developers}
+          onClose={() => setSelectedUpdateRequest(null)}
+          onRequestUpdated={refreshWorkspaceUpdateRequest}
         />
       )}
     </div>

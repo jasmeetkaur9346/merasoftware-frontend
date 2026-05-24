@@ -153,7 +153,7 @@ const RoleDirectoryPage = ({
                   <tr
                     key={user._id}
                     className="cursor-pointer transition-colors hover:bg-blue-50"
-                    onClick={() => navigate(`/admin-panel/users/${user._id}`)}
+                    onClick={() => navigate(`/admin-panel/users/${user._id}`, { state: { defaultRole: role } })}
                   >
                     <td className="px-6 py-4 text-sm font-medium text-gray-800">{user.name || 'N/A'}</td>
                     <td className="px-6 py-4 text-sm text-gray-600">{user.email || 'N/A'}</td>

@@ -195,7 +195,7 @@ const ClientsServices = () => {
                   <tr
                     key={client._id}
                     className="hover:bg-blue-50 transition-colors cursor-pointer"
-                    onClick={() => navigate(`/admin-panel/users/${client._id}`)}
+                    onClick={() => navigate(`/admin-panel/users/${client._id}`, { state: { defaultRole: 'customer' } })}
                   >
                     <td className="px-6 py-4 text-sm font-medium text-gray-800">
                       <div className="flex items-center gap-2">
